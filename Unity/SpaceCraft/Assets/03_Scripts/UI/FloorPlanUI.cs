@@ -78,6 +78,14 @@ public class FloorPlanUI : MonoBehaviour
         
         SceneManager.LoadScene("03_PlaceScene");
     }
+    
+    // go to  Main Scene
+    public void LoadMainScene()
+    {
+        //Send space information to next scene
+        
+        SceneManager.LoadScene("01_MainScene");
+    }
 
     Texture2D LoadTexture(string path) {
         var bytes = System.IO.File.ReadAllBytes(path);
