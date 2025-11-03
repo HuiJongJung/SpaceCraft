@@ -16,7 +16,13 @@ public class RoomBuilder : MonoBehaviour
     //Structure
     public struct Edge { public int A; public int B; }
 
+    [Header("Constants")]
     private const float EPS_SQR = 1e-12f;
+
+    private const float DEFAULT_WINDOWY = 1.0f;
+    private const float DEFAULT_WINDOWHEIGHT = 0.8f;
+    private const float DEFAULT_DOORHEIGHT = 2.1f;
+    private const float DEFAULT_CEILINGHEIGHT = 2.6f;
 
     private void Start()
     {
@@ -32,8 +38,6 @@ public class RoomBuilder : MonoBehaviour
         }
 
         _spaceRoot = gameObject;
-        
-        
         //Build
         BuildFloors();
         BuildWalls();
@@ -115,7 +119,7 @@ public class RoomBuilder : MonoBehaviour
         
         int topCount = topVerts.Count;
 
-        // 1) Top Vertices
+        // 1. Top Vertices
         List<Vector3> verts = new List<Vector3>(topCount * 2);
         for (int i = 0; i < topCount; i++)
         {
@@ -123,7 +127,7 @@ public class RoomBuilder : MonoBehaviour
             verts.Add(new Vector3(v.x, v.y, v.z));
         }
 
-        // 2) Compute Top Face Normal
+        // 2. Compute Top Face Normal
         int i0 = topIndices[0];
         int i1 = topIndices[1];
         int i2 = topIndices[2];
@@ -135,7 +139,7 @@ public class RoomBuilder : MonoBehaviour
         Vector3 faceN = Vector3.Cross(v2 - v1, v3 - v2).normalized;
         if (faceN.sqrMagnitude <= EPS_SQR) { faceN = Vector3.up; }
 
-        // 3) Bottom Vertices
+        // 3. Bottom Vertices
         // translate by "Thickness" to "Bottom Normal Direction"
         Vector3 bottomMove = -faceN * thickness;
         for (int i = 0; i < topCount; i++)
@@ -144,16 +148,16 @@ public class RoomBuilder : MonoBehaviour
             verts.Add(vTop + bottomMove);
         }
 
-        // 4) Compute Indices
+        // 4. Compute Indices
         List<int> indices = new List<int>(topIndices.Count * 2);
 
-        // 4-1) Top Indices
+        // 4-1. Top Indices
         for (int i = 0; i < topIndices.Count; i++)
         {
             indices.Add(topIndices[i]);
         }
 
-        // 4-2) Bottom Indices (Reverse)
+        // 4-2. Bottom Indices (Reverse)
         for (int i = 0; i < topIndices.Count; i += 3)
         {
             i0 = topIndices[i + 0] + topCount;
@@ -164,7 +168,7 @@ public class RoomBuilder : MonoBehaviour
             indices.Add(i0);
         }
 
-        // 5) Copmute Normals / UVs (Top / Bottom Face)
+        // 5. Copmute Normals / UVs (Top / Bottom Face)
         List<Vector3> normals = new List<Vector3>(verts.Count);
         List<Vector2> uvs = new List<Vector2>(verts.Count);
 
@@ -187,7 +191,7 @@ public class RoomBuilder : MonoBehaviour
             uvs.Add(new Vector2(v.x, v.z));
         }
     
-        // 6) Create Side Face
+        // 6. Create Side Face
         
         //Compute topIndices 's borders
         //bottomPosition = verts[i + topCount]
@@ -225,6 +229,12 @@ public class RoomBuilder : MonoBehaviour
             normals.Add(sideN);
             normals.Add(sideN);
             
+            //uv
+            uvs.Add(new Vector2(0.0f, 0.0f));
+            uvs.Add(new Vector2(0.0f, thickness));
+            uvs.Add(new Vector2(edgeLen, thickness));
+            uvs.Add(new Vector2(edgeLen, 0.0f));
+            
             //indices
             indices.Add(baseIndex + 0);
             indices.Add(baseIndex + 1);
@@ -233,14 +243,9 @@ public class RoomBuilder : MonoBehaviour
             indices.Add(baseIndex + 0);
             indices.Add(baseIndex + 2);
             indices.Add(baseIndex + 3);
-            //uv
-            uvs.Add(new Vector2(0.0f, 0.0f));
-            uvs.Add(new Vector2(0.0f, thickness));
-            uvs.Add(new Vector2(edgeLen, thickness));
-            uvs.Add(new Vector2(edgeLen, 0.0f));
         }
 
-        // 7) Make Mesh
+        // 7. Make Mesh
         mesh.SetVertices(verts);
         mesh.SetTriangles(indices, 0);
         mesh.SetNormals(normals);
@@ -252,17 +257,18 @@ public class RoomBuilder : MonoBehaviour
     
     #endregion
     
-    
     #region BuildWall
     // Build Walls
     public void BuildWalls()
     {
+        // 0. Validate
         if (_layout == null || _layout.walls == null || _layout.walls.Count == 0)
         {
             Debug.LogWarning("[RoomBuilder] No walls.");
             return;
         }
         
+        //Loop for all Walls
         for (int i = 0; i < _layout.walls.Count; i++)
         {
             WallDef wd = _layout.walls[i];
@@ -270,7 +276,7 @@ public class RoomBuilder : MonoBehaviour
             if (wd.vertices == null || wd.vertices.Count < 4) continue;
             if (wd.indices == null || wd.indices.Count < 3) continue;
             
-            // 1. Get Openings List of Wall
+            // 1. Get Openings List of Each Wall
             List<OpeningDef> wallOps;
             if (!data.opsByWall.TryGetValue(wd.id, out wallOps))
             {
@@ -278,8 +284,13 @@ public class RoomBuilder : MonoBehaviour
             }
             
             // 2. Make Mesh
-            Mesh m = BuildWallMesh(wd.vertices, wd.indices, wd.thickness, wallOps);
-
+            float height = _layout.ceilingHeight;
+            if (_layout.ceilingHeight <= EPS_SQR)
+            {
+                height = DEFAULT_CEILINGHEIGHT;
+            }
+            Mesh m = BuildWallMesh(wd.vertices, wd.indices, height, wallOps);
+            
             // 3. Make GameObject & Assign Mesh
             GameObject go = new GameObject("Wall_" + wd.id);
             go.transform.SetParent(_spaceRoot.transform, false);
@@ -313,87 +324,178 @@ public class RoomBuilder : MonoBehaviour
     }
     
     // Build Wall Mesh
-    private Mesh BuildWallMesh(List<Vec3> wallVerts, List<int> baseIndices, float thickness, List<OpeningDef> openings)
+    private Mesh BuildWallMesh(List<Vec3> bottomVerts, List<int> baseIndices, float height, List<OpeningDef> openings)
     {
         Mesh mesh = new Mesh();
-        // 0. Validate
-        if (wallVerts == null || wallVerts.Count < 4) return mesh;
         
-        // 1. Read 4 vertices
-        List<Vector3> w = new List<Vector3>(wallVerts.Count);
-        for (int i = 0; i < wallVerts.Count; i++)
+        // 0. Validate
+        if (bottomVerts == null || bottomVerts.Count < 4) { return mesh; }
+        if (baseIndices == null || baseIndices.Count < 3) { return mesh; }
+
+        // 1. Load 4 Bottom Vertices
+        List<Vector3> w = new List<Vector3>(bottomVerts.Count);
+        for (int i = 0; i < bottomVerts.Count; i++)
         {
-            Vec3 v = wallVerts[i];
+            Vec3 v = bottomVerts[i];
             w.Add(new Vector3(v.x, v.y, v.z));
         }
-        
-        // Assume - p0:BottomLeft, p1:BottomRight, p2:TopRight, p3:TopLeft
-        // 2. Copmute Normal & Axes
+
+        // 2. Compute Axes / Len
+        // u: Long Side(Actual Wall, including)
+        // t: Short Side
+        // v: Normal of Bottom Face
         Vector3 p0 = w[0];
         Vector3 p1 = w[1];
         Vector3 p3 = w[3];
-        
-        // u : p0 -> p1
-        Vector3 uDir = (p1 - p0).normalized;
-        // v : p0 -> p3
-        Vector3 vDir = (p3 - p0).normalized;
-        Vector3 nDir = Vector3.Cross(uDir, vDir).normalized;
-        
-        float uLen = Vector3.Distance(p0, p1);
-        float vLen = Vector3.Distance(p0, p3);
 
-        // 3. Collect Cut Lines
+        Vector3 e1 = p1 - p0;
+        Vector3 e3 = p3 - p0;
+
+        float len1 = e1.magnitude;
+        float len3 = e3.magnitude;
+        
+        //Edge Guard : if less than EPS_SQR, return empty mesh
+        if (len1 <= EPS_SQR || len3 <= EPS_SQR)
+        {
+            return mesh;
+        }
+
+        Vector3 uDir; // uDir : Wall Dir
+        Vector3 tDir; // tDir
+        Vector3 vDir = Vector3.up; // vDir : Normal of Bottom Face
+        float uLen;
+        float tLen;
+        float vLen = height;
+        
+        //Normalize uDir / tDir
+        if (len1 >= len3)
+        {
+            uDir = e1 / len1;
+            tDir = e3 / len3;
+            uLen = len1;
+            tLen = len3;
+        }
+        else
+        {
+            uDir = e3 / len3;
+            tDir = e1 / len1;
+            uLen = len3;
+            tLen = len1;
+        }
+
+        // 3. nCand (u×v) : Front Face Normal Candidate
+        // copmare with tDir to make nFrontOut
+        Vector3 nCand = Vector3.Cross(uDir, vDir);
+        if (nCand.sqrMagnitude <= EPS_SQR) nCand = tDir;
+        else nCand = nCand.normalized;
+
+        Vector3 nFrontOut;
+        // if result of dot(nCand,tDir) > 0 then, use "-nCand"
+        // nCand Should be "opposite direction of tDir"
+        if (Vector3.Dot(nCand, tDir) > 0.0f)
+        {
+            nFrontOut = -nCand;
+        }
+        else
+        {
+            nFrontOut = nCand;
+        }
+
+        // 4. Collect Cutlines of Openings
+        // FrontFace: uv Plane
+        // Origin : p0
         List<float> uCuts = new List<float>();
         List<float> vCuts = new List<float>();
-        
-        uCuts.Add(0.0f);
-        uCuts.Add(uLen);
-        vCuts.Add(0.0f);
-        vCuts.Add(vLen);
-        
-        //Openings 어쩌구..
+        uCuts.Add(0.0f); uCuts.Add(uLen);
+        vCuts.Add(0.0f); vCuts.Add(vLen);
+
         List<Rect> opRects = new List<Rect>();
+        
+        // 4-1. Assign windowCenterY
+        // invalid windowY input -> Use Default Value
+        float windowCenterY;
+        if (_layout.windowY > 0.0f) windowCenterY = _layout.windowY;
+        else windowCenterY = DEFAULT_WINDOWY;
+        
+        // loop for all Openings (included in wall)
         for (int i = 0; i < openings.Count; i++)
         {
             OpeningDef od = openings[i];
             if (od == null) { continue; }
             
-            Vector3 cW = new Vector3(od.position.x, od.position.y, od.position.z);
-            Vector2 cUV = WorldToUV(cW, p0, uDir, vDir);
+            Vector3 cW = new Vector3(od.center.x, od.center.y, od.center.z);
+            Vector3 rel = cW - p0;
             
-            float uMin = cUV.x - od.size.x * 0.5f;
-            float uMax = cUV.x + od.size.x * 0.5f;
-            float vMin = cUV.y - od.size.y * 0.5f;
-            float vMax = cUV.y + od.size.y * 0.5f;
+            
+            // 4-2. Compute uCenter
+            // Project Center to uvPlane (only extract "uCenter")
+            float uCenter = Vector3.Dot(rel, uDir);
 
+            bool isDoor = false;
+            if (od.type != null)
+            {
+                string t = od.type.ToLower();
+                // door or slidingdoor
+                if (t == "door" || t == "slidingdoor") { isDoor = true; }
+            }
+            
+            // 4-3. Compute vCenter
+            float vCenter;
+            float halfH;
+            
+            // Door
+            if (isDoor)
+            {
+                vCenter = _layout.doorHeight * 0.5f;
+                halfH   = _layout.doorHeight * 0.5f;
+            }
+            // Window
+            else
+            {
+                vCenter = windowCenterY;
+                halfH   = _layout.windowHeight * 0.5f;
+            }
+            
+            // 4-4. Clipping & Clamping uMin, uMax, vMin, vMax
+            float uMin = uCenter - od.width * 0.5f;
+            float uMax = uCenter + od.width * 0.5f;
+            float vMin = vCenter - halfH;
+            float vMax = vCenter + halfH;
+            
+            // Clipping
             if (uMax <= 0.0f || uMin >= uLen) { continue; }
             if (vMax <= 0.0f || vMin >= vLen) { continue; }
-
+            // Clamping
             if (uMin < 0.0f) { uMin = 0.0f; }
-            if (vMin < 0.0f) { vMin = 0.0f; }
             if (uMax > uLen) { uMax = uLen; }
+            if (vMin < 0.0f) { vMin = 0.0f; }
             if (vMax > vLen) { vMax = vLen; }
 
-            Rect r = new Rect(uMin, vMin, uMax - uMin, vMax - vMin);
-            if (r.width <= 0.0f || r.height <= 0.0f) { continue; }
-
+            float du = uMax - uMin;
+            float dv = vMax - vMin;
+            if (du <= 0.0f || dv <= 0.0f) { continue; }
+            
+            // 4-5. Add opRects & uCuts/ vCuts
+            Rect r = new Rect(uMin, vMin, du, dv);
             opRects.Add(r);
-            uCuts.Add(uMin); 
-            uCuts.Add(uMax);
-            vCuts.Add(vMin); 
-            vCuts.Add(vMax);
+            uCuts.Add(uMin); uCuts.Add(uMax);
+            vCuts.Add(vMin); vCuts.Add(vMax);
         }
         
-        //Sort & DeDuplication
+        // 4-6. Sort & Deduplication
         uCuts.Sort();
         vCuts.Sort();
         DedupSorted(uCuts);
         DedupSorted(vCuts);
 
-        // 4. Build Front Face (Skip Hole)
-        List<Vector3> topVerts = new List<Vector3>();
-        List<int> topIndices = new List<int>();
+        // 5. Create Front Face(uv Plane)'s indices
+        // Make Indices of front face
+        // with Deduplication
+        List<Vector3> frontVerts = new List<Vector3>();
+        List<int> frontIndices = new List<int>();
         
+        // 5-1. vertex's index of intersection of cutLine
+        // For Deduplicaiton
         int[,] vertIndex = new int[uCuts.Count, vCuts.Count];
         for (int ui = 0; ui < uCuts.Count; ui++)
         {
@@ -403,6 +505,7 @@ public class RoomBuilder : MonoBehaviour
             }
         }
         
+        // loop for (u,v)
         for (int ui = 0; ui + 1 < uCuts.Count; ui++)
         {
             for (int vi = 0; vi + 1 < vCuts.Count; vi++)
@@ -411,126 +514,156 @@ public class RoomBuilder : MonoBehaviour
                 float u1 = uCuts[ui + 1];
                 float v0 = vCuts[vi];
                 float v1 = vCuts[vi + 1];
+                
+                if (u1 - u0 <= EPS_SQR || v1 - v0 <= EPS_SQR) { continue; }
 
-                if (u1 - u0 <= 0.0f || v1 - v0 <= 0.0f) { continue; }
-                
-                
                 Rect cell = new Rect(u0, v0, u1 - u0, v1 - v0);
+                // if hole cell, Skip
                 if (IntersectsAny(cell, opRects)) { continue; }
-
-                int i00 = EnsureCorner(topVerts, vertIndex, ui, vi, u0, v0, p0, uDir, vDir);
-                int i10 = EnsureCorner(topVerts, vertIndex, ui + 1, vi, u1, v0, p0, uDir, vDir);
-                int i11 = EnsureCorner(topVerts, vertIndex, ui + 1, vi + 1, u1, v1, p0, uDir, vDir);
-                int i01 = EnsureCorner(topVerts, vertIndex, ui, vi + 1, u0, v1, p0, uDir, vDir);
                 
-                // Ensure CCW
-                topIndices.Add(i00); topIndices.Add(i10); topIndices.Add(i11);
-                topIndices.Add(i00); topIndices.Add(i11); topIndices.Add(i01);
+                // else -> Make 4 Vertices ( Reuse Duplicated Vertex )
+                int i00 = GetOrCreateCornerVertex(frontVerts, vertIndex, ui,     vi,     u0, v0, p0, uDir, vDir);
+                int i10 = GetOrCreateCornerVertex(frontVerts, vertIndex, ui + 1, vi,     u1, v0, p0, uDir, vDir);
+                int i11 = GetOrCreateCornerVertex(frontVerts, vertIndex, ui + 1, vi + 1, u1, v1, p0, uDir, vDir);
+                int i01 = GetOrCreateCornerVertex(frontVerts, vertIndex, ui,     vi + 1, u0, v1, p0, uDir, vDir);
+                // Indices
+                frontIndices.Add(i00); frontIndices.Add(i10); frontIndices.Add(i11);
+                frontIndices.Add(i00); frontIndices.Add(i11); frontIndices.Add(i01);
             }
         }
-        
-        // return if no verts or no indices
-        if (topVerts.Count == 0 || topIndices.Count == 0)
+        // 5-3. Validate for frontVerts & frotIndices
+        if (frontVerts.Count == 0 || frontIndices.Count == 0)
         {
-            Mesh empty = new Mesh();
-            return empty;
+            return mesh;
+        }
+        // 5-4. Ensure Winding of Front Face with "nFrontOut"
+        EnsureWindingByNormal(frontVerts, frontIndices, nFrontOut);
+
+        // 6. Assign Front/Back Face's Vertices
+        // Front Face : Just Add
+        // Back Face : Copy Front Vertices and Parallel Movement with (-nFrontOut * tLen)
+        int fCount = frontVerts.Count;
+        
+        // 6-1. add front vertices
+        List<Vector3> verts = new List<Vector3>(fCount * 2);
+        for (int i = 0; i < fCount; i++)
+        {
+            verts.Add(frontVerts[i]);
+        }
+        // 6-2. add back vertices (with Parallel Movement)
+        Vector3 backOffset = -nFrontOut * tLen;
+        for (int i = 0; i < fCount; i++)
+        {
+            verts.Add(frontVerts[i] + backOffset);
         }
 
-        // 5. Make Back Face(By Copy FrontFace)
-        int topCount = topVerts.Count;
-        List<Vector3> verts = new List<Vector3>(topCount * 2);
-        // 5-1. Front Face Verts
-        for (int i = 0; i < topCount; i++)
+        // 7. Assign Indices
+        // Front Face : Same
+        // Back Face : Reverse
+        List<int> indices = new List<int>(frontIndices.Count * 2);
+        // Front
+        for (int i = 0; i < frontIndices.Count; i++)
         {
-            verts.Add(topVerts[i]);
+            indices.Add(frontIndices[i]);
         }
-        // 5-2. Back Face Verts
-        Vector3 backOffset = -nDir * thickness;
-        for (int i = 0; i < topCount; i++)
+        // Back
+        for (int i = 0; i < frontIndices.Count; i += 3)
         {
-            verts.Add(topVerts[i] + backOffset);
-        }
-        
-        // 6. Compute Indices
-        // 6-1. Front Face
-        List<int> indices = new List<int>(topIndices.Count * 2);
-        for (int i = 0; i < topIndices.Count; i++)
-        {
-            indices.Add(topIndices[i]);
-        }
-        // 6-2. Back Face (Reverse)
-        for (int i = 0; i < topIndices.Count; i += 3)
-        {
-            int a = topIndices[i + 0] + topCount;
-            int b = topIndices[i + 1] + topCount;
-            int c = topIndices[i + 2] + topCount;
+            int a = frontIndices[i + 0] + fCount;
+            int b = frontIndices[i + 1] + fCount;
+            int c = frontIndices[i + 2] + fCount;
             indices.Add(a);
-            indices.Add(c);
+            indices.Add(c); // Reverse
             indices.Add(b);
         }
 
-        // 7. Assign Front/Back Face's Normals, UVs
+        // 8. Assign Normals/UVs (Front/Back)
         List<Vector3> normals = new List<Vector3>(verts.Count);
         List<Vector2> uvs = new List<Vector2>(verts.Count);
-
-        for (int i = 0; i < topCount; i++)
+        
+        // 8-1. Front Face's normals / uvs
+        for (int i = 0; i < fCount; i++)
         {
             Vector2 uvTop = WorldToUV(verts[i], p0, uDir, vDir);
-            normals.Add(nDir);
+            normals.Add(nFrontOut);
             uvs.Add(new Vector2(uvTop.x, uvTop.y));
         }
-        for (int i = 0; i < topCount; i++)
+        // 8-2. Back Face's normals / uvs
+        for (int i = 0; i < fCount; i++)
         {
-            Vector2 uvBot = WorldToUV(verts[i + topCount], p0, uDir, vDir);
-            normals.Add(-nDir);
+            Vector2 uvBot = WorldToUV(verts[i + fCount], p0 + backOffset, uDir, vDir);
+            normals.Add(-nFrontOut);
             uvs.Add(new Vector2(uvBot.x, uvBot.y));
         }
 
-        // 8. Create Side Faces
-        List<Edge> borders = FindBorderEdges(topIndices);
-        HashSet<(int,int)> processed = new HashSet<(int,int)>();
-
+        // 9. Side Face
+        // 세로 UV는 vLen(=height)
+        // Ensure nOut
+        List<Edge> borders = FindBorderEdges(frontIndices);
         for (int i = 0; i < borders.Count; i++)
         {
             int a = borders[i].A;
             int b = borders[i].B;
-
-            int ka = a;
-            int kb = b;
-            if (ka > kb)
-            {
-                int t = ka; ka = kb; kb = t;
-            }
-            bool added = processed.Add((ka, kb));
-            if (!added) { continue; }
-
-            Vector3 aTop = verts[a];
-            Vector3 bTop = verts[b];
-            Vector3 aBot = verts[a + topCount];
-            Vector3 bBot = verts[b + topCount];
-
-            Vector3 edgeDir = (bTop - aTop).normalized;
-            Vector3 sideN = Vector3.Cross(edgeDir, nDir).normalized;
-            float edgeLen = Vector3.Distance(aTop, bTop);
+            
+            
+            // Front Vertices
+            Vector3 aFront = verts[a];
+            Vector3 bFront = verts[b];
+            // Back Vertices
+            Vector3 aBack = verts[a + fCount];
+            Vector3 bBack = verts[b + fCount];
+            
+            //edgeDir
+            Vector3 edgeDir = (bFront - aFront).normalized;
+            Vector3 sideN = Vector3.Cross(edgeDir, nFrontOut).normalized;
+            float edgeLen = Vector3.Distance(aFront, bFront);
 
             int baseIndex = verts.Count;
+            
+            // Copmute Normal of Triangle
+            // if Dot(triN, sideN) < 0.0f -> then flip sideN & indices
+            Vector3 triN = Vector3.Cross(aBack - aFront, bBack - aFront).normalized;
+            bool flip = Vector3.Dot(triN, sideN) < 0.0f;
+            
+            // flipl sideN
+            if (flip)
+            {
+                sideN = -sideN;
+            }
+            
+            // Add Vertices / Normals / UVs / Indices
+            
+            // vertices
+            verts.Add(aFront);
+            verts.Add(aBack);
+            verts.Add(bBack);
+            verts.Add(bFront);
+            // normals
+            normals.Add(sideN); 
+            normals.Add(sideN);
+            normals.Add(sideN);
+            normals.Add(sideN);
+            // uvs
+            uvs.Add(new Vector2(0.0f, 0.0f));
+            uvs.Add(new Vector2(0.0f, vLen));
+            uvs.Add(new Vector2(edgeLen, vLen));
+            uvs.Add(new Vector2(edgeLen, 0.0f));
 
-            //Verts / Normals / UVs ( (0,0) ~ (edgeLen,thickness) ) 
-            verts.Add(aTop);  normals.Add(sideN);  uvs.Add(new Vector2(0.0f, 0.0f));
-            verts.Add(aBot);  normals.Add(sideN);  uvs.Add(new Vector2(0.0f, thickness));
-            verts.Add(bBot);  normals.Add(sideN);  uvs.Add(new Vector2(edgeLen, thickness));
-            verts.Add(bTop);  normals.Add(sideN);  uvs.Add(new Vector2(edgeLen, 0.0f));
-
-            indices.Add(baseIndex + 0);
-            indices.Add(baseIndex + 1);
-            indices.Add(baseIndex + 2);
-
-            indices.Add(baseIndex + 0);
-            indices.Add(baseIndex + 2);
-            indices.Add(baseIndex + 3);
+            if (!flip)
+            {
+                indices.Add(baseIndex + 0); indices.Add(baseIndex + 1); indices.Add(baseIndex + 2);
+                indices.Add(baseIndex + 0); indices.Add(baseIndex + 2); indices.Add(baseIndex + 3);
+            }
+            // flip indices
+            else
+            {
+                // reverse winding
+                indices.Add(baseIndex + 0); indices.Add(baseIndex + 2); indices.Add(baseIndex + 1);
+                indices.Add(baseIndex + 0); indices.Add(baseIndex + 3); indices.Add(baseIndex + 2);
+            }
         }
-        
-        // 9. Make Mesh
+
+        // 10. Make Mesh
         mesh.SetVertices(verts);
         mesh.SetTriangles(indices, 0);
         mesh.SetNormals(normals);
@@ -538,6 +671,9 @@ public class RoomBuilder : MonoBehaviour
         mesh.RecalculateBounds();
         return mesh;
     }
+
+
+
     #endregion
     
     #region UtilFunction
@@ -598,7 +734,7 @@ public class RoomBuilder : MonoBehaviour
     }
 
     // Add Edge Count
-    // Edge's Key : (min, max) - ValueTuple Type : Order Sensitive
+    // Edge's Key : (min, max) - ValueTuple Type : Order Insensitive
     private void AddEdgeCount(int a, int b, Dictionary<(int,int), int> count, Dictionary<(int,int), Edge> firstDir)
     {
         if (a == b) return;
@@ -672,15 +808,17 @@ public class RoomBuilder : MonoBehaviour
         return p0 + uDir * u + vDir * v;
     }
     
-    // Make Vertices
-    // Do not Allow Duplication
-    private static int EnsureCorner(
+    // Make Vertices & Indices
+    // Deduplication
+    private static int GetOrCreateCornerVertex(
         List<Vector3> topVerts, int[,] vertIndex, int ui, int vi,
         float u, float v, Vector3 p0, Vector3 uDir, Vector3 vDir)
     {
         int idx = vertIndex[ui, vi];
+        // if vertex already made, just return idx of vertex
         if (idx >= 0) return idx;
-
+        
+        //Make World Position Vertex with (u,v)
         Vector3 w = UVToWorldPos(u, v, p0, uDir, vDir);
         topVerts.Add(w);
         int newIdx = topVerts.Count - 1;

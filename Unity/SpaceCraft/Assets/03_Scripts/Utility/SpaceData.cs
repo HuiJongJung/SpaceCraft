@@ -5,7 +5,7 @@ public class SpaceData : MonoBehaviour {
     public static SpaceData Instance { get; private set; }
     public SpaceLayout _layout { get; private set; }
     
-    //WallID - Openings 
+    //WallID - Openings
     public Dictionary<int, List<OpeningDef>> opsByWall { get; private set; }
     
     [Header("Test Jsons")]

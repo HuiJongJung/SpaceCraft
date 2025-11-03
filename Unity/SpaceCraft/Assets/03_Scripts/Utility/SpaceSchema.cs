@@ -12,6 +12,9 @@ using UnityEngine;
 public class SpaceLayout
 {
     public float ceilingHeight = 2.6f;
+    public float doorHeight = 2.1f;
+    public float windowHeight = 0.8f;
+    public float windowY = 1.0f;
     public List<FloorDef> floors;
     public List<WallDef> walls;
     public List<OpeningDef> openings;
@@ -41,7 +44,6 @@ public class FloorDef
 public class WallDef
 {
     public int id;
-    public float thickness;
     public List<Vec3> vertices;
     public List<int> indices;
 }
@@ -58,8 +60,8 @@ public class OpeningDef
 {
     public string type;
     public int wallID;
-    public Vec3 position;
-    public Vec2 size;
+    public Vec3 center;
+    public float width;
     public string hinge;
     public bool inward;
 }
