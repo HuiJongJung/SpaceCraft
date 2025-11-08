@@ -4,7 +4,6 @@ using System.Collections.Generic;
 public class SpaceData : MonoBehaviour {
     public static SpaceData Instance { get; private set; }
     public SpaceLayout _layout { get; private set; }
-    
     //WallID - Openings
     public Dictionary<int, List<OpeningDef>> opsByWall { get; private set; }
     
@@ -15,7 +14,6 @@ public class SpaceData : MonoBehaviour {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        
         //Load JSON
         LoadData();
     }

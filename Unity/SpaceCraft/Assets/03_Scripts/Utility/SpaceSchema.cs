@@ -59,11 +59,12 @@ public class WallDef
 public class OpeningDef
 {
     public string type;
+    public int id;
     public int wallID;
     public Vec3 center;
+    public Vec3 hingePos;
     public float width;
-    public string hinge;
-    public bool inward;
+    public bool isCW;
 }
 
 // RoomRef:

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,24 +13,37 @@ public class RoomBuilder : MonoBehaviour
     [SerializeField] private bool addCollider = true;
     [SerializeField] private Material floorMaterial;
     [SerializeField] private Material wallMaterial;
+
+    [SerializeField] private GameObject doorPrefab;
+    [SerializeField] private GameObject slideDoorPrefab;
+    [SerializeField] private GameObject windowPrefab;
     
     //Structure
     public struct Edge { public int A; public int B; }
 
     [Header("Constants")]
     private const float EPS_SQR = 1e-12f;
-
     private const float DEFAULT_WINDOWY = 1.0f;
     private const float DEFAULT_WINDOWHEIGHT = 0.8f;
     private const float DEFAULT_DOORHEIGHT = 2.1f;
     private const float DEFAULT_CEILINGHEIGHT = 2.6f;
+    
+    private const float OPENING_ANGLE = 90.0f;
+    private const float DEFAULT_DOORDEPTH = 0.2f;
+    private const float DEFAULT_WINDOWDEPTH = 0.2f;
 
     private void Start()
     {
-        if (data == null) { data = SpaceData.Instance; }
-        
+        if (data == null)
+        {
+            data = SpaceData.Instance;
+        }
+
         _layout = null;
-        if (data != null && data._layout != null) { _layout = data._layout; }
+        if (data != null && data._layout != null)
+        {
+            _layout = data._layout;
+        }
 
         if (_layout == null)
         {
@@ -42,7 +56,7 @@ public class RoomBuilder : MonoBehaviour
         BuildFloors();
         BuildWalls();
     }
-    
+
     #region BuildFloor
     //Build Floors
     public void BuildFloors()
@@ -289,7 +303,6 @@ public class RoomBuilder : MonoBehaviour
             {
                 height = DEFAULT_CEILINGHEIGHT;
             }
-            Mesh m = BuildWallMesh(wd.vertices, wd.indices, height, wallOps);
             
             // 3. Make GameObject & Assign Mesh
             GameObject go = new GameObject("Wall_" + wd.id);
@@ -297,6 +310,9 @@ public class RoomBuilder : MonoBehaviour
 
             MeshFilter mf = go.AddComponent<MeshFilter>();
             MeshRenderer mr = go.AddComponent<MeshRenderer>();
+            
+            Mesh m = BuildWallMeshWithOpenings(wd.vertices, wd.indices, height, wallOps);
+            
             mf.sharedMesh = m;
             
             // 4. Assign Material
@@ -323,8 +339,8 @@ public class RoomBuilder : MonoBehaviour
         Debug.Log("[RoomBuilder] Walls built: " + _layout.walls.Count);
     }
     
-    // Build Wall Mesh
-    private Mesh BuildWallMesh(List<Vec3> bottomVerts, List<int> baseIndices, float height, List<OpeningDef> openings)
+    // Build Wall Mesh & Openings
+    private Mesh BuildWallMeshWithOpenings(List<Vec3> bottomVerts, List<int> baseIndices, float height, List<OpeningDef> openings)
     {
         Mesh mesh = new Mesh();
         
@@ -401,7 +417,11 @@ public class RoomBuilder : MonoBehaviour
             nFrontOut = nCand;
         }
 
-        // 4. Collect Cutlines of Openings
+        // ** Force tDir to -nFrontOut
+        tDir = -nFrontOut;
+
+        // 4. Collect Cutlines of Openings & Place Opening Prefabs
+        
         // FrontFace: uv Plane
         // Origin : p0
         List<float> uCuts = new List<float>();
@@ -426,34 +446,45 @@ public class RoomBuilder : MonoBehaviour
             Vector3 cW = new Vector3(od.center.x, od.center.y, od.center.z);
             Vector3 rel = cW - p0;
             
+            // 4-2. Compute uCenter & vCenter
             
-            // 4-2. Compute uCenter
             // Project Center to uvPlane (only extract "uCenter")
             float uCenter = Vector3.Dot(rel, uDir);
-
-            bool isDoor = false;
-            if (od.type != null)
-            {
-                string t = od.type.ToLower();
-                // door or slidingdoor
-                if (t == "door" || t == "slidingdoor") { isDoor = true; }
-            }
-            
-            // 4-3. Compute vCenter
             float vCenter;
+            OpeningType opType;
             float halfH;
             
-            // Door
-            if (isDoor)
+            // Assign Type & Prefab
+
+            // Validate
+            if (od.type == null) continue;
+
+            string t = od.type.ToLower();
+            // door
+            if (t == "door")
             {
+                opType = OpeningType.Door;
                 vCenter = _layout.doorHeight * 0.5f;
                 halfH   = _layout.doorHeight * 0.5f;
             }
-            // Window
-            else
+            // slide door
+            else if (t == "slidedoor")
             {
+                opType = OpeningType.SlideDoor;
+                vCenter = _layout.doorHeight * 0.5f;
+                halfH   = _layout.doorHeight * 0.5f;
+            }
+            // window
+            else if (t == "window")
+            {
+                opType = OpeningType.Window;
                 vCenter = windowCenterY;
                 halfH   = _layout.windowHeight * 0.5f;
+            }
+            // exception
+            else
+            {
+                continue;
             }
             
             // 4-4. Clipping & Clamping uMin, uMax, vMin, vMax
@@ -480,6 +511,164 @@ public class RoomBuilder : MonoBehaviour
             opRects.Add(r);
             uCuts.Add(uMin); uCuts.Add(uMax);
             vCuts.Add(vMin); vCuts.Add(vMax);
+            
+            // 4-6. Place Opening Prefab
+            
+            // Get Width, Height, Depth
+            float prefabWidth = od.width;
+            float prefabHeight = DEFAULT_DOORHEIGHT;
+            float prefabDepth = DEFAULT_DOORDEPTH;
+            
+            if (opType == OpeningType.Window)
+            {
+                prefabHeight = DEFAULT_WINDOWHEIGHT;
+                prefabDepth = DEFAULT_WINDOWDEPTH;
+            }
+
+            // Compute Center Position Project On Wall (y = height/2)
+            
+            float uCenterUsed = 0.5f * (uMin + uMax);
+            float vCenterUsed = 0.5f * (vMin + vMax);
+            
+            Vector3 centerWorld = UVToWorldPos(uCenterUsed, vCenterUsed, p0, uDir, vDir);
+            // mid : Wall Depth Center Position
+            Vector3 mid = p0 + tDir * (tLen * 0.5f);
+            // Project to "mid" Plane
+            centerWorld = mid + Vector3.ProjectOnPlane(centerWorld - mid, tDir);
+            Quaternion rot = Quaternion.LookRotation(tDir, Vector3.up);
+            GameObject openingObj = null;
+            
+            // Door
+            if (opType == OpeningType.Door)
+            {
+                // Compute Hinge World (apply y pos, project to mid Plane)
+                Vector3 hingeWorld = new Vector3(od.hingePos.x, od.hingePos.y, od.hingePos.z);
+                hingeWorld.y = vCenter;
+                hingeWorld = mid + Vector3.ProjectOnPlane(hingeWorld - mid, tDir);
+
+                // Create Hinge Object
+                GameObject hingeGO = new GameObject("Hinge_Door_" + od.id);
+                hingeGO.transform.SetParent(_spaceRoot.transform, false);
+                hingeGO.transform.position = hingeWorld;
+                hingeGO.transform.rotation = rot;
+
+                // Create Door Prefab
+                float uHalf = od.width * 0.5f;
+                if (doorPrefab == null)
+                {
+                    continue;
+                }
+                openingObj = Instantiate(doorPrefab, hingeGO.transform);
+
+                // Compare Hinge Object's Right and Hinge->Center
+                // Dot Result < 0, then signU = -1f
+                float dot = Vector3.Dot(centerWorld - hingeWorld, hingeGO.transform.right);
+                float signU = 1f;
+                if (dot < 0f)
+                {
+                    signU = -1f;
+                }
+                // Move OpeningObj
+                openingObj.transform.localPosition = new Vector3(signU * uHalf, 0f, 0f);
+                // if signU = -1f, then Flip Object ( Y Axis, 180f )
+                if (signU < 0f)
+                {
+                    openingObj.transform.localRotation = Quaternion.AngleAxis(180f, Vector3.up);
+                }
+                else
+                {
+                    openingObj.transform.localRotation = Quaternion.identity;
+                }
+
+                // Door Visual Open (CW/CCW)
+                if (od.isCW)
+                {
+                    hingeGO.transform.localRotation *= Quaternion.AngleAxis(OPENING_ANGLE, Vector3.up);
+                }
+                else
+                {
+                    hingeGO.transform.localRotation *= Quaternion.AngleAxis(-OPENING_ANGLE, Vector3.up);
+                }
+            }
+            // Window
+            else if (opType == OpeningType.Window)
+            {
+                // Apply centerY
+                centerWorld.y = vCenter;
+                // Window Depth = Wall Depth
+                prefabDepth = tLen;
+                
+                
+                // Create Window Object
+                if (windowPrefab == null)
+                {
+                    continue;
+                }
+                openingObj = Instantiate(windowPrefab,centerWorld, rot, _spaceRoot.transform);
+            }
+            // SlideDoor
+            else if (opType == OpeningType.SlideDoor)
+            {
+                // panel : One door
+                float panelWidth = od.width * 0.5f;
+                float panelHeight = _layout.doorHeight;
+                float panelDepth = tLen * 0.5f;
+
+                // Create Anchor Object (Apply pos, rot)
+                GameObject anchorGO = new GameObject("Anchor_SlideDoor_" + od.id);
+                anchorGO.transform.SetParent(_spaceRoot.transform, false);
+                anchorGO.transform.position = centerWorld;
+                anchorGO.transform.rotation = rot;
+                
+                if (slideDoorPrefab == null)
+                {
+                    continue;
+                }
+                // Create PanelA / Panel B
+                // Move Each Panel about u Axis (+- panelWidth * 0.5f)
+                // Move Each Panel about t Axis (+- tLen * 0.25f)
+                float uHalfPanel = panelWidth * 0.5f;
+                float tQuarter = 0.25f * tLen;
+
+                // PanelA : u = -uHalfPanel, t = +tQuarter
+                GameObject panelA = Instantiate(slideDoorPrefab, anchorGO.transform);
+                panelA.name = "SlideDoor_A_" + od.id;
+                panelA.transform.localPosition = new Vector3(-uHalfPanel, 0.0f, tQuarter);
+                panelA.transform.localRotation = Quaternion.AngleAxis(180f, Vector3.up);
+                
+                // PanelB : u = +uHalfPanel, t = -tQuarter
+                GameObject panelB = Instantiate(slideDoorPrefab, anchorGO.transform);
+                panelB.name = "SlideDoor_B_" + od.id;
+                panelB.transform.localPosition = new Vector3(uHalfPanel, 0.0f, -tQuarter);
+                
+                float slideOffsetU = 1.75f * uHalfPanel;
+                Vector3 aPos = panelA.transform.localPosition;
+                aPos.x += slideOffsetU;
+                panelA.transform.localPosition = aPos;
+                
+                // Apply Size to Each Panel (width, depth, height)
+                Furniture fa = panelA.GetComponent<Furniture>();
+                if (fa != null)
+                {
+                    fa.SetSize(panelWidth * 100.0f, panelDepth * 100.0f, panelHeight * 100.0f, false);
+                }
+                Furniture fb = panelB.GetComponent<Furniture>();
+                if (fb != null)
+                {
+                    fb.SetSize(panelWidth * 100.0f, panelDepth * 100.0f, panelHeight * 100.0f, false);
+                }
+            }
+            
+            // All - Apply Size (width, depth, height)
+            if (openingObj != null)
+            {
+                Furniture f = openingObj.GetComponent<Furniture>();
+                if (f != null)
+                {
+                    f.keepBottomOnScale = false;
+                    f.SetSize(prefabWidth * 100, prefabDepth * 100, prefabHeight * 100, false);
+                }   
+            }
         }
         
         // 4-6. Sort & Deduplication

@@ -5,81 +5,38 @@ public class Furniture : MonoBehaviour
 {
     [Header("Read-only (cm)")]
     public Vector3 sizeCentimeters;
+    
+    [Header("Default Size(cm)")]
+    [SerializeField] private Vector3 defaultSize;
 
     [Header("Options")]
     public bool keepBottomOnScale = true;
 
     // width=X, depth=Z, height=Y (cm)
-    // width = X, depth = Z, height = Y  (cm)
-    public void SetSize(float width, float depth, float height)
+    public void SetSize(float width, float depth, float height, bool keepBot)
     {
+        keepBottomOnScale = keepBot;
+        
         const float CM_TO_M = 0.01f;
         const float MIN_AXIS_M = 0.01f; // 1cm: 너무 얇은 축 폭주 방지
 
-        // ----- 스케일 전: 바닥 Y 기록(옵션) -----
-        float beforeBottomY = 0f;
-        if (keepBottomOnScale)
-        {
-            Renderer[] r0 = GetComponentsInChildren<Renderer>(true);
-            if (r0 != null && r0.Length > 0)
-            {
-                Bounds b = r0[0].bounds;
-                for (int i = 1; i < r0.Length; i++) b.Encapsulate(r0[i].bounds);
-                beforeBottomY = b.min.y;
-            }
-        }
+        // 1) 스케일 전: 루트 축 기준 실제 치수(curX/Y/Z)와 월드 바닥(Y 최소) 구하기
+        float curX;
+        float curY;
+        float curZ;
+        float beforeBottomY;
+        ComputeExtentsOnRootAxes(out curX, out curY, out curZ, out beforeBottomY);
 
-        // ----- 현재 크기(로컬 축 기준) 측정 -----
-        Renderer[] rends = GetComponentsInChildren<Renderer>(true);
-        if (rends == null || rends.Length == 0)
-        {
-            Debug.LogWarning("[Furniture] Renderer not found.", this);
-            return;
-        }
-        Bounds worldB = rends[0].bounds;
-        for (int i = 1; i < rends.Length; i++) worldB.Encapsulate(rends[i].bounds);
+        if (curX < MIN_AXIS_M) curX = MIN_AXIS_M;
+        if (curY < MIN_AXIS_M) curY = MIN_AXIS_M;
+        if (curZ < MIN_AXIS_M) curZ = MIN_AXIS_M;
 
-        Vector3 axisX = transform.right.normalized;
-        Vector3 axisY = transform.up.normalized;
-        Vector3 axisZ = transform.forward.normalized;
-
-        Vector3 c = worldB.center;
-        Vector3 e = worldB.extents;
-
-        Vector3[] corner = new Vector3[8];
-        corner[0] = c + new Vector3( e.x,  e.y,  e.z);
-        corner[1] = c + new Vector3( e.x,  e.y, -e.z);
-        corner[2] = c + new Vector3( e.x, -e.y,  e.z);
-        corner[3] = c + new Vector3( e.x, -e.y, -e.z);
-        corner[4] = c + new Vector3(-e.x,  e.y,  e.z);
-        corner[5] = c + new Vector3(-e.x,  e.y, -e.z);
-        corner[6] = c + new Vector3(-e.x, -e.y,  e.z);
-        corner[7] = c + new Vector3(-e.x, -e.y, -e.z);
-
-        float minX = float.PositiveInfinity, maxX = float.NegativeInfinity;
-        float minY = float.PositiveInfinity, maxY = float.NegativeInfinity;
-        float minZ = float.PositiveInfinity, maxZ = float.NegativeInfinity;
-
-        for (int i = 0; i < 8; i++)
-        {
-            float dx = Vector3.Dot(corner[i], axisX);
-            float dy = Vector3.Dot(corner[i], axisY);
-            float dz = Vector3.Dot(corner[i], axisZ);
-            if (dx < minX) minX = dx; if (dx > maxX) maxX = dx;
-            if (dy < minY) minY = dy; if (dy > maxY) maxY = dy;
-            if (dz < minZ) minZ = dz; if (dz > maxZ) maxZ = dz;
-        }
-
-        float curX = Mathf.Max(maxX - minX, MIN_AXIS_M); // m
-        float curY = Mathf.Max(maxY - minY, MIN_AXIS_M); // m
-        float curZ = Mathf.Max(maxZ - minZ, MIN_AXIS_M); // m
-
-        // ----- 목표(m) -----
+        // 2) 목표 치수(미터)
         float targetX = width  * CM_TO_M;
         float targetY = height * CM_TO_M;
         float targetZ = depth  * CM_TO_M;
 
-        // ----- 스케일 적용 -----
+        // 3) 스케일 비율 계산 및 적용
         Vector3 baseScale = transform.localScale;
         Vector3 ratio = new Vector3(
             targetX / curX,
@@ -92,74 +49,136 @@ public class Furniture : MonoBehaviour
             baseScale.z * ratio.z
         );
 
-        // ----- 스케일 후: 바닥 Y 복원(옵션) -----
+        // 4) 바닥 유지 옵션: 스케일 이후 다시 바닥 Y 계산 → 보정 이동
         if (keepBottomOnScale)
         {
-            Renderer[] r1 = GetComponentsInChildren<Renderer>(true);
-            if (r1 != null && r1.Length > 0)
+            float afterBottomY = ComputeWorldBottomY();
+            float deltaY = beforeBottomY - afterBottomY;
+            if (Mathf.Abs(deltaY) > 1e-6f)
             {
-                Bounds b1 = r1[0].bounds;
-                for (int i = 1; i < r1.Length; i++) b1.Encapsulate(r1[i].bounds);
-                float afterBottomY = b1.min.y;
-                float deltaY = beforeBottomY - afterBottomY;
-                if (Mathf.Abs(deltaY) > 1e-6f)
-                {
-                    transform.position += new Vector3(0f, deltaY, 0f);
-                }
+                transform.position = transform.position + new Vector3(0f, deltaY, 0f);
             }
         }
 
-        // ----- 읽기전용 cm 값 즉시 갱신 -----
+        // 5) 읽기전용 cm 값 갱신
         sizeCentimeters = new Vector3(width, height, depth);
     }
 
-    
-    // --- Helpers: 로컬 공간 바운즈 계산 (회전 무관) ---
-    private static void CalculateBoundsInLocalSpace(Transform root, out Bounds localBounds)
+    /// <summary>
+    /// 모든 하위 Renderer의 localBounds 8코너를 “각 Renderer의 로컬→월드”로 변환한 뒤,
+    /// 루트 축(transform.right/up/forward)에 투영하여 X/Y/Z 범위를 계산한다.
+    /// 또한 월드 Y-최소값(바닥)을 함께 반환한다.
+    /// </summary>
+    private void ComputeExtentsOnRootAxes(out float sizeX, out float sizeY, out float sizeZ, out float bottomWorldY)
     {
-        Renderer[] rends = root.GetComponentsInChildren<Renderer>(true);
+        Transform root = transform;
 
-        bool hasAny = false;
-        localBounds = new Bounds(Vector3.zero, Vector3.zero);
+        Vector3 rootRight = root.right.normalized;
+        Vector3 rootUp    = root.up.normalized;
+        Vector3 rootFwd   = root.forward.normalized;
 
-        for (int i = 0; i < rends.Length; i++)
+        float minProjX = float.PositiveInfinity;
+        float maxProjX = float.NegativeInfinity;
+        float minProjY = float.PositiveInfinity;
+        float maxProjY = float.NegativeInfinity;
+        float minProjZ = float.PositiveInfinity;
+        float maxProjZ = float.NegativeInfinity;
+
+        float minWorldY = float.PositiveInfinity;
+
+        Renderer[] rends = GetComponentsInChildren<Renderer>(true);
+        int rendsCount = rends != null ? rends.Length : 0;
+        if (rendsCount == 0)
         {
-            Bounds w = rends[i].bounds; // 월드 AABB
-            EncapsulateWorldAABBIntoLocal(ref localBounds, root, w, ref hasAny);
+            // 렌더러가 없으면 1m 기준으로 안전값 반환
+            sizeX = 1f;
+            sizeY = 1f;
+            sizeZ = 1f;
+            bottomWorldY = root.position.y;
+            return;
         }
 
-        if (!hasAny)
+        // 각 렌더러의 localBounds 코너 → 그 렌더러 Transform로 월드 변환
+        for (int r = 0; r < rendsCount; r++)
         {
-            localBounds = new Bounds(Vector3.zero, Vector3.zero);
+            Renderer rdr = rends[r];
+            Bounds lb = rdr.localBounds; // 로컬 AABB
+            Vector3[] corners = GetLocalBoundsCorners(lb);
+
+            // 렌더러 로컬→월드
+            Matrix4x4 l2w = rdr.localToWorldMatrix;
+
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3 worldP = l2w.MultiplyPoint3x4(corners[i]);
+
+                // 루트 축에 투영
+                float px = Vector3.Dot(worldP, rootRight);
+                float py = Vector3.Dot(worldP, rootUp);
+                float pz = Vector3.Dot(worldP, rootFwd);
+
+                if (px < minProjX) minProjX = px;
+                if (px > maxProjX) maxProjX = px;
+                if (py < minProjY) minProjY = py;
+                if (py > maxProjY) maxProjY = py;
+                if (pz < minProjZ) minProjZ = pz;
+                if (pz > maxProjZ) maxProjZ = pz;
+
+                // 월드 바닥(Y)
+                if (worldP.y < minWorldY) minWorldY = worldP.y;
+            }
         }
+
+        sizeX = maxProjX - minProjX;
+        sizeY = maxProjY - minProjY;
+        sizeZ = maxProjZ - minProjZ;
+        bottomWorldY = minWorldY;
     }
 
-    private static void EncapsulateWorldAABBIntoLocal(ref Bounds localBounds, Transform root, Bounds worldAABB, ref bool hasAny)
+    /// <summary>
+    /// 현재 스케일/자세 상태에서 월드 바닥(Y-최소)만 다시 계산.
+    /// </summary>
+    private float ComputeWorldBottomY()
     {
-        Vector3 min = worldAABB.min;
-        Vector3 max = worldAABB.max;
+        Renderer[] rends = GetComponentsInChildren<Renderer>(true);
+        int rendsCount = rends != null ? rends.Length : 0;
+        if (rendsCount == 0) return transform.position.y;
 
-        Vector3 c000 = root.InverseTransformPoint(new Vector3(min.x, min.y, min.z));
-        Vector3 c001 = root.InverseTransformPoint(new Vector3(min.x, min.y, max.z));
-        Vector3 c010 = root.InverseTransformPoint(new Vector3(min.x, max.y, min.z));
-        Vector3 c011 = root.InverseTransformPoint(new Vector3(min.x, max.y, max.z));
-        Vector3 c100 = root.InverseTransformPoint(new Vector3(max.x, min.y, min.z));
-        Vector3 c101 = root.InverseTransformPoint(new Vector3(max.x, min.y, max.z));
-        Vector3 c110 = root.InverseTransformPoint(new Vector3(max.x, max.y, min.z));
-        Vector3 c111 = root.InverseTransformPoint(new Vector3(max.x, max.y, max.z));
+        float minWorldY = float.PositiveInfinity;
 
-        if (!hasAny)
+        for (int r = 0; r < rendsCount; r++)
         {
-            localBounds = new Bounds(c000, Vector3.zero);
-            hasAny = true;
-        }
+            Renderer rdr = rends[r];
+            Bounds lb = rdr.localBounds;
+            Vector3[] corners = GetLocalBoundsCorners(lb);
+            Matrix4x4 l2w = rdr.localToWorldMatrix;
 
-        localBounds.Encapsulate(c001);
-        localBounds.Encapsulate(c010);
-        localBounds.Encapsulate(c011);
-        localBounds.Encapsulate(c100);
-        localBounds.Encapsulate(c101);
-        localBounds.Encapsulate(c110);
-        localBounds.Encapsulate(c111);
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3 worldP = l2w.MultiplyPoint3x4(corners[i]);
+                if (worldP.y < minWorldY) minWorldY = worldP.y;
+            }
+        }
+        return minWorldY;
+    }
+
+    /// <summary>
+    /// Bounds(local)에서 8개 코너 좌표(로컬공간)를 반환.
+    /// </summary>
+    private static Vector3[] GetLocalBoundsCorners(Bounds localB)
+    {
+        Vector3 c = localB.center;
+        Vector3 e = localB.extents;
+
+        Vector3[] v = new Vector3[8];
+        v[0] = new Vector3(c.x - e.x, c.y - e.y, c.z - e.z);
+        v[1] = new Vector3(c.x - e.x, c.y - e.y, c.z + e.z);
+        v[2] = new Vector3(c.x - e.x, c.y + e.y, c.z - e.z);
+        v[3] = new Vector3(c.x - e.x, c.y + e.y, c.z + e.z);
+        v[4] = new Vector3(c.x + e.x, c.y - e.y, c.z - e.z);
+        v[5] = new Vector3(c.x + e.x, c.y - e.y, c.z + e.z);
+        v[6] = new Vector3(c.x + e.x, c.y + e.y, c.z - e.z);
+        v[7] = new Vector3(c.x + e.x, c.y + e.y, c.z + e.z);
+        return v;
     }
 }
