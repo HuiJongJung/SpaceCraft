@@ -212,7 +212,7 @@
       "type": "door",
       "id": 0,
       "wallID": 1,
-      "center": { "x": 4.6, "y": 0.0, "z": 1.0 },
+      "center": { "x": 3.5, "y": 0.0, "z": 1.0 },
       "hingePos": { "x": 4.0, "y": 0.0, "z": 0.5 },
       "width": 1.0,
       "isCW": false
