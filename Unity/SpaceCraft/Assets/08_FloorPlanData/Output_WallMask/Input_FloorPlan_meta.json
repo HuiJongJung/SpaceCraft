@@ -1,0 +1,10 @@
+{
+  "input": "C:/Users/user/Documents/GitHub/SpaceCraft/SpaceCraft/Unity/SpaceCraft/Assets\\08_FloorPlanData\\Input_FloorPlan.PNG",
+  "ckpt": "C:\\Users\\user\\Documents\\GitHub\\SpaceCraft\\SpaceCraft\\Unity\\SpaceCraft\\Assets\\07_Python\\wall_deeplabv3p_best.pth",
+  "threshold": 0.5,
+  "out_mask": "C:\\Users\\user\\Documents\\GitHub\\SpaceCraft\\SpaceCraft\\Unity\\SpaceCraft\\Assets\\08_FloorPlanData\\Output_WallMask\\Input_FloorPlan_walls.png",
+  "orig_size": [
+    4963,
+    3508
+  ]
+}
