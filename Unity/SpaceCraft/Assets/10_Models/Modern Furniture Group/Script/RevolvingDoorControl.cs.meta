@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: abce236b32f1b4b4fa5e326f3fae366d
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309677
+  packageName: Modern Furniture Group(URP)
+  packageVersion: 1.0
+  assetPath: Assets/Modern Furniture Group/Script/RevolvingDoorControl.cs
+  uploadId: 729126

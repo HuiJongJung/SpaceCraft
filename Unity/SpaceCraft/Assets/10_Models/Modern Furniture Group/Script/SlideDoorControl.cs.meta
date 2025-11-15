@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 814d5a4a27a69494c88e0f2f47250697
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309677
+  packageName: Modern Furniture Group(URP)
+  packageVersion: 1.0
+  assetPath: Assets/Modern Furniture Group/Script/SlideDoorControl.cs
+  uploadId: 729126
