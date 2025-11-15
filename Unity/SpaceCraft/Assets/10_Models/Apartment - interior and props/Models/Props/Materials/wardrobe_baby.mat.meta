@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 5789cdfbfe62fcf4ea0527d534413ecf
+timeCreated: 1536577061
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135927
+  packageName: Apartment - interior and props
+  packageVersion: 2.0
+  assetPath: Assets/Apartment - interior and props/Models/Props/Materials/wardrobe_baby.mat
+  uploadId: 613795

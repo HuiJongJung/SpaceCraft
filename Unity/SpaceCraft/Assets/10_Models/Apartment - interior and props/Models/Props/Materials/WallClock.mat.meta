@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 77af0a99f4b17e24498d51b405680277
+timeCreated: 1540979160
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135927
+  packageName: Apartment - interior and props
+  packageVersion: 2.0
+  assetPath: Assets/Apartment - interior and props/Models/Props/Materials/WallClock.mat
+  uploadId: 613795

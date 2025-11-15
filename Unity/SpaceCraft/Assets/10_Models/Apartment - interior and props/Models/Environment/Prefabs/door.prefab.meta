@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 2124bf19fef159a48bd59af76b69380c
+timeCreated: 1540993859
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135927
+  packageName: Apartment - interior and props
+  packageVersion: 2.0
+  assetPath: Assets/Apartment - interior and props/Models/Environment/Prefabs/door.prefab
+  uploadId: 613795

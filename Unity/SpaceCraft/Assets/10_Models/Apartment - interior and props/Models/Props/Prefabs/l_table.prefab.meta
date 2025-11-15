@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 96f82647704d5e943938eb75ec7dcbe6
+timeCreated: 1540997271
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135927
+  packageName: Apartment - interior and props
+  packageVersion: 2.0
+  assetPath: Assets/Apartment - interior and props/Models/Props/Prefabs/l_table.prefab
+  uploadId: 613795

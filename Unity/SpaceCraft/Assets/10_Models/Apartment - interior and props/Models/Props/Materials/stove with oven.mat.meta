@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: f638d2401f9a9724db6eb22d976b528e
+timeCreated: 1536333626
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135927
+  packageName: Apartment - interior and props
+  packageVersion: 2.0
+  assetPath: Assets/Apartment - interior and props/Models/Props/Materials/stove with
+    oven.mat
+  uploadId: 613795

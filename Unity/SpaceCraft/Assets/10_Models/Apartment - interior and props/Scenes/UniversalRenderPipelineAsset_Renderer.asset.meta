@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 448b937cd4477ac4ca6486b52bd608af
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135927
+  packageName: Apartment - interior and props
+  packageVersion: 2.0
+  assetPath: Assets/Apartment - interior and props/Scenes/UniversalRenderPipelineAsset_Renderer.asset
+  uploadId: 613795

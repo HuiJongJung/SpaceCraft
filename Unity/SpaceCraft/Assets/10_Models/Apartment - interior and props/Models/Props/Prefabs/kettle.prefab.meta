@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: c60bf6ec15528e24cba5becef53e5f41
+timeCreated: 1536335317
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135927
+  packageName: Apartment - interior and props
+  packageVersion: 2.0
+  assetPath: Assets/Apartment - interior and props/Models/Props/Prefabs/kettle.prefab
+  uploadId: 613795
