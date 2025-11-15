@@ -1,6 +1,7 @@
+using System.IO;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class FloorPlanUI : MonoBehaviour
 {
@@ -32,18 +33,45 @@ public class FloorPlanUI : MonoBehaviour
         DeactiveAllPanels();
         previewPanel.SetActive(true);
     }
-
     private void DeactiveAllPanels()
     {
         mainPanel.SetActive(false);
         templatePanel.SetActive(false);
         previewPanel.SetActive(false);
     }
-    
+
     // Upload FloorPlan
+    /* ======== Comment ======== */
+    // [ 지원 ]
+    // EditorUtility에서 지원하는 기능은 Editor에서만 동작하고,
+    // 빌드된 파일에서는 작동하지 않는 문제가 있어서 빌드에서도 동작하는 방식으로 "수정 예정"
+    /* ======================== */
+
     public void OnClickUpload() {
         string path = UnityEditor.EditorUtility.OpenFilePanel("Select floor image", "", "png,jpg,jpeg");
         if (!string.IsNullOrEmpty(path)) {
+
+            // Save the image file for extract floor plan
+            string saveDir = Path.Combine(Application.dataPath, "08_FloorPlanData");
+
+            // Create save directory
+            if (!Directory.Exists(saveDir))
+                Directory.CreateDirectory(saveDir);
+
+            string saveFilePath = Path.Combine(saveDir, "Input_FloorPlan" + Path.GetExtension(path));
+
+            // Copy Image
+            try
+            {
+                File.Copy(path, saveFilePath, true);
+            }
+            catch (IOException ex)
+            {
+                Debug.LogError($"파일 복사 실패: {ex.Message}");
+                return;
+            }
+
+            // Texture Preview
             Texture2D tex = LoadTexture(path);
             
             Sprite img = Sprite.Create(
@@ -60,6 +88,7 @@ public class FloorPlanUI : MonoBehaviour
             //Communication With Server & Get Files
             
             ShowPreview();
+            FloorPlanInterpreter.instance.InterpretFloorPlan(saveFilePath);
         }
     }
     
