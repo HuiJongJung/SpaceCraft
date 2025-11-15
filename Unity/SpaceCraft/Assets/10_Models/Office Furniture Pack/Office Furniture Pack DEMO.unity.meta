@@ -1,0 +1,50 @@
+fileFormatVersion: 2
+guid: f55f5b390bb32c041b84b6a1996f09b3
+labels:
+- Architecture
+- Assets
+- Based
+- Building
+- Computer
+- Desk
+- Environment
+- Furniture
+- Game
+- HD
+- HQ
+- HTC
+- LP
+- Low
+- LowPoly
+- Oculus
+- Office
+- PBR
+- Physically
+- Poly
+- Props
+- RV
+- Ready
+- Realistic
+- Reality
+- Render
+- Renderer
+- Rendering
+- Room
+- VR
+- Virtual
+- Vive
+- Work
+- Workplace
+timeCreated: 1497858066
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 96996
+  packageName: Office Pack LUDUS Assets
+  packageVersion: 1.0
+  assetPath: Assets/Office Furniture Pack/Office Furniture Pack DEMO.unity
+  uploadId: 193533

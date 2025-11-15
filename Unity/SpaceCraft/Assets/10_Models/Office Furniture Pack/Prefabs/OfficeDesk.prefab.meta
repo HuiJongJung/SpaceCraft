@@ -1,0 +1,51 @@
+fileFormatVersion: 2
+guid: 2956f9b9d4fb37040b28243d332e9170
+labels:
+- Architecture
+- Assets
+- Based
+- Building
+- Computer
+- Desk
+- Environment
+- Furniture
+- Game
+- HD
+- HQ
+- HTC
+- LP
+- Low
+- LowPoly
+- Oculus
+- Office
+- PBR
+- Physically
+- Poly
+- Props
+- RV
+- Ready
+- Realistic
+- Reality
+- Render
+- Renderer
+- Rendering
+- Room
+- VR
+- Virtual
+- Vive
+- Work
+- Workplace
+timeCreated: 1497362649
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 96996
+  packageName: Office Pack LUDUS Assets
+  packageVersion: 1.0
+  assetPath: Assets/Office Furniture Pack/Prefabs/OfficeDesk.prefab
+  uploadId: 193533
