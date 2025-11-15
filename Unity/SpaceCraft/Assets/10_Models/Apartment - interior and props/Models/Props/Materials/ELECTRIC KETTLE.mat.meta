@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: ec4331d8545e93b448b0e2d4828530d3
+timeCreated: 1536333608
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135927
+  packageName: Apartment - interior and props
+  packageVersion: 2.0
+  assetPath: Assets/Apartment - interior and props/Models/Props/Materials/ELECTRIC
+    KETTLE.mat
+  uploadId: 613795

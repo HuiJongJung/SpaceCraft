@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 159afbaed2caacc42b2dff453a935924
+timeCreated: 1536333617
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135927
+  packageName: Apartment - interior and props
+  packageVersion: 2.0
+  assetPath: Assets/Apartment - interior and props/Models/Props/Materials/Bath.mat
+  uploadId: 613795

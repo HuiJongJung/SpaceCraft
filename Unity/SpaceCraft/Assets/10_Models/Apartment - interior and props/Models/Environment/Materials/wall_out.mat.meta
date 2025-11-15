@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 9a1de2e432352db4592a19a4c60f122d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135927
+  packageName: Apartment - interior and props
+  packageVersion: 2.0
+  assetPath: Assets/Apartment - interior and props/Models/Environment/Materials/wall_out.mat
+  uploadId: 613795

@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 497b60c561edd9849bf81a573b516a37
+timeCreated: 1536333621
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135927
+  packageName: Apartment - interior and props
+  packageVersion: 2.0
+  assetPath: Assets/Apartment - interior and props/Models/Props/Materials/kitchen
+    sink__.mat
+  uploadId: 613795

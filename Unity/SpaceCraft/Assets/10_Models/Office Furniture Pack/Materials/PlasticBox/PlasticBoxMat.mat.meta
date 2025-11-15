@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: c11368b43fbe28843abfb15a5e4f1074
+timeCreated: 1497360730
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 96996
+  packageName: Office Pack LUDUS Assets
+  packageVersion: 1.0
+  assetPath: Assets/Office Furniture Pack/Materials/PlasticBox/PlasticBoxMat.mat
+  uploadId: 193533

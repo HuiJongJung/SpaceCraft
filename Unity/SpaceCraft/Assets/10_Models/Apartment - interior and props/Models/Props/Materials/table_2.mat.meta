@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 77fd949d3a72b7849883e4c517b1d61f
+timeCreated: 1536336379
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: -1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135927
+  packageName: Apartment - interior and props
+  packageVersion: 2.0
+  assetPath: Assets/Apartment - interior and props/Models/Props/Materials/table_2.mat
+  uploadId: 613795

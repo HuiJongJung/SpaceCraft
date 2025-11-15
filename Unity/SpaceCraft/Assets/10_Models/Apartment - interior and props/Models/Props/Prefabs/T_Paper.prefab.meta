@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 3e8754848ca31934c80163ee1e66d16b
+timeCreated: 1536336253
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135927
+  packageName: Apartment - interior and props
+  packageVersion: 2.0
+  assetPath: Assets/Apartment - interior and props/Models/Props/Prefabs/T_Paper.prefab
+  uploadId: 613795

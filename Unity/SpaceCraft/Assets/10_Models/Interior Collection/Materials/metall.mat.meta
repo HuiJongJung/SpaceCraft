@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 485bb85ef9b38c847a29d12b65d65ccf
+timeCreated: 1529783283
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 144505
+  packageName: INTERIOR COLLECTION
+  packageVersion: 1.3
+  assetPath: Assets/Interior Collection/Materials/metall.mat
+  uploadId: 650097

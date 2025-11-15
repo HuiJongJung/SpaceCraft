@@ -1,0 +1,51 @@
+fileFormatVersion: 2
+guid: 14f11ebbe2f092d44977bfb99810848e
+labels:
+- Architecture
+- Assets
+- Based
+- Building
+- Computer
+- Desk
+- Environment
+- Furniture
+- Game
+- HD
+- HQ
+- HTC
+- LP
+- Low
+- LowPoly
+- Oculus
+- Office
+- PBR
+- Physically
+- Poly
+- Props
+- RV
+- Ready
+- Realistic
+- Reality
+- Render
+- Renderer
+- Rendering
+- Room
+- VR
+- Virtual
+- Vive
+- Work
+- Workplace
+timeCreated: 1497362663
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 96996
+  packageName: Office Pack LUDUS Assets
+  packageVersion: 1.0
+  assetPath: Assets/Office Furniture Pack/Prefabs/Cutter.prefab
+  uploadId: 193533

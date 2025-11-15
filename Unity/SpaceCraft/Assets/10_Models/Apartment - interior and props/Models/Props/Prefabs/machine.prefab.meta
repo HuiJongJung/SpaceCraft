@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: cffd80121b83bde4e94ddaf1ccdb667a
+timeCreated: 1540972249
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 135927
+  packageName: Apartment - interior and props
+  packageVersion: 2.0
+  assetPath: Assets/Apartment - interior and props/Models/Props/Prefabs/machine.prefab
+  uploadId: 613795

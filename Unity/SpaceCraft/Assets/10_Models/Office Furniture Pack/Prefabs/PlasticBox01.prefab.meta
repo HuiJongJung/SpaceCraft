@@ -1,0 +1,51 @@
+fileFormatVersion: 2
+guid: a8a46d49b084ce348ad080bf26b09f34
+labels:
+- Architecture
+- Assets
+- Based
+- Building
+- Computer
+- Desk
+- Environment
+- Furniture
+- Game
+- HD
+- HQ
+- HTC
+- LP
+- Low
+- LowPoly
+- Oculus
+- Office
+- PBR
+- Physically
+- Poly
+- Props
+- RV
+- Ready
+- Realistic
+- Reality
+- Render
+- Renderer
+- Rendering
+- Room
+- VR
+- Virtual
+- Vive
+- Work
+- Workplace
+timeCreated: 1497362668
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 96996
+  packageName: Office Pack LUDUS Assets
+  packageVersion: 1.0
+  assetPath: Assets/Office Furniture Pack/Prefabs/PlasticBox01.prefab
+  uploadId: 193533
