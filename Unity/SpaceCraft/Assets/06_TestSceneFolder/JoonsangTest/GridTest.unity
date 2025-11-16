@@ -274,6 +274,7 @@ MonoBehaviour:
   drawGizmos: 1
   gizmoAlpha: 0.35
   wallInset: 0.02
+  slidingDoorDepth: 0.5
 --- !u!4 &272697199
 Transform:
   m_ObjectHideFlags: 0
