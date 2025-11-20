@@ -22,6 +22,13 @@ public class RoomPlacementGridBuilder : MonoBehaviour
     [SerializeField] private float wallInset = 0.02f; // 벽면에서 살짝 안쪽(수치오차/겹침 방지)
     [SerializeField] private float slidingDoorDepth = 0.5f;
 
+    [Header("Runtime Grid Visual")]
+    [SerializeField] private bool showRuntimeGrid = false;
+    [SerializeField] private Material gridMaterial;
+    [SerializeField] private Transform gridRoot; // 그리드 오브젝트들을 담아둘 부모
+
+    private Dictionary<int, GameObject> roomGridRoots = new Dictionary<int, GameObject>();
+
     // 결과물: 방별 그리드
     public List<RoomPlacementGrid> grids = new List<RoomPlacementGrid>();
 
@@ -92,6 +99,11 @@ public class RoomPlacementGridBuilder : MonoBehaviour
 
         ApplyDoorSwingZones(); // 문이 열리는 사각형 영역만 배치 불가 처리
         Debug.Log("[RoomPlacementGridBuilder] Built " + grids.Count + " room grids with door swing mask.");
+
+        if (showRuntimeGrid)
+        {
+            BuildRuntimeGridVisuals();
+        }
     }
 
     // ===== 폴리곤 추출 =====
@@ -614,4 +626,93 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         }
 #endif
     }
+    private void EnsureGridMaterial()
+    {
+        if (gridMaterial == null)
+        {
+            gridMaterial = new Material(Shader.Find("Unlit/Color"));
+            gridMaterial.color = new Color(0f, 1f, 0f, 0.4f); // 연한 초록 투명
+        }
+    }
+    private void BuildRuntimeGridVisuals()
+    {
+        EnsureGridMaterial();
+
+        if (gridRoot == null)
+            gridRoot = this.transform;
+
+        // 기존 전체 그리드 비우기
+        for (int i = gridRoot.childCount - 1; i >= 0; i--)
+        {
+            Destroy(gridRoot.GetChild(i).gameObject);
+        }
+        roomGridRoots.Clear();
+
+        foreach (RoomPlacementGrid grid in grids)
+        {
+            // 🔹 방별 루트 오브젝트 생성
+            GameObject roomRootGO = new GameObject($"Grid_Room_{grid.roomID}");
+            roomRootGO.transform.SetParent(gridRoot, false);
+
+            roomGridRoots[grid.roomID] = roomRootGO;
+
+            for (int gz = 0; gz < grid.rows; gz++)
+            {
+                for (int gx = 0; gx < grid.cols; gx++)
+                {
+                    if (!grid.placementMask[gx, gz]) continue;
+
+                    Vector3 c = grid.GridCenterToWorld(gx, gz, 0f);
+                    c.y += 0.01f;
+
+                    GameObject tile = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                    tile.name = $"Grid_{grid.roomID}_{gx}_{gz}";
+                    tile.transform.SetParent(roomRootGO.transform, false);
+                    tile.transform.position = c;
+                    tile.transform.rotation = Quaternion.Euler(90f, 0f, 0f);  // 위쪽(+Y) 바라보게
+                    float s = grid.cellSize * 0.98f;
+                    tile.transform.localScale = new Vector3(s, s, 1f);
+
+                    var mr = tile.GetComponent<MeshRenderer>();
+                    if (gridMaterial != null)
+                        mr.material = gridMaterial;
+
+                    var col = tile.GetComponent<Collider>();
+                    if (col != null) Destroy(col);
+                }
+            }
+        }
+
+        Debug.Log($"[GridVisual] Built runtime grid visuals for {roomGridRoots.Count} rooms");
+    }
+
+    public void ShowOnlyRoomGrid(int roomID)
+    {
+        foreach (var kvp in roomGridRoots)
+        {
+            bool active = (kvp.Key == roomID);
+            kvp.Value.SetActive(active);
+        }
+    }
+    public void SetRoomGridVisible(int roomID, bool visible)
+    {
+        GameObject root;
+        if (roomGridRoots.TryGetValue(roomID, out root))
+        {
+            root.SetActive(visible);
+        }
+    }
+
+    public void HideAllRoomGrids()
+    {
+        foreach (var kvp in roomGridRoots)
+            kvp.Value.SetActive(false);
+    }
+
+    public void ShowAllRoomGrids()
+    {
+        foreach (var kvp in roomGridRoots)
+            kvp.Value.SetActive(true);
+    }
+
 }
