@@ -19,6 +19,7 @@ public class SpaceLayout
     public List<WallDef> walls;
     public List<OpeningDef> openings;
     public List<RoomDef> rooms;
+    public List<FurnitureItemData> furns;
 }
 
 // FloorDef:
@@ -79,4 +80,30 @@ public class RoomDef
     public string name;
     public List<int> floorIDs;
     public List<int> wallIDs;
+}
+
+
+// FurnitureItemData
+[Serializable]
+public class FurnitureItemData
+{
+    public string instanceId;     // 개별 가구 인스턴스 ID -> 같은 종류여도 개체별로 다름
+    public string furnitureId;    // 가구 종류 ID (= Furniture.furnitureType)
+
+    public bool isPlaced;         // 배치 여부
+    
+    // Layout
+    public int roomID;
+    public Vector2Int gridCell;
+    public int rotation;
+    
+    // Size
+    public Vector3 sizeCentimeters;
+    
+    // Options
+    public WallPlacementDirection wallDir;
+    public FunctionalClearanceCm clearance;
+    public bool isPrimaryFurniture;
+    public bool isPrivacyFurniture;
+    public PrivacyDirection privacyDir;
 }

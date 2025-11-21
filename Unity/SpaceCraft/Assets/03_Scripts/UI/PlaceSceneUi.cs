@@ -2,9 +2,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
 
-public class PlaceSceneUi : MonoBehaviour
+public class PlaceSceneUI : MonoBehaviour
 {
+    [Header("External Systems")]
+    public FurnitureDatabase furnitureDatabase;
+    public FurnitureManager furnitureManager;
+    
+    [Header("Panels")]
     public GameObject mainPanel;
     public GameObject categoryPanel;
     public GameObject sizePanel;
@@ -13,13 +20,113 @@ public class PlaceSceneUi : MonoBehaviour
 
     public GameObject detailPanelReadOnly;
     public GameObject autoPlacePanel;
+
+    [Header("Main UI (My Furniture List)")]
+    public Transform myFurnitureListRoot;
+    public GameObject furnitureSlotPrefab;
     
+    [Header("Detail Panel (ReadOnly)")]
+    public Image roFurnitureImage;
+    public TextMeshProUGUI roNameText;
+    
+    public TMP_InputField roWidthText;
+    public TMP_InputField roDepthText;
+    public TMP_InputField roHeightText;
+    
+    public Toggle roWallFrontToggle;
+    public Toggle roWallBackToggle;
+    public Toggle roWallLeftToggle;
+    public Toggle roWallRightToggle;
+
+    public TMP_InputField roClearanceFrontText;
+    public TMP_InputField roClearanceBackText;
+    public TMP_InputField roClearanceLeftText;
+    public TMP_InputField roClearanceRightText;
+
+    public Toggle roPrimaryToggle;
+    
+    public Toggle roPrivacyToggle;
+    public Toggle roPrivacyFrontToggle;
+    public Toggle roPrivacyBackToggle;
+    public Toggle roPrivacyLeftToggle;
+    public Toggle roPrivacyRightToggle;
+    
+    public Button deleteFurnitureButton;
+    
+    [Header("Category UI")]
+    public Transform categoryListRoot;   
+    public GameObject categorySlotPrefab;
+
+    [Header("Size UI")]
+    public Transform sizeListRoot;
+    public GameObject sizeItemPrefab;
+
+
+    [Header("Detail Panel (Editable)")] 
+    public Image detailFurnitureImage;
+    public TextMeshProUGUI detailNameText;
+    
+    public TMP_InputField widthInput;
+    public TMP_InputField depthInput;
+    public TMP_InputField heightInput;
+    
+    public Toggle wallFrontToggle;
+    public Toggle wallBackToggle;
+    public Toggle wallLeftToggle;
+    public Toggle wallRightToggle;
+    
+    public TMP_InputField clearanceFrontInput;
+    public TMP_InputField clearanceBackInput;
+    public TMP_InputField clearanceLeftInput;
+    public TMP_InputField clearanceRightInput;
+    
+    public Toggle primaryToggle;
+    
+    public Toggle privacyToggle;
+    public Toggle privacyFrontToggle;
+    public Toggle privacyBackToggle;
+    public Toggle privacyLeftToggle;
+    public Toggle privacyRightToggle;
+
+    public Button addFurnitureButton;
+    
+    
+    // 현재 선택 상태
+    private string currentReadOnlyInstanceId;
+    private FurnitureDefinition currentDefinition;
+    private bool hasCurrentDefinition = false;
+
+    private FurnitureSizeTemplate currentTemplate;
+    private bool hasCurrentTemplate = false;
     
     void Start()
     {
         ShowLoading();
+
+        if (furnitureManager != null)
+        {
+            furnitureDatabase = furnitureManager.furnitureDatabase;
+        }
+        
+        // Add Function
+        addFurnitureButton.onClick.RemoveAllListeners();
+        addFurnitureButton.onClick.AddListener(OnClickAddFurnitureButton);
+        
+        // Delete Function
+        deleteFurnitureButton.onClick.RemoveAllListeners();
+        deleteFurnitureButton.onClick.AddListener(OnClickDeleteFurnitureButton);
+        
+        
+        
+        // Test
+        furnitureManager.AddInventoryItems("Bed1", new Vector3(100,100,100), 1);
+        RefreshFurnitureList();
+        
+        furnitureManager.PlaceFromInventory("Bed1#0001", 
+            new Vector3(0,0,0), 0, 1, new Vector2Int(2,2));
     }
     
+    #region PanelControl
     private void DeactiveAllPanels()
     {
         mainPanel.SetActive(false);
@@ -35,12 +142,17 @@ public class PlaceSceneUi : MonoBehaviour
     {
         DeactiveAllPanels();
         mainPanel.SetActive(true);
+        
+        // Refresh ToolBar
+        RefreshFurnitureList();
     }
     
     public void ShowCategory()
     {
         DeactiveAllPanels();
         categoryPanel.SetActive(true);
+        
+        BuildCategoryList();
     }
 
     public void ShowSize()
@@ -75,6 +187,400 @@ public class PlaceSceneUi : MonoBehaviour
         else autoPlacePanel.SetActive(true);
     }
     
+    #endregion
+    
+    #region CategoryPanelMethod
+    // Make Category List
+    private void BuildCategoryList()
+    {
+        // Validate
+        if (furnitureDatabase == null)
+        {
+            return;
+        }
+        
+        // Reset Children
+        ClearChildren(categoryListRoot);
+
+        if (furnitureDatabase.definitions == null)
+        {
+            return;
+        }
+        
+        // Load All Definitions in DB
+        for (int i = 0; i < furnitureDatabase.definitions.Length; i++)
+        {
+            
+            FurnitureDefinition def = furnitureDatabase.definitions[i];
+            if (def == null)
+            {
+                continue;
+            }
+
+            GameObject itemGo = Instantiate(categorySlotPrefab, categoryListRoot);
+            
+            // Button Event
+            Button button = itemGo.GetComponent<Button>();
+            FurnitureDefinition capturedDef = def;
+            if (button != null)
+            {
+                button.onClick.AddListener(delegate { OnClickCategorySlot(capturedDef); });
+            }
+
+            // Apply UI
+            Image image = itemGo.GetComponentInChildren<Image>();
+            if (image != null && def.sprite != null)
+            {
+                image.sprite = def.sprite;
+            }
+
+            TextMeshProUGUI text = itemGo.GetComponentInChildren<TextMeshProUGUI>();
+            if (text != null)
+            {
+                text.text = def.name;
+            }
+        }
+    }
+    // CategorySlot OnClick Method
+    private void OnClickCategorySlot(FurnitureDefinition def)
+    {
+        currentDefinition = def;
+        hasCurrentDefinition = true;
+        hasCurrentTemplate = false;
+
+        // Go To Size Panel
+        BuildSizeList();
+        ShowSize();
+    }
+    
+    #endregion
+    
+    #region SizePanelMethod
+    
+    //Make Size List
+    private void BuildSizeList()
+    {
+        // Validate
+        if (hasCurrentDefinition == false || currentDefinition == null)
+        {
+            return;
+        }
+        
+        // Reset Children
+        ClearChildren(sizeListRoot);
+        
+        bool hasTemplates = currentDefinition.sizeTemplates != null && currentDefinition.sizeTemplates.Length > 0;
+    
+        
+        if (hasTemplates)
+        {
+            for (int i = 0; i < currentDefinition.sizeTemplates.Length; i++)
+            {
+                FurnitureSizeTemplate template = currentDefinition.sizeTemplates[i];
+                GameObject itemGo = Instantiate(sizeItemPrefab, sizeListRoot);
+
+                Button button = itemGo.GetComponent<Button>();
+                FurnitureSizeTemplate capturedTemplate = template;
+                if (button != null)
+                {
+                    button.onClick.AddListener(delegate { OnClickSizeSlot(capturedTemplate); });
+                }
+
+                TextMeshProUGUI text = itemGo.GetComponentInChildren<TextMeshProUGUI>();
+                if (text != null)
+                {
+                    Vector3 size = template.sizeCentimeters;
+                    text.text = size.x + "x" + size.z + "x" + size.y;
+                }
+            }
+        }
+        // Case : No Templates
+        // Default Template : 100x100x100
+        else
+        {
+            FurnitureSizeTemplate defaultTemplate = new FurnitureSizeTemplate();
+            defaultTemplate.sizeCentimeters = new Vector3(100f, 100f, 100f);
+
+            GameObject itemGo = Instantiate(sizeItemPrefab, sizeListRoot);
+
+            Button button = itemGo.GetComponent<Button>();
+            FurnitureSizeTemplate capturedTemplate = defaultTemplate;
+            if (button != null)
+            {
+                button.onClick.AddListener(delegate { OnClickSizeSlot(capturedTemplate); });
+            }
+
+            TextMeshProUGUI text = itemGo.GetComponentInChildren<TextMeshProUGUI>();
+            if (text != null)
+            {
+                text.text = "100x100x100";
+            }
+        }
+    }
+
+    // SizeSlot OnClick Method
+    private void OnClickSizeSlot(FurnitureSizeTemplate template)
+    {
+        currentTemplate = template;
+        hasCurrentTemplate = true;
+        
+        // Set Name & Sprite
+        if (currentDefinition != null)
+        {
+            if (detailNameText != null)
+            {   
+                detailNameText.text = "이름 : " + currentDefinition.name;
+            }
+
+            if (detailFurnitureImage != null)
+            {
+                detailFurnitureImage.sprite = currentDefinition.sprite;
+            }
+        }
+            
+        // Apply Size to Detail Panel
+        Vector3 size = template.sizeCentimeters;
+        widthInput.text = size.x.ToString();
+        depthInput.text = size.z.ToString();
+        heightInput.text = size.y.ToString();
+
+        // Reset Options
+        wallFrontToggle.isOn = false;
+        wallBackToggle.isOn = false;
+        wallLeftToggle.isOn = false;
+        wallRightToggle.isOn = false;
+        
+        clearanceFrontInput.text = "0";
+        clearanceBackInput.text = "0";
+        clearanceLeftInput.text = "0";
+        clearanceRightInput.text = "0";
+
+        primaryToggle.isOn = false;
+        
+        privacyToggle.isOn = false;
+        
+        privacyFrontToggle.isOn = false;
+        privacyBackToggle.isOn = false;
+        privacyLeftToggle.isOn = false;
+        privacyRightToggle.isOn = false;
+
+        ShowDetail();
+    }
+    #endregion
+    
+    #region DetailPanelMethod
+    public void OnClickAddFurnitureButton()
+    {
+        if (furnitureManager == null)
+        {
+            Debug.LogError("FurnitureManager is not assigned.");
+            return;
+        }
+
+        if (hasCurrentDefinition == false || currentDefinition == null)
+        {
+            Debug.LogWarning("No FurnitureDefinition selected.");
+            return;
+        }
+
+        // Size Parsing
+        float width;
+        float depth;
+        float height;
+
+        bool okWidth = float.TryParse(widthInput.text, out width);
+        bool okDepth = float.TryParse(depthInput.text, out depth);
+        bool okHeight = float.TryParse(heightInput.text, out height);
+
+        if (okWidth == false || okDepth == false || okHeight == false)
+        {
+            Debug.LogWarning("Size parse failed.");
+            return;
+        }
+        Vector3 sizeCentimeters = new Vector3(width, height, depth);
+        
+        // WallPlacement Parsing
+        WallPlacementDirection wallDir = new WallPlacementDirection();
+        wallDir.front = wallFrontToggle.isOn;
+        wallDir.back  = wallBackToggle.isOn;
+        wallDir.left  = wallLeftToggle.isOn;
+        wallDir.right = wallRightToggle.isOn;
+
+        
+        // clearance Parsing
+        FunctionalClearanceCm clearance = new FunctionalClearanceCm();
+        clearance.front = ParseIntOrZero(clearanceFrontInput.text);
+        clearance.back = ParseIntOrZero(clearanceBackInput.text);
+        clearance.left = ParseIntOrZero(clearanceLeftInput.text);
+        clearance.right = ParseIntOrZero(clearanceRightInput.text);
+        
+        // Primary
+        bool isPrimaryFurniture = primaryToggle.isOn;
+        
+        // Privacy & directions
+        bool isPrivacyFurniture = privacyToggle.isOn;
+        
+        PrivacyDirection privacyDir = new PrivacyDirection();
+        privacyDir.front = privacyFrontToggle.isOn;
+        privacyDir.back  = privacyBackToggle.isOn;
+        privacyDir.left  = privacyLeftToggle.isOn;
+        privacyDir.right = privacyRightToggle.isOn;
+
+        // Add Furniture
+        furnitureManager.AddItemFromDetail(
+            currentDefinition.id,
+            sizeCentimeters,
+            wallDir,
+            clearance,
+            isPrimaryFurniture,
+            isPrivacyFurniture,
+            privacyDir
+        );
+
+        // Refresh
+        RefreshFurnitureList();
+
+        // Go To Main
+        ShowMain();
+    }
+    
+    #endregion
+    
+    #region MainPanelMethod
+    // Refresh Furniture List
+    private void RefreshFurnitureList()
+    {
+        if (myFurnitureListRoot == null)
+        {
+            return;
+        }
+
+        ClearChildren(myFurnitureListRoot);
+
+        if (furnitureManager == null)
+        {
+            return;
+        }
+
+        List<FurnitureItemData> list = furnitureManager.inventory;
+        for (int i = 0; i < list.Count; i++)
+        {
+            FurnitureItemData item = list[i];
+
+            GameObject itemGo = Instantiate(furnitureSlotPrefab, myFurnitureListRoot);
+            
+            // Setup (Assign PlaceSceneUI & instanceID)
+            MyFurnitureSlot slot = itemGo.GetComponent<MyFurnitureSlot>();
+            if (slot != null)
+            {
+                slot.Setup(this, item.instanceId);
+            }
+
+            // 이미지 / 텍스트 세팅
+            Image image = itemGo.GetComponentInChildren<Image>();
+            if (image != null && furnitureDatabase != null)
+            {
+                FurnitureDefinition def = furnitureDatabase.GetById(item.furnitureId);
+                if (def != null && def.sprite != null)
+                {
+                    image.sprite = def.sprite;
+                }
+            }
+
+            TextMeshProUGUI text = itemGo.GetComponentInChildren<TextMeshProUGUI>();
+            if (text != null)
+            {
+                text.text = item.instanceId;
+            }
+        }
+    }
+    
+    // Furniture Slot OnClick Method
+    public void OnClickFurnitureSlot(string instanceId)
+    {
+        FurnitureItemData item = furnitureManager.GetItemByInstanceId(instanceId);
+        if (item == null)
+        {
+            return;
+        }
+
+        currentReadOnlyInstanceId = instanceId;
+        ApplyReadOnlyDetail(item);
+        ShowDetailPanelReadOnly();
+    }
+
+    private void ApplyReadOnlyDetail(FurnitureItemData item)
+    {
+        string displayName = "이름 : " + item.furnitureId + "\nID : " + item.instanceId;
+
+        if (furnitureDatabase != null)
+        {
+            FurnitureDefinition def = furnitureDatabase.GetById(item.furnitureId);
+            if (def != null)
+            {
+                displayName = "이름 : " + def.name + "\nID : " + item.instanceId;
+                if (def.sprite != null)
+                {
+                    roFurnitureImage.sprite = def.sprite;
+                }
+            }
+        }
+
+        roNameText.text = displayName;
+        
+        roWidthText.text = item.sizeCentimeters.x.ToString();
+        roDepthText.text = item.sizeCentimeters.z.ToString();
+        roHeightText.text = item.sizeCentimeters.y.ToString();
+        
+        roWallFrontToggle.isOn = item.wallDir.front;
+        roWallBackToggle.isOn  = item.wallDir.back;
+        roWallLeftToggle.isOn  = item.wallDir.left;
+        roWallRightToggle.isOn = item.wallDir.right;
+        
+        roClearanceFrontText.text = item.clearance.front.ToString();
+        roClearanceBackText.text  = item.clearance.back.ToString();
+        roClearanceLeftText.text  = item.clearance.left.ToString();
+        roClearanceRightText.text = item.clearance.right.ToString();
+        
+        roPrimaryToggle.isOn = item.isPrimaryFurniture;
+        roPrivacyToggle.isOn = item.isPrivacyFurniture;
+        
+        roPrivacyFrontToggle.isOn = item.privacyDir.front;
+        roPrivacyBackToggle.isOn  = item.privacyDir.back;
+        roPrivacyLeftToggle.isOn  = item.privacyDir.left;
+        roPrivacyRightToggle.isOn = item.privacyDir.right;
+    }
+    
+    public void OnClickDeleteFurnitureButton()
+    {
+        if (string.IsNullOrEmpty(currentReadOnlyInstanceId))
+        {
+            return;
+        }
+
+        if (furnitureManager == null)
+        {
+            return;
+        }
+
+        // Delete ( inventory + roomMap + object )
+        furnitureManager.DeleteFurniture(currentReadOnlyInstanceId);
+
+        // Refresh
+        RefreshFurnitureList();
+
+        // Close ReadOnly Panel
+        CloseDetailPanelReadOnly();
+
+        // Reset current ID
+        currentReadOnlyInstanceId = null;
+    }
+    
+    #endregion
+
+    #region Others
+    
+    // Loading
     public void ShowLoading()
     {
         DeactiveAllPanels();
@@ -102,4 +608,27 @@ public class PlaceSceneUi : MonoBehaviour
         SceneManager.LoadScene("04_SimulationScene");
     }
     
+    
+    private void ClearChildren(Transform root)
+    {
+        int count = root.childCount;
+        for (int i = count - 1; i >= 0; i--)
+        {
+            Transform child = root.GetChild(i);
+            Destroy(child.gameObject);
+        }
+    }
+    
+    private int ParseIntOrZero(string text)
+    {
+        int value;
+        bool ok = int.TryParse(text, out value);
+        if (ok)
+        {
+            return value;
+        }
+        return 0;
+    }
+    
+    #endregion
 }
