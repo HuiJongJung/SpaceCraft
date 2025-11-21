@@ -760,8 +760,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4578943a68e864c47a7f8f7606722b49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  instanceId: 
+  furnitureId: 
+  roomID: -1
+  gridCell: {x: 0, y: 0}
+  rotation: 0
   sizeCentimeters: {x: 0, y: 0, z: 0}
-  defaultSize: {x: 0, y: 0, z: 0}
+  isPrimaryFurniture: 0
+  clearance:
+    front: 0
+    back: 0
+    left: 0
+    right: 0
+  isPrivacyFurniture: 0
   keepBottomOnScale: 1
 --- !u!1 &807674094
 GameObject:
@@ -814,6 +825,52 @@ MonoBehaviour:
   doorPrefab: {fileID: 7827655430765280026, guid: b18abfd3afc54d2449fcfd80b0ef68d9, type: 3}
   slideDoorPrefab: {fileID: 7827655430765280026, guid: b18abfd3afc54d2449fcfd80b0ef68d9, type: 3}
   windowPrefab: {fileID: 2618860925019183576, guid: 179171cb8151d0a42a7c178abe732c8f, type: 3}
+--- !u!1 &1215825801
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1215825803}
+  - component: {fileID: 1215825802}
+  m_Layer: 0
+  m_Name: FurnitureManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1215825802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1215825801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f84fe9f3d9f217458a0e90cdaae0852, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  furnitureDatabase: {fileID: 11400000, guid: 3b4e744308ca7d34cb487a90a3c9230f, type: 2}
+  inventory: []
+--- !u!4 &1215825803
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1215825801}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 10.227581, y: -1.6134671, z: 35.314182}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1288456613
 GameObject:
   m_ObjectHideFlags: 0
@@ -945,8 +1002,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4578943a68e864c47a7f8f7606722b49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  instanceId: 
+  furnitureId: 
+  roomID: -1
+  gridCell: {x: 0, y: 0}
+  rotation: 0
   sizeCentimeters: {x: 0, y: 0, z: 0}
-  defaultSize: {x: 0, y: 0, z: 0}
+  isPrimaryFurniture: 0
+  clearance:
+    front: 0
+    back: 0
+    left: 0
+    right: 0
+  isPrivacyFurniture: 0
   keepBottomOnScale: 1
 --- !u!4 &1464469590 stripped
 Transform:
@@ -1090,8 +1158,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4578943a68e864c47a7f8f7606722b49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  instanceId: 
+  furnitureId: 
+  roomID: -1
+  gridCell: {x: 0, y: 0}
+  rotation: 0
   sizeCentimeters: {x: 0, y: 0, z: 0}
-  defaultSize: {x: 0, y: 0, z: 0}
+  isPrimaryFurniture: 0
+  clearance:
+    front: 0
+    back: 0
+    left: 0
+    right: 0
+  isPrivacyFurniture: 0
   keepBottomOnScale: 1
 --- !u!4 &1804299393 stripped
 Transform:
@@ -1174,3 +1253,4 @@ SceneRoots:
   - {fileID: 323593241}
   - {fileID: 527260937}
   - {fileID: 807674095}
+  - {fileID: 1215825803}

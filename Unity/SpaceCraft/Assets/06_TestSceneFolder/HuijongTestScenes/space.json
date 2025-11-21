@@ -309,7 +309,6 @@
       "isCW": true
     }
   ],
-
   "rooms": [
     { "roomID": 0, "name": "Room0",  "floorIDs": [0], "wallIDs": [0, 1, 2, 3] },
     { "roomID": 1, "name": "Room1", "floorIDs": [1], "wallIDs": [1, 4, 5, 6, 7, 8, 9, 10, 11] },

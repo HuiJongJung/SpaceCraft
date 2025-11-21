@@ -1,17 +1,28 @@
 using UnityEngine;
 
-[DisallowMultipleComponent]
 public class Furniture : MonoBehaviour
 {
-    [Header("Read-only (cm)")]
-    public Vector3 sizeCentimeters;
+    [Header("Identity")]
+    public string instanceId;
+    public string furnitureId;
     
-    [Header("Default Size(cm)")]
-    [SerializeField] private Vector3 defaultSize;
+    [Header("Layout")]
+    public int roomID = -1;
+    public Vector2Int gridCell;
+    public int rotation;
+    
+    [Header("Size (cm)")]
+    public Vector3 sizeCentimeters;
 
     [Header("Options")]
+    public bool isPrimaryFurniture = false;
+    public FunctionalClearanceCm clearance;
+    public bool isPrivacyFurniture = false;
+    public PrivacyDirection privacyDir;
+    
+    [Header("SetSize Options")]
     public bool keepBottomOnScale = true;
-
+    
     // width=X, depth=Z, height=Y (cm)
     public void SetSize(float width, float depth, float height, bool keepBot)
     {
