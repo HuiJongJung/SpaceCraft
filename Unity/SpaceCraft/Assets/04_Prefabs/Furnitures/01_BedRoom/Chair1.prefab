@@ -64,6 +64,7 @@ MonoBehaviour:
     left: 0
     right: 0
   keepBottomOnScale: 1
+  snapToFloor: 1
 --- !u!1001 &3315507912635309963
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -78,15 +79,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5623442326561853838, guid: 68886c282bc99c4409261330b984bb5a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.3760004
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5623442326561853838, guid: 68886c282bc99c4409261330b984bb5a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.35654804
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5623442326561853838, guid: 68886c282bc99c4409261330b984bb5a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.05272293
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5623442326561853838, guid: 68886c282bc99c4409261330b984bb5a, type: 3}
       propertyPath: m_LocalRotation.w
