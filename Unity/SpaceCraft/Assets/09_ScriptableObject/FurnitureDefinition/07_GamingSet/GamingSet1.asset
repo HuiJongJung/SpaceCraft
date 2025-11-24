@@ -15,6 +15,6 @@ MonoBehaviour:
   id: GamingSet1
   name: "\uAC8C\uC774\uBC0D\uC138\uD2B8"
   sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
-  prefab: {fileID: 8666352968306891960, guid: 740b1bd930b3e3349b9742d82680911a, type: 3}
+  prefab: {fileID: 3620269137156011706, guid: 0bfd9b70c650b7e41819f84e40b7c65c, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 280, y: 130, z: 240}
