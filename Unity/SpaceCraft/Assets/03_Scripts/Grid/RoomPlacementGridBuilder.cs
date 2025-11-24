@@ -22,6 +22,14 @@ public class RoomPlacementGridBuilder : MonoBehaviour
     [SerializeField] private float wallInset = 0.02f; // 벽면에서 살짝 안쪽(수치오차/겹침 방지)
     [SerializeField] private float slidingDoorDepth = 0.5f;
 
+    [Header("Runtime Grid Visual")]
+    [SerializeField] private bool showRuntimeGrid = false;
+    [SerializeField] private Material gridMaterial;
+    [SerializeField] private Material gridOccupiedMaterial;
+    [SerializeField] private Transform gridRoot; // 그리드 오브젝트들을 담아둘 부모
+
+    private Dictionary<int, GameObject> roomGridRoots = new Dictionary<int, GameObject>();
+
     // 결과물: 방별 그리드
     public List<RoomPlacementGrid> grids = new List<RoomPlacementGrid>();
 
@@ -87,11 +95,18 @@ public class RoomPlacementGridBuilder : MonoBehaviour
                 }
             }
 
+            grid.occupiedMask = new bool[cols, rows];
+            IdentifyWallZones(grid);
             grids.Add(grid);
         }
 
         ApplyDoorSwingZones(); // 문이 열리는 사각형 영역만 배치 불가 처리
         Debug.Log("[RoomPlacementGridBuilder] Built " + grids.Count + " room grids with door swing mask.");
+
+        if (showRuntimeGrid)
+        {
+            BuildRuntimeGridVisuals();
+        }
     }
 
     // ===== 폴리곤 추출 =====
@@ -589,8 +604,23 @@ public class RoomPlacementGridBuilder : MonoBehaviour
             {
                 for (int gx = 0; gx < grid.cols; gx++)
                 {
-                    if (!grid.placementMask[gx, gz]) continue;
+                    // 1. 점유된 곳(가구 있음) -> 빨간색
+                    if (grid.occupiedMask != null && grid.occupiedMask[gx, gz])
+                    {
+                        Gizmos.color = new Color(1f, 0f, 0f, gizmoAlpha); // Red
+                    }
+                    // 2. 비어있고 배치 가능한 곳 -> 초록색
+                    else if (grid.placementMask[gx, gz])
+                    {
+                        Gizmos.color = new Color(0f, 1f, 0f, gizmoAlpha); // Green
+                    }
+                    // 3. 둘 다 아니면(벽, 문 등) -> 그리지 않음
+                    else
+                    {
+                        continue;
+                    }
 
+                    // 큐브 그리기 (기존 코드 유지)
                     Vector3 c = grid.GridCenterToWorld(gx, gz, y);
                     Vector3 size = new Vector3(grid.cellSize * 0.98f, 0.002f, grid.cellSize * 0.98f);
                     Gizmos.DrawCube(c, size);
@@ -613,5 +643,145 @@ public class RoomPlacementGridBuilder : MonoBehaviour
             }
         }
 #endif
+    }
+    private void EnsureGridMaterial()
+    {
+        if (gridMaterial == null)
+        {
+            gridMaterial = new Material(Shader.Find("Unlit/Color"));
+            gridMaterial.color = new Color(0f, 1f, 0f, 0.4f); // 연한 초록 투명
+        }
+
+        if (gridOccupiedMaterial == null)
+        {
+            gridOccupiedMaterial = new Material(Shader.Find("Unlit/Color"));
+            gridOccupiedMaterial.color = new Color(1f, 0f, 0f); // 빨간색 반투명
+        }
+    }
+    public void BuildRuntimeGridVisuals()
+    {
+        EnsureGridMaterial();
+
+        if (gridRoot == null)
+            gridRoot = this.transform;
+
+        // 기존 전체 그리드 비우기
+        for (int i = gridRoot.childCount - 1; i >= 0; i--)
+        {
+            Destroy(gridRoot.GetChild(i).gameObject);
+        }
+        roomGridRoots.Clear();
+
+        foreach (RoomPlacementGrid grid in grids)
+        {
+            // 🔹 방별 루트 오브젝트 생성
+            GameObject roomRootGO = new GameObject($"Grid_Room_{grid.roomID}");
+            roomRootGO.transform.SetParent(gridRoot, false);
+
+            roomGridRoots[grid.roomID] = roomRootGO;
+
+            for (int gz = 0; gz < grid.rows; gz++)
+            {
+                for (int gx = 0; gx < grid.cols; gx++)
+                {
+                    // 어떤 재질을 쓸지 결정하는 로직
+                    Material matToUse = null;
+
+                    // 1순위: 가구에 의해 점유된 곳 -> 빨간색
+                    if (grid.occupiedMask != null && grid.occupiedMask[gx, gz])
+                    {
+                        matToUse = gridOccupiedMaterial;
+                    }
+                    // 2순위: 비어있고 배치 가능한 곳 -> 초록색
+                    else if (grid.placementMask[gx, gz])
+                    {
+                        matToUse = gridMaterial;
+                    }
+                    // 3순위: 벽이나 문 영역 -> 그리지 않음
+                    else
+                    {
+                        continue;
+                    }
+
+                    // 타일 생성 (빨간색이든 초록색이든 그릴 대상이 있다면)
+                    Vector3 c = grid.GridCenterToWorld(gx, gz, 0f);
+                    c.y += 0.01f;
+
+                    GameObject tile = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                    tile.name = $"Grid_{grid.roomID}_{gx}_{gz}";
+                    tile.transform.SetParent(roomRootGO.transform, false);
+                    tile.transform.position = c;
+                    tile.transform.rotation = Quaternion.Euler(90f, 0f, 0f);  // 위쪽(+Y) 바라보게
+                    float s = grid.cellSize * 0.98f;
+                    tile.transform.localScale = new Vector3(s, s, 1f);
+
+                    var mr = tile.GetComponent<MeshRenderer>();
+                    if (matToUse != null)
+                        mr.material = matToUse; // 결정된 재질 할당
+
+                    var col = tile.GetComponent<Collider>();
+                    if (col != null) Destroy(col);
+                }
+            }
+        }
+
+        Debug.Log($"[GridVisual] Built runtime grid visuals for {roomGridRoots.Count} rooms");
+    }
+
+    public void ShowOnlyRoomGrid(int roomID)
+    {
+        foreach (var kvp in roomGridRoots)
+        {
+            bool active = (kvp.Key == roomID);
+            kvp.Value.SetActive(active);
+        }
+    }
+    public void SetRoomGridVisible(int roomID, bool visible)
+    {
+        GameObject root;
+        if (roomGridRoots.TryGetValue(roomID, out root))
+        {
+            root.SetActive(visible);
+        }
+    }
+
+    public void HideAllRoomGrids()
+    {
+        foreach (var kvp in roomGridRoots)
+            kvp.Value.SetActive(false);
+    }
+
+    public void ShowAllRoomGrids()
+    {
+        foreach (var kvp in roomGridRoots)
+            kvp.Value.SetActive(true);
+    }
+    private void IdentifyWallZones(RoomPlacementGrid grid)
+    {
+        int cols = grid.cols;
+        int rows = grid.rows;
+        grid.wallZoneMask = new bool[cols, rows];
+
+        for (int z = 0; z < rows; z++)
+        {
+            for (int x = 0; x < cols; x++)
+            {
+                // 배치가 불가능한 곳(이미 벽이거나 문)은 벽 인접 여부를 따질 필요 없음
+                if (!grid.placementMask[x, z]) continue;
+
+                // 상하좌우 중 하나라도 '배치 불가(false)'가 있다면 -> 벽(또는 문) 경계면임
+                bool isEdge = false;
+
+                if (x - 1 < 0 || !grid.placementMask[x - 1, z]) isEdge = true;
+                else if (x + 1 >= cols || !grid.placementMask[x + 1, z]) isEdge = true;
+                else if (z - 1 < 0 || !grid.placementMask[x, z - 1]) isEdge = true;
+                else if (z + 1 >= rows || !grid.placementMask[x, z + 1]) isEdge = true;
+
+                if (isEdge)
+                {
+                    grid.wallZoneMask[x, z] = true;
+                }
+            }
+        }
     }
 }

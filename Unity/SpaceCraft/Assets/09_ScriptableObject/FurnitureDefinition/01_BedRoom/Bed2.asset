@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6df0731041d08614dac40a39ee37d4f4, type: 3}
+  m_Name: Bed2
+  m_EditorClassIdentifier: 
+  id: Bed2
+  name: "\uCE68\uB300"
+  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  prefab: {fileID: 4030113142202465813, guid: a35ec5ada128f1d4294096e3d1d72932, type: 3}
+  sizeTemplates:
+  - sizeCentimeters: {x: 100, y: 80, z: 200}
+  - sizeCentimeters: {x: 120, y: 80, z: 200}
+  - sizeCentimeters: {x: 140, y: 80, z: 200}
+  - sizeCentimeters: {x: 160, y: 80, z: 200}

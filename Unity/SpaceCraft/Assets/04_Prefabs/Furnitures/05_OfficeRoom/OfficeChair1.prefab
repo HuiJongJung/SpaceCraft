@@ -1,0 +1,150 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6829261318038776181
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9173695033317189849}
+  - component: {fileID: 9164274265703453281}
+  - component: {fileID: -6369267991341369367}
+  m_Layer: 0
+  m_Name: OfficeChair1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9173695033317189849
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6829261318038776181}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -36.88685, y: -0.009999752, z: 34.5549}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 6611401086606639047}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &9164274265703453281
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6829261318038776181}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.64123535, y: 1.2044374, z: 0.61548615}
+  m_Center: {x: 0.0029640198, y: 0.60989636, z: 0.0059661865}
+--- !u!114 &-6369267991341369367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6829261318038776181}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4578943a68e864c47a7f8f7606722b49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  instanceId: 
+  furnitureId: 
+  roomID: -1
+  gridCell: {x: 0, y: 0}
+  rotation: 0
+  sizeCentimeters: {x: 0, y: 0, z: 0}
+  isPrimaryFurniture: 0
+  clearance:
+    front: 0
+    back: 0
+    left: 0
+    right: 0
+  isPrivacyFurniture: 0
+  privacyDir:
+    front: 0
+    back: 0
+    left: 0
+    right: 0
+  keepBottomOnScale: 1
+--- !u!1001 &777217070937873251
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 9173695033317189849}
+    m_Modifications:
+    - target: {fileID: 5839286956509291684, guid: 2d8db5554db1857468c6d31000f0e2cc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5839286956509291684, guid: 2d8db5554db1857468c6d31000f0e2cc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5839286956509291684, guid: 2d8db5554db1857468c6d31000f0e2cc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5839286956509291684, guid: 2d8db5554db1857468c6d31000f0e2cc, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 5839286956509291684, guid: 2d8db5554db1857468c6d31000f0e2cc, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5839286956509291684, guid: 2d8db5554db1857468c6d31000f0e2cc, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 5839286956509291684, guid: 2d8db5554db1857468c6d31000f0e2cc, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5839286956509291684, guid: 2d8db5554db1857468c6d31000f0e2cc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5839286956509291684, guid: 2d8db5554db1857468c6d31000f0e2cc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 5839286956509291684, guid: 2d8db5554db1857468c6d31000f0e2cc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6813300123224221706, guid: 2d8db5554db1857468c6d31000f0e2cc, type: 3}
+      propertyPath: m_Name
+      value: OfficeChair1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 2d8db5554db1857468c6d31000f0e2cc, type: 3}
+--- !u!4 &6611401086606639047 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5839286956509291684, guid: 2d8db5554db1857468c6d31000f0e2cc, type: 3}
+  m_PrefabInstance: {fileID: 777217070937873251}
+  m_PrefabAsset: {fileID: 0}
