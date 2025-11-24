@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6df0731041d08614dac40a39ee37d4f4, type: 3}
   m_Name: TVTable2
   m_EditorClassIdentifier: 
-  id: TVTable
+  id: TVTable2
   name: "TV\uD14C\uC774\uBE14"
   sprite: {fileID: 21300000, guid: e81c3fe3b550f3e43964462d611eb771, type: 3}
   prefab: {fileID: 6276701433954530012, guid: 9df3b81b3c42fc24aaf3d64f8cc45192, type: 3}
