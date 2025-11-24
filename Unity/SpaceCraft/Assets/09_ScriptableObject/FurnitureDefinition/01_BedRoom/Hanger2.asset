@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Hanger2
   name: "\uC2A4\uD0E0\uB4DC \uD589\uAC70"
-  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  sprite: {fileID: 21300000, guid: db5665f61a2f2b143a5757fe096ba26c, type: 3}
   prefab: {fileID: 4497123329389981667, guid: 6733da3176459734291541a488221a78, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 50, y: 200, z: 50}

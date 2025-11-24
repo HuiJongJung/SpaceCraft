@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Bed1
   name: "\uCE68\uB300"
-  sprite: {fileID: 21300000, guid: 6911190387112d04780f96af87d3331a, type: 3}
+  sprite: {fileID: 21300000, guid: bf667da3b6e59c644ae59cfbab50f6d3, type: 3}
   prefab: {fileID: 1551864870284885535, guid: 2495633ed6323ee4483e80ca2c57187d, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 100, y: 60, z: 200}

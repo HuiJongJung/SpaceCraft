@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: OfficeCupboard1
   name: "\uC0AC\uBB34\uC6A9\uBCBD\uC7A5"
-  sprite: {fileID: 21300000, guid: 70e8cb3004ed044419e3353bffb8f465, type: 3}
+  sprite: {fileID: 21300000, guid: 0a72469dc99eb7f468c167ab8366c7ad, type: 3}
   prefab: {fileID: 2345582409307326616, guid: ebc4687748e257b4f9da5157c9b79697, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 90, y: 200, z: 50}

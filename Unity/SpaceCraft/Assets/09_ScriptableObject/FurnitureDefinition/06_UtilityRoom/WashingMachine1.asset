@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: WashingMachine1
   name: "\uC138\uD0C1\uAE30"
-  sprite: {fileID: 21300000, guid: fd46582e24f3fc74a914ebfb6f2d32df, type: 3}
+  sprite: {fileID: 21300000, guid: d8babbc3c10e32247a14ebe4966339e1, type: 3}
   prefab: {fileID: 8666352968306891960, guid: 740b1bd930b3e3349b9742d82680911a, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 60, y: 85, z: 60}

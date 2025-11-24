@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Desk2
   name: "\uCC45\uC0C1"
-  sprite: {fileID: 21300000, guid: 97279c41ec4a9b44bba14f8a67e66240, type: 3}
+  sprite: {fileID: 21300000, guid: 7a9c553c025d3414097b080fda31303b, type: 3}
   prefab: {fileID: 2783053499050164298, guid: f822c42f7d92f98488b0d03d01269dae, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 180, y: 180, z: 100}

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Table1
   name: "\uD14C\uC774\uBE14"
-  sprite: {fileID: 21300000, guid: a22239a4d7f6e3e41bef7f0614551716, type: 3}
+  sprite: {fileID: 21300000, guid: e3f6df4275781924d8b7fb9d7f405446, type: 3}
   prefab: {fileID: 2273909680850387506, guid: 9d62dacaa6d287c41bd90b01bb9c1fa1, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 90, y: 80, z: 90}
