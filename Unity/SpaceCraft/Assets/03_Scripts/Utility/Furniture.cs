@@ -23,6 +23,8 @@ public class Furniture : MonoBehaviour
     [Header("SetSize Options")]
     public bool keepBottomOnScale = true;
 
+    public bool snapToFloor = true;
+
     // width=X, depth=Z, height=Y (cm)
     private void Start()
     {
@@ -58,11 +60,14 @@ public class Furniture : MonoBehaviour
 
         // --- [Step 2] Y축 바닥 보정 (부모를 이동) ---
         // 위에서 XZ만 움직였으므로 Y축 최하단 값(min.y)은 변하지 않음, 그대로 사용 가능
-        float bottomY = combinedBounds.min.y;
-        float targetFloorY = 0f; // 목표 바닥 높이
+        if (snapToFloor)
+        {
+            float bottomY = combinedBounds.min.y;
+            float targetFloorY = 0f; // 목표 바닥 높이
 
-        // 차이만큼 부모 오브젝트 전체를 이동
-        transform.position += new Vector3(0f, targetFloorY - bottomY, 0f);
+            // 차이만큼 부모 오브젝트 전체를 이동
+            transform.position += new Vector3(0f, targetFloorY - bottomY, 0f);
+        } 
     }
     public void SetSize(float width, float depth, float height, bool keepBot)
     {

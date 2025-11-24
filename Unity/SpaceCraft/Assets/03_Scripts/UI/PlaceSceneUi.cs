@@ -115,15 +115,6 @@ public class PlaceSceneUI : MonoBehaviour
         // Delete Function
         deleteFurnitureButton.onClick.RemoveAllListeners();
         deleteFurnitureButton.onClick.AddListener(OnClickDeleteFurnitureButton);
-        
-        
-        
-        // Test
-        furnitureManager.AddInventoryItems("Bed1", new Vector3(100,100,100), 1);
-        RefreshFurnitureList();
-        
-        furnitureManager.PlaceFromInventory("Bed1#0001", 
-            new Vector3(0,0,0), 0, 1, new Vector2Int(2,2));
     }
     
     #region PanelControl
