@@ -22,8 +22,48 @@ public class Furniture : MonoBehaviour
     
     [Header("SetSize Options")]
     public bool keepBottomOnScale = true;
-    
+
     // width=X, depth=Z, height=Y (cm)
+    private void Start()
+    {
+        AlignModelCenterAndSnapToFloor();
+    }
+
+    // [추가] 모델의 X, Z 중심을 피벗 위치로 강제 이동시키는 함수
+    private void AlignModelCenterAndSnapToFloor()
+    {
+        // 1. 모든 자식 렌더러들의 통합 Bounds(경계) 계산
+        Renderer[] renders = GetComponentsInChildren<Renderer>();
+        if (renders.Length == 0) return;
+
+        Bounds combinedBounds = renders[0].bounds;
+        for (int i = 1; i < renders.Length; i++)
+        {
+            combinedBounds.Encapsulate(renders[i].bounds);
+        }
+
+        // --- [Step 1] X, Z축 중심 보정 (자식들을 이동) ---
+        Vector3 centerWorld = combinedBounds.center;
+        Vector3 pivotWorld = transform.position;
+
+        // 현재 피벗과 시각적 중심의 차이 계산 (Y축은 제외)
+        Vector3 offsetXZ = pivotWorld - centerWorld;
+        offsetXZ.y = 0f;
+
+        // 자식 오브젝트들을 반대 방향으로 밀어서 피벗이 중앙에 오도록 함
+        foreach (Transform child in transform)
+        {
+            child.position += offsetXZ;
+        }
+
+        // --- [Step 2] Y축 바닥 보정 (부모를 이동) ---
+        // 위에서 XZ만 움직였으므로 Y축 최하단 값(min.y)은 변하지 않음, 그대로 사용 가능
+        float bottomY = combinedBounds.min.y;
+        float targetFloorY = 0f; // 목표 바닥 높이
+
+        // 차이만큼 부모 오브젝트 전체를 이동
+        transform.position += new Vector3(0f, targetFloorY - bottomY, 0f);
+    }
     public void SetSize(float width, float depth, float height, bool keepBot)
     {
         keepBottomOnScale = keepBot;
