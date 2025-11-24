@@ -65,6 +65,7 @@ MonoBehaviour:
     left: 0
     right: 0
   keepBottomOnScale: 1
+  snapToFloor: 1
 --- !u!1001 &4606309995041979091
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -76,10 +77,6 @@ PrefabInstance:
     - target: {fileID: 3161645711559994707, guid: 5d84871e7f5b5dd4d8180cd392060718, type: 3}
       propertyPath: m_Name
       value: TV_Table
-      objectReference: {fileID: 0}
-    - target: {fileID: 4234130999925686344, guid: 5d84871e7f5b5dd4d8180cd392060718, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1.2021353
       objectReference: {fileID: 0}
     - target: {fileID: 4234130999925686344, guid: 5d84871e7f5b5dd4d8180cd392060718, type: 3}
       propertyPath: m_LocalPosition.x
