@@ -121,7 +121,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4578943a68e864c47a7f8f7606722b49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  modelRoot: {fileID: 0}
-  sizeMeters: {x: 0, y: 0, z: 0}
+  instanceId: 
+  furnitureId: 
+  roomID: -1
+  gridCell: {x: 0, y: 0}
+  rotation: 0
   sizeCentimeters: {x: 0, y: 0, z: 0}
+  isPrimaryFurniture: 0
+  clearance:
+    front: 0
+    back: 0
+    left: 0
+    right: 0
+  isPrivacyFurniture: 0
+  privacyDir:
+    front: 0
+    back: 0
+    left: 0
+    right: 0
   keepBottomOnScale: 1
+  snapToFloor: 0
