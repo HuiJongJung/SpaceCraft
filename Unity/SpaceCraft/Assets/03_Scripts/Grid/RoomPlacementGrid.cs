@@ -13,6 +13,10 @@ public class RoomPlacementGrid
 
     // 배치 후보 맵 (방 내부 True)
     public bool[,] placementMask;
+    // 가구에 의해 점유된 상태인지 확인용
+    public bool[,] occupiedMask;
+    // 벽 인접 여부
+    public bool[,] wallZoneMask;
 
     // 월드↔그리드 간단 변환 유틸
     public Vector2Int WorldToGrid(Vector3 worldPos)
