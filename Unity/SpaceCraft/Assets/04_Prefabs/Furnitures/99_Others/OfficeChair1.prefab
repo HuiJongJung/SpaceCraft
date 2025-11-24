@@ -183,7 +183,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5839286956509291684}
   m_Layer: 0
-  m_Name: OfficeChair
+  m_Name: OfficeChair1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

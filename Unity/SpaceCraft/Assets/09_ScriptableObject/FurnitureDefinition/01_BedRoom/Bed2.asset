@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6df0731041d08614dac40a39ee37d4f4, type: 3}
   m_Name: Bed2
   m_EditorClassIdentifier: 
-  id: Bed1
+  id: Bed2
   name: "\uCE68\uB300"
   sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
-  prefab: {fileID: 1551864870284885535, guid: 2495633ed6323ee4483e80ca2c57187d, type: 3}
+  prefab: {fileID: 4030113142202465813, guid: a35ec5ada128f1d4294096e3d1d72932, type: 3}
   sizeTemplates:
-  - sizeCentimeters: {x: 100, y: 60, z: 100}
-  - sizeCentimeters: {x: 120, y: 60, z: 120}
-  - sizeCentimeters: {x: 150, y: 60, z: 150}
+  - sizeCentimeters: {x: 100, y: 80, z: 200}
+  - sizeCentimeters: {x: 120, y: 80, z: 200}
+  - sizeCentimeters: {x: 140, y: 80, z: 200}
+  - sizeCentimeters: {x: 160, y: 80, z: 200}

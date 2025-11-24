@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8277696829625493910}
   - component: {fileID: 5999315909111484418}
   - component: {fileID: 2920402336116000800}
+  - component: {fileID: 240563230347755474}
   m_Layer: 0
   m_Name: Plant1
   m_TagString: Untagged
@@ -118,3 +119,24 @@ MonoBehaviour:
     left: 0
     right: 0
   keepBottomOnScale: 1
+--- !u!65 &240563230347755474
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2952105884319320314}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.68623793, y: 0.891509, z: 0.569515}
+  m_Center: {x: 0.0069482327, y: 0.4457545, z: -0.0260275}

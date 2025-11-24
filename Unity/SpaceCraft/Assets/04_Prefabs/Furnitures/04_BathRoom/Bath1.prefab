@@ -9,6 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 870384482355912353}
+  - component: {fileID: 3611401354373991127}
+  - component: {fileID: -5425420978704481395}
   m_Layer: 0
   m_Name: Bath1
   m_TagString: Untagged
@@ -32,6 +34,58 @@ Transform:
   - {fileID: 9162080210052754121}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &3611401354373991127
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8625835626365437762}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.194107, y: 0.79437584, z: 1.0008774}
+  m_Center: {x: -1.1681595, y: -0.19727662, z: 0.6785698}
+--- !u!114 &-5425420978704481395
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8625835626365437762}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4578943a68e864c47a7f8f7606722b49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  instanceId: 
+  furnitureId: 
+  roomID: -1
+  gridCell: {x: 0, y: 0}
+  rotation: 0
+  sizeCentimeters: {x: 0, y: 0, z: 0}
+  isPrimaryFurniture: 0
+  clearance:
+    front: 0
+    back: 0
+    left: 0
+    right: 0
+  isPrivacyFurniture: 0
+  privacyDir:
+    front: 0
+    back: 0
+    left: 0
+    right: 0
+  keepBottomOnScale: 1
 --- !u!1001 &546703799999043378
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5186561614768689630}
   - component: {fileID: 4975998200486535074}
   - component: {fileID: 4856757354457594503}
+  - component: {fileID: -6367252789935107306}
   m_Layer: 0
   m_Name: KitchenSink1
   m_TagString: Untagged
@@ -111,6 +112,37 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 4300000, guid: c0ad68979e17b4047bd109a2b5aa9c26, type: 3}
+--- !u!114 &-6367252789935107306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2529462248911088063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4578943a68e864c47a7f8f7606722b49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  instanceId: 
+  furnitureId: 
+  roomID: -1
+  gridCell: {x: 0, y: 0}
+  rotation: 0
+  sizeCentimeters: {x: 0, y: 0, z: 0}
+  isPrimaryFurniture: 0
+  clearance:
+    front: 0
+    back: 0
+    left: 0
+    right: 0
+  isPrivacyFurniture: 0
+  privacyDir:
+    front: 0
+    back: 0
+    left: 0
+    right: 0
+  keepBottomOnScale: 1
 --- !u!1 &6904869104023213834
 GameObject:
   m_ObjectHideFlags: 0

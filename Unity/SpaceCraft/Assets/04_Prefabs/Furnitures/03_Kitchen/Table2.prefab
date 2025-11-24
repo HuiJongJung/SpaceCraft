@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6078380329778515084}
   - component: {fileID: 8471684442694094606}
   - component: {fileID: 2184999376870383089}
+  - component: {fileID: 5954209829630727231}
   m_Layer: 0
   m_Name: Table2
   m_TagString: Untagged
@@ -108,3 +109,34 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.3869689, y: 0.9464374, z: 1.4467514}
   m_Center: {x: 0, y: 0.4732187, z: 0}
+--- !u!114 &5954209829630727231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 374477669958845360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4578943a68e864c47a7f8f7606722b49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  instanceId: 
+  furnitureId: 
+  roomID: -1
+  gridCell: {x: 0, y: 0}
+  rotation: 0
+  sizeCentimeters: {x: 0, y: 0, z: 0}
+  isPrimaryFurniture: 0
+  clearance:
+    front: 0
+    back: 0
+    left: 0
+    right: 0
+  isPrivacyFurniture: 0
+  privacyDir:
+    front: 0
+    back: 0
+    left: 0
+    right: 0
+  keepBottomOnScale: 1

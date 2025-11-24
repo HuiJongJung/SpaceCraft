@@ -192,4 +192,31 @@ public class Furniture : MonoBehaviour
         v[7] = new Vector3(c.x + e.x, c.y + e.y, c.z + e.z);
         return v;
     }
+    
+    // Debug
+    [ContextMenu("Refresh Size From Children Renderers")]
+    public void RefreshSizeFromChildrenRenderers()
+    {
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        if (renderers == null || renderers.Length == 0)
+        {
+            Debug.LogWarning(name + " : Renderer가 없습니다.");
+            return;
+        }
+
+        // 1) 자식 렌더러 전부 포함하는 Bounds 계산 (월드 기준)
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+        {
+            bounds.Encapsulate(renderers[i].bounds);
+        }
+
+        Vector3 sizeWorld = bounds.size;  // 유닛 단위 (1 = 1m 라고 보면 됨)
+        float width = sizeWorld.x;
+        float height = sizeWorld.y;
+        float depth = sizeWorld.z;
+
+        Debug.Log(name + " size (units)  W x H x D = "
+                       + width + " x " + height + " x " + depth);
+    }
 }

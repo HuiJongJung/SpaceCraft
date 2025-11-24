@@ -11322,8 +11322,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   data: {fileID: 0}
   addCollider: 1
-  floorMaterial: {fileID: 2100000, guid: f5dfb292be4fa1d418b3f44cc96df965, type: 2}
-  wallMaterial: {fileID: 2100000, guid: d7eef83ae773a07478f6ee145d3b3dbb, type: 2}
+  floorMaterial: {fileID: 2100000, guid: 7c13e7fdf4b73ec4c92fe5ade055eb8b, type: 2}
+  wallMaterial: {fileID: 2100000, guid: 78f64606e219ed2459b0b756226a91fc, type: 2}
   doorPrefab: {fileID: 5801201411498769240, guid: ea6b9da38c83c214c9f56d7d8ec957e0, type: 3}
   slideDoorPrefab: {fileID: 7827655430765280026, guid: b18abfd3afc54d2449fcfd80b0ef68d9, type: 3}
   windowPrefab: {fileID: 2618860925019183576, guid: 179171cb8151d0a42a7c178abe732c8f, type: 3}
@@ -19737,7 +19737,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1508509174
 RectTransform:
   m_ObjectHideFlags: 0

@@ -15,7 +15,6 @@ MonoBehaviour:
   id: Chair1
   name: "\uC758\uC790"
   sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
-  prefab: {fileID: 1434974631607098, guid: d5474a02fb5dec0459c6bb3ab4db155c, type: 3}
+  prefab: {fileID: 4235057660021351150, guid: 7468813e5ff476e41ae1f301c9b8c164, type: 3}
   sizeTemplates:
-  - templateId: 0
-    sizeCentimeters: {x: 100, y: 60, z: 100}
+  - sizeCentimeters: {x: 60, y: 120, z: 60}

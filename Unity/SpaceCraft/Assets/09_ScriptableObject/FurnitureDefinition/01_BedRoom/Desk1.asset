@@ -15,13 +15,8 @@ MonoBehaviour:
   id: Desk1
   name: "\uCC45\uC0C1"
   sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
-  prefab: {fileID: 1672571381707156, guid: 2956f9b9d4fb37040b28243d332e9170, type: 3}
+  prefab: {fileID: 4762716550424089427, guid: c9c9bd6ff297d584295142bf7f4f340a, type: 3}
   sizeTemplates:
-  - templateId: 0
-    sizeCentimeters: {x: 100, y: 60, z: 100}
-  - templateId: 1
-    sizeCentimeters: {x: 120, y: 60, z: 120}
-  - templateId: 2
-    sizeCentimeters: {x: 150, y: 60, z: 150}
-  - templateId: 3
-    sizeCentimeters: {x: 150, y: 60, z: 150}
+  - sizeCentimeters: {x: 180, y: 100, z: 100}
+  - sizeCentimeters: {x: 200, y: 100, z: 100}
+  - sizeCentimeters: {x: 240, y: 100, z: 100}

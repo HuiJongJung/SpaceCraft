@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1576574394132565877}
   - component: {fileID: 8415611614771409073}
   - component: {fileID: 6316149534939816692}
+  - component: {fileID: 8643697044611973785}
   m_Layer: 0
   m_Name: Dresser1
   m_TagString: Untagged
@@ -28,13 +29,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2026959876445661253}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.135119, y: -1.5719807, z: -1.0650332}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3676747612191324444
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -141,3 +142,24 @@ MonoBehaviour:
     left: 0
     right: 0
   keepBottomOnScale: 1
+--- !u!65 &8643697044611973785
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2026959876445661253}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.1986016, y: 2.075958, z: 0.60142714}
+  m_Center: {x: 0.00000023841864, y: 1.0334214, z: 0.03465078}
