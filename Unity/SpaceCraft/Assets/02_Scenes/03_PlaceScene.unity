@@ -11325,8 +11325,8 @@ MonoBehaviour:
   floorMaterial: {fileID: 2100000, guid: 7c13e7fdf4b73ec4c92fe5ade055eb8b, type: 2}
   wallMaterial: {fileID: 2100000, guid: 78f64606e219ed2459b0b756226a91fc, type: 2}
   doorPrefab: {fileID: 5801201411498769240, guid: ea6b9da38c83c214c9f56d7d8ec957e0, type: 3}
-  slideDoorPrefab: {fileID: 7827655430765280026, guid: b18abfd3afc54d2449fcfd80b0ef68d9, type: 3}
-  windowPrefab: {fileID: 2618860925019183576, guid: 179171cb8151d0a42a7c178abe732c8f, type: 3}
+  slideDoorPrefab: {fileID: 2536222223895042317, guid: 5d8b76a8b2946164da01f3ba036d8257, type: 3}
+  windowPrefab: {fileID: 4801731921414469647, guid: 3fb4a12b03e43794c9f37f767f466d14, type: 3}
 --- !u!4 &846193312
 Transform:
   m_ObjectHideFlags: 0
@@ -14475,6 +14475,7 @@ MonoBehaviour:
   slidingDoorDepth: 0.5
   showRuntimeGrid: 0
   gridMaterial: {fileID: 0}
+  gridOccupiedMaterial: {fileID: 0}
   gridRoot: {fileID: 0}
 --- !u!4 &1091609591
 Transform:
