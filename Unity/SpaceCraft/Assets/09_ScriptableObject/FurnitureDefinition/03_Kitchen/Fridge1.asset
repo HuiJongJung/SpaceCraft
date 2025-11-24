@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Fridge1
   name: "\uB0C9\uC7A5\uACE0"
-  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  sprite: {fileID: 21300000, guid: e4870eeba181f6146a34c719218ed095, type: 3}
   prefab: {fileID: 8934542790105721365, guid: 9367045427770dd4b935cd3009749466, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 80, y: 175, z: 75}

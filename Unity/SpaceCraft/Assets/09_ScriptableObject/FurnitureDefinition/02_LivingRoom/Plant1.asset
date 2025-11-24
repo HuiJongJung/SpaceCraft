@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Plant1
   name: "\uD654\uBD84"
-  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  sprite: {fileID: 21300000, guid: 5ce4877316790b647a10a2513002365b, type: 3}
   prefab: {fileID: 2952105884319320314, guid: f29a60d34eba21644a7635e0ce9c171a, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 60, y: 80, z: 50}

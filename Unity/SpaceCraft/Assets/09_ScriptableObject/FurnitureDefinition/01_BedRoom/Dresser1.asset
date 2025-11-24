@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Dresser1
   name: "\uC637\uC7A5"
-  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  sprite: {fileID: 21300000, guid: d984379fa76236b46baf710c4fcba968, type: 3}
   prefab: {fileID: 2026959876445661253, guid: b95b4b423037a0f4d866dd8348981af2, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 120, y: 200, z: 60}

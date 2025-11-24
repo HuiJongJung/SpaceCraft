@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: TVTable
   name: "TV\uD14C\uC774\uBE14"
-  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  sprite: {fileID: 21300000, guid: e81c3fe3b550f3e43964462d611eb771, type: 3}
   prefab: {fileID: 6276701433954530012, guid: 9df3b81b3c42fc24aaf3d64f8cc45192, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 250, y: 120, z: 50}

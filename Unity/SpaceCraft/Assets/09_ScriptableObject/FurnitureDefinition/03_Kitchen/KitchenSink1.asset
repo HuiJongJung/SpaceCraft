@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: KitchenSink1
   name: "\uBD80\uC5CC \uC2F1\uD06C\uB300"
-  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  sprite: {fileID: 21300000, guid: cb853e16f12e0854583e22e6be1f39ac, type: 3}
   prefab: {fileID: 2529462248911088063, guid: a5ba42a58d8084949b8142afc41ed2ac, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 90, y: 110, z: 60}

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: KitchenStove1
   name: "\uBD80\uC5CC \uC2A4\uD1A0\uBE0C"
-  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  sprite: {fileID: 21300000, guid: a32e344954a369a47ab61ec45afb4f7c, type: 3}
   prefab: {fileID: 4906482974072853540, guid: 55b364e7c3a0c4d468128b3feda818d8, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 60, y: 90, z: 60}

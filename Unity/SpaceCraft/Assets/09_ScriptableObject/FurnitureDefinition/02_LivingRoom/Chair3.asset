@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Chair3
   name: "\uC758\uC790"
-  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  sprite: {fileID: 21300000, guid: 4a18baf95128aaf4a85317c7fead8fb4, type: 3}
   prefab: {fileID: 4769456017231341177, guid: 78c0abd9a69c07a4090c3a278df639c0, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 60, y: 80, z: 60}

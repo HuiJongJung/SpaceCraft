@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: KitchenCabinet1
   name: "\uBD80\uC5CC \uD558\uBD80\uC7A5"
-  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  sprite: {fileID: 21300000, guid: b4514379b02e29b4d84ca14814c50b95, type: 3}
   prefab: {fileID: 8908767782723522003, guid: f5b356935a33dcd489db9beb7e18b52f, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 90, y: 90, z: 60}

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: DressingTable1
   name: "\uD654\uC7A5\uB300"
-  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  sprite: {fileID: 21300000, guid: 80ddd6ed78959234883c62b5016f151c, type: 3}
   prefab: {fileID: 384016187923097470, guid: 2d42179af894c5149b3c5a7127b039b4, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 100, y: 160, z: 50}

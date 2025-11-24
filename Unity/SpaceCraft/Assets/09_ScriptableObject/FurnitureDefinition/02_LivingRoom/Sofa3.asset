@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Sofa3
   name: "\uC18C\uD30C"
-  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  sprite: {fileID: 21300000, guid: 4dcbcfb6232d78e4c9499946e342d7a3, type: 3}
   prefab: {fileID: 5147687521811869907, guid: 422190a8d8fa54c4bbff67e53106e155, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 240, y: 100, z: 80}

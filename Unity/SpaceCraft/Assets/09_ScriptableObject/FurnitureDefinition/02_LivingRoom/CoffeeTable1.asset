@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: CoffeeTable1
   name: "\uCEE4\uD53C\uD14C\uC774\uBE14"
-  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  sprite: {fileID: 21300000, guid: 8c1c6257e043e614c8c05d25fd6968db, type: 3}
   prefab: {fileID: 3153097142784550948, guid: 491c82afc429a79409237eb9399981f8, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 160, y: 40, z: 90}

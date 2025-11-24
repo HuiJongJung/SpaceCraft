@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Bath1
   name: "\uC695\uC870"
-  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  sprite: {fileID: 21300000, guid: f1834601c32e9f8439a55bab8457c2e3, type: 3}
   prefab: {fileID: 8625835626365437762, guid: 898cc908e661f1c449c821c9d4f60d26, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 200, y: 80, z: 100}

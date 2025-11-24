@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Toilet1
   name: "\uBCC0\uAE30"
-  sprite: {fileID: 21300000, guid: 0dbeb3b145503734591053603dba3e8a, type: 3}
+  sprite: {fileID: 21300000, guid: 96764d450ba52b7449ae879bb8e7cb89, type: 3}
   prefab: {fileID: 1016481776587941692, guid: 3b0470fba4415964fae29dc7244628eb, type: 3}
   sizeTemplates:
   - sizeCentimeters: {x: 45, y: 100, z: 75}
