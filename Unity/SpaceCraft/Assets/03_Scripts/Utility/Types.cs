@@ -15,3 +15,11 @@ public enum OpeningType
     SlideDoor,
     Window
 }
+
+public enum RoomObjectType
+{
+    Floor,
+    Wall,
+    Opening,   // Door / Window / SlideDoor
+    Furniture
+}

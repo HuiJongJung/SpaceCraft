@@ -6,8 +6,10 @@ public class RoomBuilder : MonoBehaviour
 {
     [Header("Refs")]
     [SerializeField] private SpaceData data;   // SpaceData.Instance 보관소
+    [SerializeField] private RoomManager roomManager; // RoomManager
     private SpaceLayout _layout;
     private GameObject _spaceRoot;
+    
 
     [Header("Options")]
     [SerializeField] private bool addCollider = true;
@@ -51,8 +53,22 @@ public class RoomBuilder : MonoBehaviour
             return;
         }
 
+        if (roomManager == null)
+        {
+            roomManager = GetComponent<RoomManager>();
+        }
+
+        if (roomManager == null)
+        {
+            Debug.LogError("[RoomBuilder] RoomManager is not exist.");
+            return;
+        }
+
+        // Build RoomMap
+        roomManager.EnsureRoomMaps();
+
         _spaceRoot = gameObject;
-        //Build
+
         BuildFloors();
         BuildWalls();
     }
@@ -117,6 +133,20 @@ public class RoomBuilder : MonoBehaviour
             
             // 6. Recenter Pivot
             RecenterPivot(mf, new Vector3(fd.vertices[0].x, fd.vertices[0].y, fd.vertices[0].z));
+            
+            // 7. Assign RoomObject & Register to RoomManager (직접 fd.roomID 사용)
+            if (roomManager != null)
+            {
+                if (fd.roomID != null && fd.roomID.Count > 0)
+                {
+                    RegisterRoomObjectForRooms(go, RoomObjectType.Floor, fd.id, fd.roomID);
+                }
+                else
+                {
+                    Debug.LogWarning("[RoomBuilder] Floor_" + fd.id + " 의 roomID 리스트가 비어 있습니다.");
+                }
+            }
+
         }
 
         Debug.Log("[RoomBuilder] Floors built: " + _layout.floors.Count);
@@ -334,6 +364,19 @@ public class RoomBuilder : MonoBehaviour
             
             // 6. Recenter Pivot
             RecenterPivot(mf, new Vector3(wd.vertices[0].x, wd.vertices[0].y, wd.vertices[0].z));
+            
+            // 7. Assign RoomObject & Register RoomManager (wd.roomID 사용)
+            if (roomManager != null)
+            {
+                if (wd.roomID != null && wd.roomID.Count > 0)
+                {
+                    RegisterRoomObjectForRooms(go, RoomObjectType.Wall, wd.id, wd.roomID);
+                }
+                else
+                {
+                    Debug.LogWarning("[RoomBuilder] Wall_" + wd.id + " 의 roomID 리스트가 비어 있습니다.");
+                }
+            }
         }
 
         Debug.Log("[RoomBuilder] Walls built: " + _layout.walls.Count);
@@ -551,6 +594,12 @@ public class RoomBuilder : MonoBehaviour
                 hingeGO.transform.SetParent(_spaceRoot.transform, false);
                 hingeGO.transform.position = hingeWorld;
                 hingeGO.transform.rotation = rot;
+                
+                // Register To RoomManager
+                if (roomManager != null)
+                {
+                    RegisterRoomObjectForRooms(hingeGO, RoomObjectType.Opening, od.id, od.roomID);
+                }
 
                 // Create Door Prefab
                 float uHalf = od.width * 0.5f;
@@ -605,6 +654,12 @@ public class RoomBuilder : MonoBehaviour
                     continue;
                 }
                 openingObj = Instantiate(windowPrefab,centerWorld, rot, _spaceRoot.transform);
+                
+                // Register to RoomManager
+                if (roomManager != null && openingObj != null)
+                {
+                    RegisterRoomObjectForRooms(openingObj, RoomObjectType.Opening, od.id, od.roomID);
+                }
             }
             // SlideDoor
             else if (opType == OpeningType.SlideDoor)
@@ -619,6 +674,12 @@ public class RoomBuilder : MonoBehaviour
                 anchorGO.transform.SetParent(_spaceRoot.transform, false);
                 anchorGO.transform.position = centerWorld;
                 anchorGO.transform.rotation = rot;
+                
+                // Register To RoomManager
+                if (roomManager != null)
+                {
+                    RegisterRoomObjectForRooms(anchorGO, RoomObjectType.Opening, od.id, od.roomID);
+                }
                 
                 if (slideDoorPrefab == null)
                 {
@@ -1056,6 +1117,44 @@ public class RoomBuilder : MonoBehaviour
         if (a.yMin >= b.yMax) { return false; }
         if (a.yMax <= b.yMin) { return false; }
         return true;
+    }
+    
+    // ===== RoomObject 등록 헬퍼 =====
+    private void RegisterRoomObjectForRooms(
+        GameObject go,
+        RoomObjectType type,
+        int logicalId,
+        List<int> roomIds)
+    {
+        if (roomManager == null)
+        {
+            return;
+        }
+
+        if (go == null)
+        {
+            return;
+        }
+
+        if (roomIds == null || roomIds.Count == 0)
+        {
+            return;
+        }
+
+        RoomObject ro = go.GetComponent<RoomObject>();
+        if (ro == null)
+        {
+            ro = go.AddComponent<RoomObject>();
+        }
+
+        ro.type = type;
+        ro.logicalID = logicalId;
+
+        for (int i = 0; i < roomIds.Count; i++)
+        {
+            int roomID = roomIds[i];
+            roomManager.Register(ro, roomID);
+        }
     }
     
     #endregion
