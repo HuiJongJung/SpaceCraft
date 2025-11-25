@@ -125,7 +125,7 @@ public class PlaceSceneUI : MonoBehaviour
 
         if (furnitureManager != null)
         {
-            furnitureDatabase = furnitureManager.furnitureDatabase;
+            furnitureDatabase = furnitureManager.GetDB();
         }
         
         // Save Button

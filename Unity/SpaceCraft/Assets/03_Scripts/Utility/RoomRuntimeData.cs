@@ -9,7 +9,7 @@ public class RoomRuntimeData
     public List<GameObject> floors = new List<GameObject>();
     public List<GameObject> walls = new List<GameObject>();
     public List<GameObject> openings = new List<GameObject>();
-    public List<Furniture> furnitures = new List<Furniture>();
+    public List<GameObject> furnitures = new List<GameObject>();
 
     public RoomRuntimeData(int roomID)
     {
@@ -32,7 +32,7 @@ public class RoomRuntimeData
         }
         else if (obj.type == RoomObjectType.Furniture)
         {
-            furnitures.Add(obj.GetComponent<Furniture>());
+            furnitures.Add(obj.gameObject);
         }
     }
 
@@ -41,7 +41,7 @@ public class RoomRuntimeData
         SetListActive(floors, active);
         SetListActive(walls, active);
         SetListActive(openings, active);
-        SetFurnitureActive(furnitures, active);
+        SetListActive(furnitures, active);
     }
 
     // Floor / Wall / Openings Active
@@ -50,19 +50,6 @@ public class RoomRuntimeData
         for (int i = 0; i < list.Count; i++)
         {
             GameObject go = list[i];
-            if (go != null)
-            {
-                go.SetActive(active);
-            }
-        }
-    }
-    
-    // Furniture Active
-    private void SetFurnitureActive(List<Furniture> list, bool active)
-    {
-        for (int i = 0; i < list.Count; i++)
-        {
-            GameObject go = list[i].gameObject;
             if (go != null)
             {
                 go.SetActive(active);

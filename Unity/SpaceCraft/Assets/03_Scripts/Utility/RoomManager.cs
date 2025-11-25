@@ -13,44 +13,35 @@ public class RoomManager : MonoBehaviour
     private Dictionary<int, RoomRuntimeData> roomsById =
         new Dictionary<int, RoomRuntimeData>();
 
-    // ID -> roomID
-    private Dictionary<int, int> floorToRoom =
-        new Dictionary<int, int>();
-    // wallID -> roomID
-    private Dictionary<int, List<int>> wallToRooms =
-        new Dictionary<int, List<int>>();
-    // openingID -> roomID
-    private Dictionary<int, List<int>> openingToRooms =
-        new Dictionary<int, List<int>>();
-    // Furniture의 roomID는 반드시 1개
-    private Dictionary<string, int> furnitureToRoom =
-        new Dictionary<string, int>();
-
-    // GameObject -> 포함 roomID 리스트
-    private Dictionary<GameObject, List<int>> objectToRooms =
-        new Dictionary<GameObject, List<int>>();
-    
-    // 현재 "켜져 있어야 하는" 방 집합
-    private HashSet<int> activeRooms =
-        new HashSet<int>();
-
     // 디버그용 인스펙터 확인
     [SerializeField] private List<RoomRuntimeData> debugRooms =
         new List<RoomRuntimeData>();
 
-    private bool mapsBuilt = false;
+    private void Awake()
+    {
+        if (spaceData == null)
+        {
+            spaceData = SpaceData.Instance;
+        }
+
+        if (spaceData != null)
+        {
+            layout = spaceData._layout;
+        }
+        else
+        {
+            Debug.LogWarning("[RoomManager] SpaceData is null.");
+        }
+    }
 
     private void Start()
     {
-        EnsureRoomMaps();
-        
         if (gridBuilder == null)
         {
             gridBuilder = FindObjectOfType<RoomPlacementGridBuilder>();
         }
     }
-    
-    // Camera Follow
+
     // ===== Camera Focus =====
     private void FocusCameraOnRoom(int roomID)
     {
@@ -136,180 +127,13 @@ public class RoomManager : MonoBehaviour
         pos.z = centerZ;
         cam.transform.position = pos;
     }
-    
-    // Grid Visual
-    private void SyncRoomGridVisibility()
-    {
-        if (gridBuilder == null)
-        {
-            return;
-        }
 
-        // 일단 전부 끄고
-        gridBuilder.HideAllRoomGrids();
-
-        // activeRooms 에 들어있는 roomID만 켠다
-        foreach (int roomID in activeRooms)
-        {
-            gridBuilder.SetRoomGridVisible(roomID, true);
-        }
-    }
-
-    public void EnsureRoomMaps()
-    {
-        if (mapsBuilt)
-        {
-            return;
-        }
-
-        if (spaceData == null)
-        {
-            spaceData = SpaceData.Instance;
-        }
-
-        if (spaceData == null || spaceData._layout == null)
-        {
-            Debug.LogWarning("[RoomManager] SpaceData or layout is null.");
-            return;
-        }
-
-        layout = spaceData._layout;
-        BuildRoomMaps();
-        mapsBuilt = true;
-
-        // 처음에는 모든 방 켜진 상태로 시작
-        activeRooms.Clear();
-        foreach (KeyValuePair<int, RoomRuntimeData> pair in roomsById)
-        {
-            activeRooms.Add(pair.Key);
-        }
-        UpdateAllObjectActives();
-    }
-
-    private void BuildRoomMaps()
-    {
-        if (layout == null)
-        {
-            Debug.LogWarning("[RoomManager] layout is null.");
-            return;
-        }
-
-        floorToRoom.Clear();
-        wallToRooms.Clear();
-        openingToRooms.Clear();
-        furnitureToRoom.Clear();
-        roomsById.Clear();
-        objectToRooms.Clear();
-        debugRooms.Clear();
-
-        // 1. RoomDef 기반 floorID/wallID -> roomID 리스트
-        if (layout.rooms != null)
-        {
-            for (int i = 0; i < layout.rooms.Count; i++)
-            {
-                RoomDef room = layout.rooms[i];
-                if (room == null)
-                {
-                    continue;
-                }
-
-                int roomID = room.roomID;
-
-                if (room.floorIDs != null)
-                {
-                    for (int f = 0; f < room.floorIDs.Count; f++)
-                    {
-                        int floorID = room.floorIDs[f];
-                        if (!floorToRoom.ContainsKey(floorID))
-                        {
-                            floorToRoom.Add(floorID, roomID);
-                        }
-                    }
-                }
-
-                if (room.wallIDs != null)
-                {
-                    for (int w = 0; w < room.wallIDs.Count; w++)
-                    {
-                        int wallID = room.wallIDs[w];
-
-                        List<int> list;
-                        if (!wallToRooms.TryGetValue(wallID, out list))
-                        {
-                            list = new List<int>();
-                            wallToRooms.Add(wallID, list);
-                        }
-
-                        if (!list.Contains(roomID))
-                        {
-                            list.Add(roomID);
-                        }
-                    }
-                }
-            }
-        }
-
-        // 2. OpeningDef 기반 openingID -> roomID 리스트 (wallID -> roomIDs 이용)
-        if (layout.openings != null)
-        {
-            for (int i = 0; i < layout.openings.Count; i++)
-            {
-                OpeningDef od = layout.openings[i];
-                if (od == null)
-                {
-                    continue;
-                }
-
-                List<int> roomsOfWall;
-                if (!wallToRooms.TryGetValue(od.wallID, out roomsOfWall))
-                {
-                    continue;
-                }
-
-                List<int> list;
-                if (!openingToRooms.TryGetValue(od.id, out list))
-                {
-                    list = new List<int>();
-                    openingToRooms.Add(od.id, list);
-                }
-
-                for (int r = 0; r < roomsOfWall.Count; r++)
-                {
-                    int roomID = roomsOfWall[r];
-                    if (!list.Contains(roomID))
-                    {
-                        list.Add(roomID);
-                    }
-                }
-            }
-        }
-
-        // 3. FurnitureItemData 기반 instanceId -> roomID
-        if (layout.furnitures != null)
-        {
-            for (int i = 0; i < layout.furnitures.Count; i++)
-            {
-                FurnitureItemData fd = layout.furnitures[i];
-                if (fd == null)
-                {
-                    continue;
-                }
-
-                if (!string.IsNullOrEmpty(fd.instanceId))
-                {
-                    if (!furnitureToRoom.ContainsKey(fd.instanceId))
-                    {
-                        furnitureToRoom.Add(fd.instanceId, fd.roomID);
-                    }
-                }
-            }
-        }
-    }
-
+    // RoomRuntimeData
     private RoomRuntimeData GetOrCreateRoomData(int roomID)
     {
         RoomRuntimeData roomData;
-        if (!roomsById.TryGetValue(roomID, out roomData))
+        bool found = roomsById.TryGetValue(roomID, out roomData);
+        if (!found)
         {
             roomData = new RoomRuntimeData(roomID);
             roomsById.Add(roomID, roomData);
@@ -318,7 +142,8 @@ public class RoomManager : MonoBehaviour
         return roomData;
     }
     
-    // Register roomID to RoomObject
+    // Called in RoomBuilder & Furniture Place
+    // Register RoomObject To "roomID"
     public void Register(RoomObject obj, int roomID)
     {
         if (obj == null)
@@ -326,7 +151,7 @@ public class RoomManager : MonoBehaviour
             return;
         }
 
-        // Update RoomObject roomIDs 
+        // RoomObject가 자기 속한 방 ID를 알고 있게 해두고 싶다면:
         if (!obj.roomIDs.Contains(roomID))
         {
             obj.roomIDs.Add(roomID);
@@ -334,94 +159,90 @@ public class RoomManager : MonoBehaviour
 
         RoomRuntimeData roomData = GetOrCreateRoomData(roomID);
         roomData.Add(obj);
-
-        GameObject go = obj.gameObject;
-        List<int> list;
-        if (!objectToRooms.TryGetValue(go, out list))
-        {
-            list = new List<int>();
-            objectToRooms.Add(go, list);
-        }
-
-        if (!list.Contains(roomID))
-        {
-            list.Add(roomID);
-        }
     }
-
-    // ===== 활성화 갱신 공통 함수 =====
-    private void UpdateAllObjectActives()
+    
+    // Remove Furniture From Room
+    public void RemoveFurnitureFromRoom(GameObject go, int roomID)
     {
-        foreach (KeyValuePair<GameObject, List<int>> pair in objectToRooms)
+        if (go == null)
         {
-            GameObject go = pair.Key;
-            List<int> rooms = pair.Value;
-
-            bool visible = false;
-            for (int i = 0; i < rooms.Count; i++)
-            {
-                if (activeRooms.Contains(rooms[i]))
-                {
-                    visible = true;
-                    break;
-                }
-            }
-
-            if (go != null)
-            {
-                go.SetActive(visible);
-            }
-
-            SyncRoomGridVisibility();
+            return;
         }
-    }
 
-    // ===== 방 활성화 / 비활성 =====
+        RoomRuntimeData roomData;
+        bool found = roomsById.TryGetValue(roomID, out roomData);
+        if (found == false || roomData == null)
+        {
+            return;
+        }
+
+        // Remove Furniture
+        roomData.furnitures.Remove(go);
+    }
+    
+    // SetActive Only One Room
     public void SetActiveOnly(int roomID)
     {
-        activeRooms.Clear();
-        activeRooms.Add(roomID);
-        UpdateAllObjectActives();
+        // 1) DeActive All Rooms
+        foreach (KeyValuePair<int, RoomRuntimeData> pair in roomsById)
+        {
+            RoomRuntimeData roomData = pair.Value;
+            if (roomData != null)
+            {
+                roomData.SetActive(false);
+            }
+        }
+
+        // 2) Active Only One Room
+        RoomRuntimeData target;
+        bool found = roomsById.TryGetValue(roomID, out target);
+        if (found && target != null)
+        {
+            target.SetActive(true);
+        }
+
+        // 3) Show Grid
+        if (gridBuilder != null)
+        {
+            gridBuilder.ShowOnlyRoomGrid(roomID);
+        }
+
+        // 4) Camera Focus
         FocusCameraOnRoom(roomID);
     }
 
-    public void SetRoomActive(int roomID, bool active)
-    {
-        if (active)
-        {
-            activeRooms.Add(roomID);
-        }
-        else
-        {
-            if (activeRooms.Contains(roomID))
-            {
-                activeRooms.Remove(roomID);
-            }
-        }
-
-        UpdateAllObjectActives();
-    }
-
+    // Show All Rooms
     public void SetAllRoomsActive(bool active)
     {
-        activeRooms.Clear();
-
-        if (active)
+        foreach (KeyValuePair<int, RoomRuntimeData> pair in roomsById)
         {
-            foreach (KeyValuePair<int, RoomRuntimeData> pair in roomsById)
+            RoomRuntimeData roomData = pair.Value;
+            if (roomData != null)
             {
-                activeRooms.Add(pair.Key);
+                roomData.SetActive(active);
             }
         }
 
-        UpdateAllObjectActives();
+        if (gridBuilder != null)
+        {
+            if (active)
+            {
+                gridBuilder.ShowAllRoomGrids();
+            }
+            else
+            {
+                gridBuilder.HideAllRoomGrids();
+            }
+        }
     }
 
-    #region Getters
+    // ===== Getters =====
+
     public List<GameObject> GetWallsOfRoom(int roomID)
     {
         RoomRuntimeData roomData;
-        if (roomsById.TryGetValue(roomID, out roomData))
+        bool found = roomsById.TryGetValue(roomID, out roomData);
+        if (found && roomData != null)
         {
             return roomData.walls;
         }
@@ -431,7 +252,8 @@ public class RoomManager : MonoBehaviour
     public List<GameObject> GetFloorsOfRoom(int roomID)
     {
         RoomRuntimeData roomData;
-        if (roomsById.TryGetValue(roomID, out roomData))
+        bool found = roomsById.TryGetValue(roomID, out roomData);
+        if (found && roomData != null)
         {
             return roomData.floors;
         }
@@ -441,21 +263,22 @@ public class RoomManager : MonoBehaviour
     public List<GameObject> GetOpeningsOfRoom(int roomID)
     {
         RoomRuntimeData roomData;
-        if (roomsById.TryGetValue(roomID, out roomData))
+        bool found = roomsById.TryGetValue(roomID, out roomData);
+        if (found && roomData != null)
         {
             return roomData.openings;
         }
         return null;
     }
 
-    public List<Furniture> GetFurnituresOfRoom(int roomID)
+    public List<GameObject> GetFurnituresOfRoom(int roomID)
     {
         RoomRuntimeData roomData;
-        if (roomsById.TryGetValue(roomID, out roomData))
+        bool found = roomsById.TryGetValue(roomID, out roomData);
+        if (found && roomData != null)
         {
             return roomData.furnitures;
         }
         return null;
     }
-    #endregion
 }

@@ -4,23 +4,22 @@ using UnityEngine;
 public class FurnitureManager : MonoBehaviour
 {
     [Header("Database")]
-    public FurnitureDatabase furnitureDatabase;
+    [SerializeField] private FurnitureDatabase furnitureDatabase;
 
-    [Header("Inventory Data")] 
-    // JSON Load/Save
-    public List<FurnitureItemData> inventory = new List<FurnitureItemData>();
+    [Header("Data (Saved / Loaded)")]
+    [SerializeField] private List<FurnitureItemData> inventory =
+        new List<FurnitureItemData>();   // JSON, Inspector 에 보이는 진짜 데이터
 
-    // 1) Data : instanceId -> FurnitureItemData
+    // instanceId -> Data
     private Dictionary<string, FurnitureItemData> byInstanceId =
         new Dictionary<string, FurnitureItemData>();
 
-    // 2) RoomToInstances : roomID -> instanceIDs
-    private Dictionary<int, HashSet<string>> roomToInstances =
-        new Dictionary<int, HashSet<string>>();
-
-    // 3) placedRuntimeMap : instanceID -> Furniture (Scene Object)
+    // instanceId -> Runtime Furniture (씬 오브젝트)
     private Dictionary<string, Furniture> placedRuntimeMap =
         new Dictionary<string, Furniture>();
+
+    [Header("Refs")]
+    [SerializeField] private RoomManager roomManager;
 
     [SerializeField] private int nextInstanceIndex = 1;
 
@@ -35,53 +34,53 @@ public class FurnitureManager : MonoBehaviour
             Debug.LogError("FurnitureDatabase is not assigned on FurnitureManager.", this);
         }
 
+        if (roomManager == null)
+        {
+            roomManager = FindObjectOfType<RoomManager>();
+        }
+
         RebuildMapsFromInventory();
     }
 
+    // DB Getter
+    public FurnitureDatabase GetDB()
+    {
+        return furnitureDatabase;
+    }
+
+    // Rebuild Maps From Inventory
+    // Use When "Load JSON"
     public void RebuildMapsFromInventory()
     {
         byInstanceId.Clear();
-        roomToInstances.Clear();
-        placedRuntimeMap.Clear(); // 런타임 오브젝트 맵은 다시 배치할 때만 채움
+        placedRuntimeMap.Clear();
 
         for (int i = 0; i < inventory.Count; i++)
         {
             FurnitureItemData item = inventory[i];
-            if (item == null)
+
+            // No instanceId -> Generate
+            if (string.IsNullOrEmpty(item.instanceId))
             {
-                continue;
+                item.instanceId = GenerateInstanceId(item.furnitureId);
+                inventory[i] = item;
             }
-            RegisterItemToMaps(item);
+
+            if (string.IsNullOrEmpty(item.instanceId) == false)
+            {
+                if (byInstanceId.ContainsKey(item.instanceId))
+                {
+                    Debug.LogWarning("Duplicate instanceId in inventory: " + item.instanceId);
+                }
+                else
+                {
+                    byInstanceId[item.instanceId] = item;
+                }
+            }
         }
-        
-        // JSON 상에서 실제로 배치된 가구가 있다면 재배치 해야하긴 함
-    }
-    
-    // Register To Map (room->instanceId)
-    private void RegisterItemToMaps(FurnitureItemData item)
-    {
-        if (item == null)
-        {
-            return;
-        }
-
-        byInstanceId[item.instanceId] = item;
-
-        int roomKey = item.roomID; // 항상 실제 roomID
-
-        HashSet<string> set;
-        bool found = roomToInstances.TryGetValue(roomKey, out set);
-        if (found == false)
-        {
-            set = new HashSet<string>();
-            roomToInstances.Add(roomKey, set);
-        }
-
-        set.Add(item.instanceId);
     }
 
-    // InstanceID Generator
-    // ex) Desk#0001
+    // Generate Rule : Desk#0001
     private string GenerateInstanceId(string furnitureId)
     {
         string suffix = nextInstanceIndex.ToString("D4");
@@ -89,8 +88,8 @@ public class FurnitureManager : MonoBehaviour
         nextInstanceIndex = nextInstanceIndex + 1;
         return instanceId;
     }
-    
-    // Add Item To Inventory
+
+    // Add Furniture to "Room" (UnPlaced)
     public FurnitureItemData AddItemToRoomInventory(
         int roomID,
         string furnitureId,
@@ -120,12 +119,14 @@ public class FurnitureManager : MonoBehaviour
         item.privacyDir = privacyDir;
 
         inventory.Add(item);
-        RegisterItemToMaps(item);
+        byInstanceId[item.instanceId] = item;
 
         return item;
     }
-
-    // Get By InstanceID
+    
+    
+    // Find FurnitureItemData
+    // Using InstanceId
     public FurnitureItemData GetItemByInstanceId(string instanceId)
     {
         FurnitureItemData item;
@@ -137,32 +138,23 @@ public class FurnitureManager : MonoBehaviour
         return item;
     }
 
-    // 해당 방의 모든 가구 (배치 + 미배치)
+    // Get All Furnitures in "Room"
     public List<FurnitureItemData> GetItemsInRoom(int roomID)
     {
-        HashSet<string> set;
-        bool found = roomToInstances.TryGetValue(roomID, out set);
-        if (found == false)
-        {
-            return new List<FurnitureItemData>();
-        }
-
         List<FurnitureItemData> result = new List<FurnitureItemData>();
 
-        foreach (string id in set)
+        for (int i = 0; i < inventory.Count; i++)
         {
-            FurnitureItemData item;
-            if (byInstanceId.TryGetValue(id, out item))
+            if (inventory[i].roomID == roomID)
             {
-                result.Add(item);
+                result.Add(inventory[i]);
             }
         }
-
         return result;
     }
 
-    // ***Function For Auto Place***
-    // Get "Unplaced Items" In Room
+    // Get All "Unplaced" Furnitures in Room
+    // For "Auto Place"
     public List<FurnitureItemData> GetUnplacedItemsInRoom(int roomID)
     {
         List<FurnitureItemData> all = GetItemsInRoom(roomID);
@@ -178,9 +170,8 @@ public class FurnitureManager : MonoBehaviour
 
         return result;
     }
-
-    // Place Item To Room
-    // worldPos -> Grid Snap, rotationDeg -> 0/90/180/270
+    
+    // Place Furniture
     public Furniture PlaceItem(
         string instanceId,
         int roomID,
@@ -189,6 +180,7 @@ public class FurnitureManager : MonoBehaviour
         int rotationDeg
     )
     {
+        // Find index in inventory
         int index = FindInventoryIndex(instanceId);
         if (index < 0)
         {
@@ -198,29 +190,24 @@ public class FurnitureManager : MonoBehaviour
 
         FurnitureItemData item = inventory[index];
 
-        if (item == null)
-        {
-            Debug.LogError("Inventory item is null: " + instanceId);
-            return null;
-        }
-
-        // different roomID -> Error (SafeGuard)
+        // Safety
         if (item.roomID != roomID)
         {
             Debug.LogWarning("PlaceItem: item roomID mismatch. item:" +
                              item.roomID + " arg:" + roomID);
             item.roomID = roomID;
         }
-    
-        // No Furniture in DB
+        
+        // Get FurnitureDefinition By Id
         FurnitureDefinition def = furnitureDatabase.GetById(item.furnitureId);
         if (def == null)
         {
             Debug.LogError("FurnitureDefinition not found: " + item.furnitureId);
             return null;
         }
-
-        Quaternion rot = Quaternion.Euler(0f, (float)rotationDeg, 0f);
+        
+        // Instantiate Prefab
+        Quaternion rot = Quaternion.Euler(0f, rotationDeg, 0f);
         GameObject go = Instantiate(def.prefab, worldPos, rot);
         Furniture furniture = go.GetComponent<Furniture>();
 
@@ -233,17 +220,26 @@ public class FurnitureManager : MonoBehaviour
         inventory[index] = item;
         byInstanceId[item.instanceId] = item;
 
+        // Apply Data to Furniture 
         if (furniture != null)
         {
             ApplyInventoryToFurniture(item, furniture);
         }
 
+        // Create RoomObject & Register
+        RoomObject ro = go.GetComponent<RoomObject>();
+        if (ro != null && roomManager != null)
+        {
+            roomManager.Register(ro, roomID);
+        }
+
+        // Register to RuntimeMap
         placedRuntimeMap[instanceId] = furniture;
 
         return furniture;
     }
-    
-    // Unplace Item
+
+    // UnPlace
     public void UnplaceItem(string instanceId)
     {
         FurnitureItemData item = GetItemByInstanceId(instanceId);
@@ -252,21 +248,32 @@ public class FurnitureManager : MonoBehaviour
             return;
         }
 
-        // Destroy Furniture Object
+        // Destroy GameObject in Scene
         Furniture placed;
         bool hasPlaced = placedRuntimeMap.TryGetValue(instanceId, out placed);
         if (hasPlaced && placed != null)
         {
-            Destroy(placed.gameObject);
+            // Remove At roomManager's furnitures list
+            if (roomManager != null)
+            {
+                roomManager.RemoveFurnitureFromRoom(placed.gameObject, item.roomID);
+            }
+
+            // 🔹 그 다음 실제 GameObject 제거
+            GameObject go = placed.gameObject;
+            if (go != null)
+            {
+                GameObject.Destroy(go);
+            }
         }
         placedRuntimeMap.Remove(instanceId);
 
-        // renew Data (keep roomID)
+        // Renew Data
         item.isPlaced = false;
         item.gridCell = new Vector2Int(0, 0);
         item.rotation = 0;
 
-        // Apply to inventory list
+        // Apply in Inventory Lists
         int index = FindInventoryIndex(instanceId);
         if (index >= 0)
         {
@@ -275,7 +282,7 @@ public class FurnitureManager : MonoBehaviour
         byInstanceId[instanceId] = item;
     }
 
-    // Delete Furniture
+    // Delete
     public void DeleteFurnitureItem(string instanceId)
     {
         FurnitureItemData item = GetItemByInstanceId(instanceId);
@@ -284,33 +291,25 @@ public class FurnitureManager : MonoBehaviour
             return;
         }
 
-        // 1. Unplace Object
+        // Unplace
         UnplaceItem(instanceId);
 
-        // 2. remove at roomToInstances
-        HashSet<string> set;
-        bool found = roomToInstances.TryGetValue(item.roomID, out set);
-        if (found)
-        {
-            set.Remove(instanceId);
-            if (set.Count == 0)
-            {
-                roomToInstances.Remove(item.roomID);
-            }
-        }
-
-        // 3. remove at byInstanceId
+        // Remove at byInstanceId
         byInstanceId.Remove(instanceId);
 
-        // 4. remove at inventory
+        // Remove at inventory
         inventory.Remove(item);
+        
+        //
     }
+
+    // Util
 
     private int FindInventoryIndex(string instanceId)
     {
         for (int i = 0; i < inventory.Count; i++)
         {
-            if (inventory[i] != null && inventory[i].instanceId == instanceId)
+            if (inventory[i].instanceId == instanceId)
             {
                 return i;
             }
@@ -330,6 +329,7 @@ public class FurnitureManager : MonoBehaviour
         f.isPrimaryFurniture = item.isPrimaryFurniture;
         f.clearance = item.clearance;
         f.isPrivacyFurniture = item.isPrivacyFurniture;
+        f.privacyDir = item.privacyDir;
 
         // Set Size (width=X, depth=Z, height=Y)
         f.SetSize(
@@ -338,5 +338,11 @@ public class FurnitureManager : MonoBehaviour
             f.sizeCentimeters.y,
             true
         );
+    }
+    
+    // Get Inventory
+    public List<FurnitureItemData> GetAllItems()
+    {
+        return inventory;
     }
 }
