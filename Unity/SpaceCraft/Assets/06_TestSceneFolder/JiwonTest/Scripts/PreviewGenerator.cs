@@ -317,9 +317,9 @@ public class PreviewGenerator : EditorWindow
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            EditorUtility.DisplayDialog("Complete",
-                $"Preview generation finished.\\nGenerated {{count}} preview images in total.",
-                "OK");
+            //EditorUtility.DisplayDialog("Complete",
+            //    $"Preview generation finished.\\nGenerated {{count}} preview images in total.",
+            //    "OK");
         }
         finally
         {
