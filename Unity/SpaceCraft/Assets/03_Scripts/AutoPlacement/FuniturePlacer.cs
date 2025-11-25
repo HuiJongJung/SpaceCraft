@@ -136,12 +136,12 @@ public class FurniturePlacer : MonoBehaviour
                     // --- 배치 성공 ---
                     Vector3 worldPos = ComputeWorldPositionForFootprint(grid, origin, sizeInCells);
 
-                    furnitureManager.PlaceFromInventory(
+                    furnitureManager.PlaceItem(
                         item.instanceId,
-                        worldPos,
-                        rot,
                         roomID,
-                        origin
+                        origin,
+                        worldPos,
+                        rot
                     );
 
                     // 그리드 마스킹 (데이터 갱신)
@@ -163,7 +163,7 @@ public class FurniturePlacer : MonoBehaviour
     public void AutoPlaceAllUnplacedItems(int roomID)
     {
         // 1. 배치되지 않은 가구 목록 가져오기
-        List<FurnitureItemData> unplacedItems = furnitureManager.GetUnplacedItems();
+        List<FurnitureItemData> unplacedItems = furnitureManager.GetUnplacedItemsInRoom(roomID);
 
         // (옵션) 가구를 크기 순으로 정렬해서 큰 것부터 배치하면 성공률이 높음
         // unplacedItems.Sort((a, b) => (b.sizeCentimeters.x * b.sizeCentimeters.z).CompareTo(a.sizeCentimeters.x * a.sizeCentimeters.z));
@@ -270,7 +270,7 @@ public class FurniturePlacer : MonoBehaviour
 
     public bool AutoPlaceOneItem(int roomID)
     {
-        List<FurnitureItemData> unplaced = furnitureManager.GetUnplacedItems();
+        List<FurnitureItemData> unplaced = furnitureManager.GetUnplacedItemsInRoom(roomID);
         if (unplaced.Count == 0)
         {
             Debug.Log("No unplaced items!");

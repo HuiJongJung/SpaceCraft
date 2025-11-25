@@ -33,7 +33,7 @@ public class PlaceSceneUI : MonoBehaviour
     public Button saveButton;
     
     private List<RoomDef> rooms;
-    private int currentIndex = 0;
+    [SerializeField] private int currentRoomID = 0;
     
     [Header("Detail Panel (ReadOnly)")]
     public Image roFurnitureImage;
@@ -162,7 +162,7 @@ public class PlaceSceneUI : MonoBehaviour
         }
 
         // 처음 방으로 초기화
-        currentIndex = 0;
+        currentRoomID = 0;
         UpdateRoomView();
     }
     
@@ -467,7 +467,8 @@ public class PlaceSceneUI : MonoBehaviour
         privacyDir.right = privacyRightToggle.isOn;
 
         // Add Furniture
-        furnitureManager.AddItemFromDetail(
+        furnitureManager.AddItemToRoomInventory(
+            currentRoomID,
             currentDefinition.id,
             sizeCentimeters,
             wallDir,
@@ -501,8 +502,9 @@ public class PlaceSceneUI : MonoBehaviour
         {
             return;
         }
-
-        List<FurnitureItemData> list = furnitureManager.inventory;
+        
+        // Get Room Item Lists
+        List<FurnitureItemData> list = furnitureManager.GetItemsInRoom(currentRoomID);
         for (int i = 0; i < list.Count; i++)
         {
             FurnitureItemData item = list[i];
@@ -604,7 +606,7 @@ public class PlaceSceneUI : MonoBehaviour
         }
 
         // Delete ( inventory + roomMap + object )
-        furnitureManager.DeleteFurniture(currentReadOnlyInstanceId);
+        furnitureManager.DeleteFurnitureItem(currentReadOnlyInstanceId);
 
         // Refresh
         RefreshFurnitureList();
@@ -624,12 +626,13 @@ public class PlaceSceneUI : MonoBehaviour
             return;
         }
 
-        currentIndex = currentIndex - 1;
-        if (currentIndex < 0)
+        currentRoomID = currentRoomID - 1;
+        if (currentRoomID < 0)
         {
-            currentIndex = rooms.Count - 1;
+            currentRoomID = rooms.Count - 1;
         }
-
+        // Refresh List & Room
+        RefreshFurnitureList();
         UpdateRoomView();
     }
 
@@ -641,12 +644,13 @@ public class PlaceSceneUI : MonoBehaviour
             return;
         }
 
-        currentIndex = currentIndex + 1;
-        if (currentIndex >= rooms.Count)
+        currentRoomID = currentRoomID + 1;
+        if (currentRoomID >= rooms.Count)
         {
-            currentIndex = 0;
+            currentRoomID = 0;
         }
-
+        // Refresh List & Room
+        RefreshFurnitureList();
         UpdateRoomView();
     }
     
@@ -670,7 +674,7 @@ public class PlaceSceneUI : MonoBehaviour
             return;
         }
 
-        RoomDef curRoom = rooms[currentIndex];
+        RoomDef curRoom = rooms[currentRoomID];
 
         // RoomName
         if (roomNameText != null)
@@ -689,7 +693,7 @@ public class PlaceSceneUI : MonoBehaviour
         // "현재 / 전체" 표시
         if (indexText != null)
         {
-            int humanIndex = currentIndex + 1;
+            int humanIndex = currentRoomID + 1;
             int total = rooms.Count;
             indexText.text = humanIndex.ToString() + " / " + total.ToString();
         }
