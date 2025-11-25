@@ -8,8 +8,10 @@ using TMPro;
 public class PlaceSceneUI : MonoBehaviour
 {
     [Header("External Systems")]
-    public FurnitureDatabase furnitureDatabase;
-    public FurnitureManager furnitureManager;
+    [SerializeField] private SpaceData spaceData;
+    [SerializeField] private FurnitureManager furnitureManager;
+    private FurnitureDatabase furnitureDatabase;
+    [SerializeField] private RoomManager roomManager;
     
     [Header("Panels")]
     public GameObject mainPanel;
@@ -24,6 +26,14 @@ public class PlaceSceneUI : MonoBehaviour
     [Header("Main UI (My Furniture List)")]
     public Transform myFurnitureListRoot;
     public GameObject furnitureSlotPrefab;
+    public Button prevButton;
+    public Button nextButton;
+    public TextMeshProUGUI roomNameText;
+    public TextMeshProUGUI indexText;
+    public Button saveButton;
+    
+    private List<RoomDef> rooms;
+    private int currentIndex = 0;
     
     [Header("Detail Panel (ReadOnly)")]
     public Image roFurnitureImage;
@@ -102,11 +112,32 @@ public class PlaceSceneUI : MonoBehaviour
     void Start()
     {
         ShowLoading();
+        
+        if (spaceData == null)
+        {
+            spaceData = SpaceData.Instance;
+        }
+
+        if (roomManager == null)
+        {
+            roomManager = FindObjectOfType<RoomManager>();
+        }
 
         if (furnitureManager != null)
         {
             furnitureDatabase = furnitureManager.furnitureDatabase;
         }
+        
+        // Save Button
+        saveButton.onClick.RemoveAllListeners();
+        saveButton.onClick.AddListener(OnClickSaveButton);
+        
+        // Prev Button & next Button
+        prevButton.onClick.RemoveAllListeners();
+        prevButton.onClick.AddListener(OnClickPrevRoom);
+        
+        nextButton.onClick.RemoveAllListeners();
+        nextButton.onClick.AddListener(OnClickNextRoom);
         
         // Add Function
         addFurnitureButton.onClick.RemoveAllListeners();
@@ -115,6 +146,24 @@ public class PlaceSceneUI : MonoBehaviour
         // Delete Function
         deleteFurnitureButton.onClick.RemoveAllListeners();
         deleteFurnitureButton.onClick.AddListener(OnClickDeleteFurnitureButton);
+        
+        if (spaceData == null || spaceData._layout == null || spaceData._layout.rooms == null)
+        {
+            Debug.LogWarning("[RoomSelectUI] SpaceLayout.rooms 가 비어있음.");
+            return;
+        }
+
+        rooms = spaceData._layout.rooms;
+
+        if (rooms.Count == 0)
+        {
+            Debug.LogWarning("[RoomSelectUI] 방이 0개임.");
+            return;
+        }
+
+        // 처음 방으로 초기화
+        currentIndex = 0;
+        UpdateRoomView();
     }
     
     #region PanelControl
@@ -481,7 +530,7 @@ public class PlaceSceneUI : MonoBehaviour
             TextMeshProUGUI text = itemGo.GetComponentInChildren<TextMeshProUGUI>();
             if (text != null)
             {
-                text.text = item.instanceId;
+                text.text = furnitureDatabase.GetById(item.furnitureId).name;
             }
         }
     }
@@ -567,6 +616,91 @@ public class PlaceSceneUI : MonoBehaviour
         currentReadOnlyInstanceId = null;
     }
     
+    // Prev Button
+    public void OnClickPrevRoom()
+    {
+        if (rooms == null || rooms.Count == 0)
+        {
+            return;
+        }
+
+        currentIndex = currentIndex - 1;
+        if (currentIndex < 0)
+        {
+            currentIndex = rooms.Count - 1;
+        }
+
+        UpdateRoomView();
+    }
+
+    // Next Button
+    public void OnClickNextRoom()
+    {
+        if (rooms == null || rooms.Count == 0)
+        {
+            return;
+        }
+
+        currentIndex = currentIndex + 1;
+        if (currentIndex >= rooms.Count)
+        {
+            currentIndex = 0;
+        }
+
+        UpdateRoomView();
+    }
+    
+    // Save Button
+    public void OnClickSaveButton()
+    {
+        // Show All Rooms
+        roomManager.SetAllRoomsActive(true);
+        // Save Datas
+        
+        // Spawn Player
+        
+        // Show Simulation UI
+    }
+
+    // room Name / room Index / RoomManager Update
+    private void UpdateRoomView()
+    {
+        if (rooms == null || rooms.Count == 0)
+        {
+            return;
+        }
+
+        RoomDef curRoom = rooms[currentIndex];
+
+        // RoomName
+        if (roomNameText != null)
+        {
+            // RoomDef.name 이 null -> roomID 표시
+            if (!string.IsNullOrEmpty(curRoom.name))
+            {
+                roomNameText.text = curRoom.name;
+            }
+            else
+            {
+                roomNameText.text = "Room " + curRoom.roomID.ToString();
+            }
+        }
+
+        // "현재 / 전체" 표시
+        if (indexText != null)
+        {
+            int humanIndex = currentIndex + 1;
+            int total = rooms.Count;
+            indexText.text = humanIndex.ToString() + " / " + total.ToString();
+        }
+
+        // 방 활성화 반영
+        if (roomManager != null)
+        {
+            roomManager.SetActiveOnly(curRoom.roomID);
+        }
+    }
+    
     #endregion
 
     #region Others
@@ -591,12 +725,6 @@ public class PlaceSceneUI : MonoBehaviour
     public void OnClickFloorPlanButton()
     {
         SceneManager.LoadScene("02_FloorPlanScene");
-    }
-    
-    //go to Simulation Scene
-    public void OnClickSaveButton()
-    {
-        SceneManager.LoadScene("04_SimulationScene");
     }
     
     

@@ -19,7 +19,7 @@ public class SpaceLayout
     public List<WallDef> walls;
     public List<OpeningDef> openings;
     public List<RoomDef> rooms;
-    public List<FurnitureItemData> furns;
+    public List<FurnitureItemData> furnitures;
 }
 
 // FloorDef:
@@ -31,6 +31,7 @@ public class SpaceLayout
 public class FloorDef
 {
     public int id;
+    public List<int> roomID;
     public float thickness;
     public List<Vec3> vertices;
     public List<int> indices;
@@ -45,6 +46,7 @@ public class FloorDef
 public class WallDef
 {
     public int id;
+    public List<int> roomID;
     public List<Vec3> vertices;
     public List<int> indices;
 }
@@ -61,6 +63,7 @@ public class OpeningDef
 {
     public string type;
     public int id;
+    public List<int> roomID;
     public int wallID;
     public Vec3 center;
     public Vec3 hingePos;

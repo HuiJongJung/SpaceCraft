@@ -49,12 +49,4 @@ public class SpaceData : MonoBehaviour {
             }
         }
     }
-
-    // (Option)
-    public SimulationResult LastSimResult { get; set; }
-}
-public class SimulationResult {
-    public float cost;
-    public string summary;
-    // Furniture List
 }
