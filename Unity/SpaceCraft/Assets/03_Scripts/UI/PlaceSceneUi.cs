@@ -537,8 +537,18 @@ public class PlaceSceneUI : MonoBehaviour
         }
     }
     
-    // Furniture Slot OnClick Method
-    public void OnClickFurnitureSlot(string instanceId)
+    
+    // LeftClick -> Place Mode
+    public void OnLeftClickFurnitureSlot(string instanceId)
+    {
+        Debug.Log("[PlaceSceneUI] Left Click Slot - instanceId: " + instanceId);
+        
+        // 1) 배치 모드 시작
+        // 2) 프리뷰 가구 생성
+    }
+    
+    // RightClick -> Show Detail Panel (RO)
+    public void OnRightClickFurnitureSlot(string instanceId)
     {
         FurnitureItemData item = furnitureManager.GetItemByInstanceId(instanceId);
         if (item == null)
