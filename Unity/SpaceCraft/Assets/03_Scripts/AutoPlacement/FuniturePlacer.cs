@@ -84,17 +84,28 @@ public class FurniturePlacer : MonoBehaviour
 
         if (IsWallPlacementRequired(item))
         {
-            // 각 방향별로 조건이 만족되었는지 체크
-            // (옵션이 꺼져있으면 true, 켜져있으면 해당 면이 벽 구역(WallZone)과 닿아야 true)
+            bool needBack = item.wallDir.back;
+            bool needFront = item.wallDir.front;
+            bool needLeft = item.wallDir.left;
+            bool needRight = item.wallDir.right;
 
-            bool backOk = !item.wallDir.back || CheckSideTouchingWall(grid, originCell, sizeInCells, rotationDeg, "back");
-            bool frontOk = !item.wallDir.front || CheckSideTouchingWall(grid, originCell, sizeInCells, rotationDeg, "front");
-            bool leftOk = !item.wallDir.left || CheckSideTouchingWall(grid, originCell, sizeInCells, rotationDeg, "left");
-            bool rightOk = !item.wallDir.right || CheckSideTouchingWall(grid, originCell, sizeInCells, rotationDeg, "right");
+            bool requiresWall = needBack || needFront || needLeft || needRight;
 
-            // 하나라도 조건을 만족하지 못하면 실패
-            if (!backOk || !frontOk || !leftOk || !rightOk)
-                return false;
+            if (requiresWall)
+            {
+                // ☆ 필요한 방향만 AND 조건으로 검사
+                if (needBack && !CheckSideTouchingWall(grid, originCell, sizeInCells, rotationDeg, "back"))
+                    return false;
+
+                if (needFront && !CheckSideTouchingWall(grid, originCell, sizeInCells, rotationDeg, "front"))
+                    return false;
+
+                if (needLeft && !CheckSideTouchingWall(grid, originCell, sizeInCells, rotationDeg, "left"))
+                    return false;
+
+                if (needRight && !CheckSideTouchingWall(grid, originCell, sizeInCells, rotationDeg, "right"))
+                    return false;
+            }
         }
 
         // 여기까지 통과하면: "기본적으로 이 위치에 둘 수 있다"
@@ -329,66 +340,128 @@ public class FurniturePlacer : MonoBehaviour
     /// </summary>
     private bool CheckSideTouchingWall(RoomPlacementGrid grid, Vector2Int origin, Vector2Int size, int rot, string side)
     {
-        // 1. 현재 회전각도에서 '가구의 side'가 '그리드의 어느 방향'을 향하는지 매핑
-        // 그리드 기준: Bottom(Z=0쪽), Top(Z=Max쪽), Left(X=0쪽), Right(X=Max쪽)
+        string gridSide = GetGridSideByRotation(rot, side);
+        if (string.IsNullOrEmpty(gridSide))
+            return false;
 
-        string gridSide = "";
-        int normRot = (rot % 360 + 360) % 360; // 0~360 정규화
+        bool touched = false;
+        int gx, gz;
 
-        if (side == "back")
+        switch (gridSide)
         {
-            if (normRot == 0) gridSide = "bottom";       // 0도일 때 뒤쪽은 아래(-Z)
-            else if (normRot == 90) gridSide = "left";   // 90도 돌면 뒤쪽은 왼쪽(-X)
-            else if (normRot == 180) gridSide = "top";   // 180도 돌면 뒤쪽은 위(+Z)
-            else if (normRot == 270) gridSide = "right"; // 270도 돌면 뒤쪽은 오른쪽(+X)
-        }
-        else if (side == "front")
-        {
-            if (normRot == 0) gridSide = "top";
-            else if (normRot == 90) gridSide = "right";
-            else if (normRot == 180) gridSide = "bottom";
-            else if (normRot == 270) gridSide = "left";
-        }
-        else if (side == "left")
-        {
-            if (normRot == 0) gridSide = "left";
-            else if (normRot == 90) gridSide = "top";
-            else if (normRot == 180) gridSide = "right";
-            else if (normRot == 270) gridSide = "bottom";
-        }
-        else if (side == "right")
-        {
-            if (normRot == 0) gridSide = "right";
-            else if (normRot == 90) gridSide = "bottom";
-            else if (normRot == 180) gridSide = "left";
-            else if (normRot == 270) gridSide = "top";
+            case "bottom":  // Z = origin.y
+                for (int dx = 0; dx < size.x; dx++)
+                {
+                    gx = origin.x + dx;
+                    gz = origin.y;
+                    if (IsWallZone(grid, gx, gz))
+                    {
+                        Debug.Log($"[WALL HIT] bottom ({gx},{gz})");
+                        touched = true;
+                    }
+                }
+                break;
+
+            case "top":  // Z = origin.y + size.y - 1
+                for (int dx = 0; dx < size.x; dx++)
+                {
+                    gx = origin.x + dx;
+                    gz = origin.y + size.y - 1;
+                    if (IsWallZone(grid, gx, gz))
+                    {
+                        Debug.Log($"[WALL HIT] top ({gx},{gz})");
+                        touched = true;
+                    }
+                }
+                break;
+
+            case "left":  // X = origin.x
+                for (int dz = 0; dz < size.y; dz++)
+                {
+                    gx = origin.x;
+                    gz = origin.y + dz;
+                    if (IsWallZone(grid, gx, gz))
+                    {
+                        Debug.Log($"[WALL HIT] left ({gx},{gz})");
+                        touched = true;
+                    }
+                }
+                break;
+
+            case "right": // X = origin.x + size.x - 1
+                for (int dz = 0; dz < size.y; dz++)
+                {
+                    gx = origin.x + size.x - 1;
+                    gz = origin.y + dz;
+                    if (IsWallZone(grid, gx, gz))
+                    {
+                        Debug.Log($"[WALL HIT] right ({gx},{gz})");
+                        touched = true;
+                    }
+                }
+                break;
         }
 
-        // 2. 매핑된 그리드 면의 셀들 중 하나라도 WallZone인지 검사
-
-        if (gridSide == "bottom") // 아랫면(Z=0 라인) 검사
-        {
-            for (int dx = 0; dx < size.x; dx++)
-                if (IsWallZone(grid, origin.x + dx, origin.y)) return true;
-        }
-        else if (gridSide == "top") // 윗면(Z=Max 라인) 검사
-        {
-            for (int dx = 0; dx < size.x; dx++)
-                if (IsWallZone(grid, origin.x + dx, origin.y + size.y - 1)) return true;
-        }
-        else if (gridSide == "left") // 왼쪽면(X=0 라인) 검사
-        {
-            for (int dz = 0; dz < size.y; dz++)
-                if (IsWallZone(grid, origin.x, origin.y + dz)) return true;
-        }
-        else if (gridSide == "right") // 오른쪽면(X=Max 라인) 검사
-        {
-            for (int dz = 0; dz < size.y; dz++)
-                if (IsWallZone(grid, origin.x + size.x - 1, origin.y + dz)) return true;
-        }
-
-        return false;
+        Debug.Log($"[RESULT] side={side}, gridSide={gridSide}, touched={touched}");
+        return touched;
     }
+
+
+    /// rotationDeg(0/90/180/270)과 가구 로컬 방향("front/back/left/right")을 받아서
+    /// 그리드 기준 방향("top/bottom/left/right") 문자열로 변환.
+    private string GetGridSideByRotation(int rotationDeg, string side)
+    {
+        // 회전 후 가구의 forward / right 벡터 계산
+        Quaternion q = Quaternion.Euler(0f, rotationDeg, 0f);
+        Vector3 fwd = q * Vector3.forward; // 가구의 '앞'
+        Vector3 right = q * Vector3.right;   // 가구의 '오른쪽'
+
+        // side에 따라 어떤 방향 벡터를 쓸지 결정
+        Vector3 dir;
+        switch (side)
+        {
+            case "front":
+                dir = fwd;
+                break;
+            case "back":
+                dir = -fwd;
+                break;
+            case "left":
+                dir = -right;
+                break;
+            case "right":
+                dir = right;
+                break;
+            default:
+                return "";
+        }
+
+        return ClosestDir(dir);
+    }
+
+    /// 벡터 dir이 XZ 평면에서 어떤 방향(+Z / -Z / +X / -X)에 가장 가까운지 보고
+    /// "top/bottom/left/right" 중 하나를 리턴.
+    private string ClosestDir(Vector3 dir)
+    {
+        Vector3 d = new Vector3(dir.x, 0f, dir.z).normalized;
+        if (d.sqrMagnitude < 1e-6f)
+            return "";
+
+        float dotF = Vector3.Dot(d, Vector3.forward); // +Z
+        float dotB = Vector3.Dot(d, Vector3.back);    // -Z
+        float dotL = Vector3.Dot(d, Vector3.left);    // -X
+        float dotR = Vector3.Dot(d, Vector3.right);   // +X
+
+        float maxDot = dotF;
+        string best = "top"; // +Z
+
+        if (dotB > maxDot) { maxDot = dotB; best = "bottom"; }
+        if (dotL > maxDot) { maxDot = dotL; best = "left"; }
+        if (dotR > maxDot) { maxDot = dotR; best = "right"; }
+
+        return best;
+    }
+
 
     private bool IsWallZone(RoomPlacementGrid grid, int gx, int gz)
     {
