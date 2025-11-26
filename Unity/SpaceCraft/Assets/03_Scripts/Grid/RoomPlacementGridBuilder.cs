@@ -33,9 +33,15 @@ public class RoomPlacementGridBuilder : MonoBehaviour
     // 결과물: 방별 그리드
     public List<RoomPlacementGrid> grids = new List<RoomPlacementGrid>();
 
+    //public RoomManager roomManager;
+
     void Start()
     {
         if (data == null) data = SpaceData.Instance;
+        //if (roomManager == null)
+        //{
+        //    roomManager = FindObjectOfType<RoomManager>();
+        //}
         RebuildAll();
     }
 
@@ -658,26 +664,45 @@ public class RoomPlacementGridBuilder : MonoBehaviour
             gridOccupiedMaterial.color = new Color(1f, 0f, 0f); // 빨간색 반투명
         }
     }
-    public void BuildRuntimeGridVisuals()
+    // [수정] targetRoomID 인자 추가 (기본값 -1: 전체 갱신)
+    public void BuildRuntimeGridVisuals(int targetRoomID = -1)
     {
         EnsureGridMaterial();
 
         if (gridRoot == null)
             gridRoot = this.transform;
 
-        // 기존 전체 그리드 비우기
-        for (int i = gridRoot.childCount - 1; i >= 0; i--)
+        // 1. 기존 그리드 오브젝트 삭제 (청소)
+        if (targetRoomID == -1)
         {
-            Destroy(gridRoot.GetChild(i).gameObject);
+            // 전체 갱신일 경우: 싹 다 지우고 초기화
+            for (int i = gridRoot.childCount - 1; i >= 0; i--)
+            {
+                Destroy(gridRoot.GetChild(i).gameObject);
+            }
+            roomGridRoots.Clear();
         }
-        roomGridRoots.Clear();
+        else
+        {
+            // 특정 방 갱신일 경우: 해당 방의 오브젝트만 찾아서 삭제
+            if (roomGridRoots.TryGetValue(targetRoomID, out GameObject oldRoot))
+            {
+                if (oldRoot != null) Destroy(oldRoot);
+                roomGridRoots.Remove(targetRoomID);
+            }
+        }
 
+        // 2. 그리드 재생성 루프
         foreach (RoomPlacementGrid grid in grids)
         {
+            // [추가] 타겟 방이 지정되어 있고, 현재 처리 중인 그리드 ID와 다르면 건너뜀
+            if (targetRoomID != -1 && grid.roomID != targetRoomID) continue;
+
             // 🔹 방별 루트 오브젝트 생성
             GameObject roomRootGO = new GameObject($"Grid_Room_{grid.roomID}");
             roomRootGO.transform.SetParent(gridRoot, false);
 
+            // 딕셔너리에 등록 (나중에 삭제할 때 찾기 위함)
             roomGridRoots[grid.roomID] = roomRootGO;
 
             for (int gz = 0; gz < grid.rows; gz++)
@@ -703,7 +728,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
                         continue;
                     }
 
-                    // 타일 생성 (빨간색이든 초록색이든 그릴 대상이 있다면)
+                    // 타일 생성
                     Vector3 c = grid.GridCenterToWorld(gx, gz, 0f);
                     c.y += 0.01f;
 
@@ -725,7 +750,10 @@ public class RoomPlacementGridBuilder : MonoBehaviour
             }
         }
 
-        Debug.Log($"[GridVisual] Built runtime grid visuals for {roomGridRoots.Count} rooms");
+        if (targetRoomID == -1)
+            Debug.Log($"[GridVisual] Rebuilt ALL grids. ({roomGridRoots.Count} rooms)");
+        else
+            Debug.Log($"[GridVisual] Rebuilt grid for Room {targetRoomID}.");
     }
 
     public void ShowOnlyRoomGrid(int roomID)
@@ -744,7 +772,6 @@ public class RoomPlacementGridBuilder : MonoBehaviour
             root.SetActive(visible);
         }
     }
-
     public void HideAllRoomGrids()
     {
         foreach (var kvp in roomGridRoots)

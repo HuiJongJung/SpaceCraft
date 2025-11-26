@@ -2019,6 +2019,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   furnitureDatabase: {fileID: 11400000, guid: 3b4e744308ca7d34cb487a90a3c9230f, type: 2}
   inventory: []
+  roomManager: {fileID: 0}
+  gridBuilder: {fileID: 0}
   nextInstanceIndex: 1
 --- !u!4 &99871892
 Transform:
@@ -11221,6 +11223,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spaceData: {fileID: 842449624}
   gridBuilder: {fileID: 1387516483}
+  currentRoomID: 0
   debugRooms: []
 --- !u!1 &849426543
 GameObject:
@@ -17055,6 +17058,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridBuilder: {fileID: 1387516483}
   furnitureManager: {fileID: 99871891}
+  roomManager: {fileID: 846193313}
   cellSizeMeters: 0.1
 --- !u!4 &1304543417
 Transform:
@@ -21883,6 +21887,7 @@ MonoBehaviour:
   spaceData: {fileID: 842449624}
   furnitureManager: {fileID: 99871891}
   roomManager: {fileID: 846193313}
+  placementController: {fileID: 0}
   mainPanel: {fileID: 2126566703}
   categoryPanel: {fileID: 1072654411}
   sizePanel: {fileID: 1596324971}
@@ -24203,6 +24208,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 665c07a7fd701484dacab65abb78bdbe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  roomManager: {fileID: 846193313}
   placer: {fileID: 1304543416}
   testRoomID: 2
 --- !u!4 &1898412556

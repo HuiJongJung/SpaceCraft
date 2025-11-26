@@ -14542,7 +14542,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   data: {fileID: 842449624}
   cellSize: 0.1
-  drawGizmos: 1
+  drawGizmos: 0
   gizmoAlpha: 0.35
   wallInset: 0.02
   slidingDoorDepth: 0.5
@@ -21855,6 +21855,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridBuilder: {fileID: 1091609590}
   furnitureManager: {fileID: 99871891}
+  roomManager: {fileID: 846193313}
   cellSizeMeters: 0.1
 --- !u!4 &1717232561
 Transform:
