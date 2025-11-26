@@ -689,6 +689,12 @@ public class PlaceSceneUI : MonoBehaviour
         int curRoomID = roomManager.currentRoomID;
         RoomDef curRoom = roomManager.GetRoomDefById(curRoomID);
 
+        if (curRoom == null)
+        {
+            Debug.LogWarning(curRoomID+" Room does not exist.");
+            return;
+        }
+
         // RoomName
         if (roomNameText != null)
         {

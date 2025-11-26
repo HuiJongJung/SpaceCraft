@@ -210,6 +210,17 @@
         { "x": 7.1, "y": 0.0, "z": -0.1 }
       ],
       "indices": [0, 1, 2, 0, 2, 3]
+    },
+    {
+      "id": 14,
+      "roomID" : [3, -1],
+      "vertices": [
+        { "x": 10.2, "y": 0.0, "z": 0.0 },
+        { "x": 13.1, "y": 0.0, "z": 2.9 },
+        { "x": 13.2, "y": 0.0, "z": 2.8 },
+        { "x": 10.1, "y": 0.0, "z": -0.1 }
+      ],
+      "indices": [0, 1, 2, 0, 2, 3]
     }
   ],
 
@@ -316,6 +327,7 @@
     }
   ],
   "rooms": [
+    { "roomID": -1, "name" : "Others", "floorIDs" : [], "wallIDs": []},
     { "roomID": 0, "name": "Room0",  "floorIDs": [0], "wallIDs": [0, 1, 2, 3] },
     { "roomID": 1, "name": "Room1", "floorIDs": [1], "wallIDs": [1, 4, 5, 6, 7, 8, 9, 10] },
     { "roomID": 2, "name": "Room2", "floorIDs": [2], "wallIDs": [2, 10, 11, 12] },
