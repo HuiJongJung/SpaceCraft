@@ -2,10 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class MyFurnitureSlot : MonoBehaviour,
-    IBeginDragHandler,
-    IDragHandler,
-    IEndDragHandler
+public class MyFurnitureSlot : MonoBehaviour, IPointerClickHandler
 {
     public string instanceId;
 
@@ -20,42 +17,26 @@ public class MyFurnitureSlot : MonoBehaviour,
         if (button != null)
         {
             button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(OnButtonClick);
         }
     }
+    
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (placeSceneUI == null)
+        {
+            Debug.LogWarning("[MyFurnitureSlot] placeSceneUI is null");
+            return;
+        }
 
-    private void OnButtonClick()
-    {
-        if (placeSceneUI != null)
+        if (eventData.button == PointerEventData.InputButton.Left)
         {
-            placeSceneUI.OnClickFurnitureSlot(instanceId);
+            // 좌클릭 → 배치 모드 진입용
+            placeSceneUI.OnLeftClickFurnitureSlot(instanceId);
         }
-    }
-    
-    // Begin Drag
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-        if (placeSceneUI != null)
+        else if (eventData.button == PointerEventData.InputButton.Right)
         {
-            //placeSceneUI.OnBeginDragFurnitureSlot(instanceId, eventData.position);
-        }
-    }
-    
-    // On Drag
-    public void OnDrag(PointerEventData eventData)
-    {
-        if (placeSceneUI != null)
-        {
-            //placeSceneUI.OnDragFurnitureSlot(instanceId, eventData.position);
-        }
-    }
-    
-    // End Drag
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        if (placeSceneUI != null)
-        {
-            //placeSceneUI.OnEndDragFurnitureSlot(instanceId, eventData.position);
+            // 우클릭 → 가구 정보창
+            placeSceneUI.OnRightClickFurnitureSlot(instanceId);
         }
     }
 }

@@ -64,9 +64,6 @@ public class RoomBuilder : MonoBehaviour
             return;
         }
 
-        // Build RoomMap
-        roomManager.EnsureRoomMaps();
-
         _spaceRoot = gameObject;
 
         BuildFloors();

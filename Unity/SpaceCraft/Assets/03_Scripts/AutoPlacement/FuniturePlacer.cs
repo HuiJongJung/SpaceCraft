@@ -131,28 +131,27 @@ public class FurniturePlacer : MonoBehaviour
         for (int rIndex = 0; rIndex < rotations.Length; rIndex++)
         {
             int rot = rotations[rIndex];
-            Vector2Int sizeInCells = ComputeFootprintCells(item.sizeCentimeters, cellSize, rot);
-            if (sizeInCells.x <= 0 || sizeInCells.y <= 0) continue;
 
             for (int gz = 0; gz < grid.rows; gz++)
             {
                 for (int gx = 0; gx < grid.cols; gx++)
                 {
                     Vector2Int origin = new Vector2Int(gx, gz);
-                    Vector2Int dummySize;
-
-                    if (!CanPlaceBasic(item, roomID, origin, rot, out dummySize))
+                    
+                    Vector2Int sizeInCells; // CanPlaceBasic에서 채워줄 값
+                    if (!CanPlaceBasic(item, roomID, origin, rot, out sizeInCells))
+                    {
                         continue;
+                    }
+                    
+                    // --- 배치 성공 시---
+                    Vector2Int pivotCell = ComputePivotCell(origin, sizeInCells);
 
-                    // --- 배치 성공 ---
-                    Vector3 worldPos = ComputeWorldPositionForFootprint(grid, origin, sizeInCells);
-
-                    furnitureManager.PlaceFromInventory(
+                    furnitureManager.PlaceItem(
                         item.instanceId,
-                        worldPos,
-                        rot,
                         roomID,
-                        origin
+                        pivotCell,
+                        rot
                     );
 
                     // 그리드 마스킹 (데이터 갱신)
@@ -174,7 +173,7 @@ public class FurniturePlacer : MonoBehaviour
     public void AutoPlaceAllUnplacedItems(int roomID)
     {
         // 1. 배치되지 않은 가구 목록 가져오기
-        List<FurnitureItemData> unplacedItems = furnitureManager.GetUnplacedItems();
+        List<FurnitureItemData> unplacedItems = furnitureManager.GetUnplacedItemsInRoom(roomID);
 
         // (옵션) 가구를 크기 순으로 정렬해서 큰 것부터 배치하면 성공률이 높음
         // unplacedItems.Sort((a, b) => (b.sizeCentimeters.x * b.sizeCentimeters.z).CompareTo(a.sizeCentimeters.x * a.sizeCentimeters.z));
@@ -250,38 +249,24 @@ public class FurniturePlacer : MonoBehaviour
     }
 
     /// originCell(좌측-하단)과 footprint 셀 크기(sizeInCells)를 기준으로
-    /// 가구의 "중심" 월드 좌표를 계산.
-    ///
-    /// - 눈으로 보기 좋게, footprint 중앙 셀의 center를 사용.
-    private Vector3 _debugLastPos;
-    private Vector3 _debugLastSize;
-    private bool _hasDebugInfo = false;
-    private Vector3 ComputeWorldPositionForFootprint(RoomPlacementGrid grid,
-                                                Vector2Int originCell,
-                                                Vector2Int sizeInCells)
+    /// 가구의 "중심 셀" 을 계산
+    private Vector2Int ComputePivotCell(Vector2Int originCell, Vector2Int sizeInCells)
     {
-        // footprint의 월드 크기(폭/깊이)
-        float wWorld = sizeInCells.x * grid.cellSize;   // width in meters
-        float dWorld = sizeInCells.y * grid.cellSize;   // depth in meters
+        int offsetX = (sizeInCells.x - 1) / 2;
+        int offsetZ = (sizeInCells.y - 1) / 2;
 
-        // footprint의 "왼쪽-아래 모서리" 기준 world 좌표
-        Vector3 cornerWorld = grid.GridCenterToWorld(originCell.x, originCell.y, 0f);
-        cornerWorld.x -= grid.cellSize / 2f;
-        cornerWorld.z -= grid.cellSize / 2f;
+        Vector2Int pivot = new Vector2Int(
+            originCell.x + offsetX,
+            originCell.y + offsetZ
+        );
 
-        // footprint 중심 좌표 = cornerWorld + (폭/2, 깊이/2)
-        Vector3 centerWorld = cornerWorld + new Vector3(wWorld / 2f, 0f, dWorld / 2f);
-
-        _debugLastPos = centerWorld;
-        _debugLastSize = new Vector3(wWorld, 1.0f, dWorld); // 높이는 대충 1m
-        _hasDebugInfo = true;
-
-        return centerWorld;
+        return pivot;
     }
+   
 
     public bool AutoPlaceOneItem(int roomID)
     {
-        List<FurnitureItemData> unplaced = furnitureManager.GetUnplacedItems();
+        List<FurnitureItemData> unplaced = furnitureManager.GetUnplacedItemsInRoom(roomID);
         if (unplaced.Count == 0)
         {
             Debug.Log("No unplaced items!");
@@ -292,20 +277,6 @@ public class FurniturePlacer : MonoBehaviour
 
         bool success = TryAutoPlaceBasic(item, roomID);
         return success;
-    }
-
-    private void OnDrawGizmos()
-    {
-        if (_hasDebugInfo)
-        {
-            Gizmos.color = Color.red;
-            // 코드가 생각하는 "가구가 있어야 할 자리"를 와이어 큐브로 그림
-            Gizmos.DrawWireCube(_debugLastPos, _debugLastSize);
-
-            // 중심점 표시
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawSphere(_debugLastPos, 0.1f);
-        }
     }
 
     /// 배치가 확정된 영역을 그리드에서 '사용 불가(false)'로 처리하고,

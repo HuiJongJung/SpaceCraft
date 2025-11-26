@@ -15,9 +15,9 @@ MonoBehaviour:
   id: Bed1
   name: "\uCE68\uB300"
   sprite: {fileID: 21300000, guid: bf667da3b6e59c644ae59cfbab50f6d3, type: 3}
-  prefab: {fileID: 1551864870284885535, guid: 2495633ed6323ee4483e80ca2c57187d, type: 3}
+  prefab: {fileID: 6546081088136366844, guid: 2495633ed6323ee4483e80ca2c57187d, type: 3}
   sizeTemplates:
-  - sizeCentimeters: {x: 100, y: 60, z: 200}
-  - sizeCentimeters: {x: 120, y: 60, z: 200}
-  - sizeCentimeters: {x: 140, y: 60, z: 200}
-  - sizeCentimeters: {x: 160, y: 60, z: 200}
+  - sizeCentimeters: {x: 100, y: 65, z: 180}
+  - sizeCentimeters: {x: 120, y: 70, z: 200}
+  - sizeCentimeters: {x: 140, y: 75, z: 200}
+  - sizeCentimeters: {x: 160, y: 80, z: 200}

@@ -32,7 +32,7 @@ public class FloorDef
 {
     public int id;
     public List<int> roomID;
-    public float thickness;
+    public float thickness = 0.1f;
     public List<Vec3> vertices;
     public List<int> indices;
 }
