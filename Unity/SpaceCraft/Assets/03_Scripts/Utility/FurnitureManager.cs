@@ -20,6 +20,7 @@ public class FurnitureManager : MonoBehaviour
 
     [Header("Refs")]
     [SerializeField] private RoomManager roomManager;
+    [SerializeField] private RoomPlacementGridBuilder gridBuilder;
 
     [SerializeField] private int nextInstanceIndex = 1;
 
@@ -37,6 +38,11 @@ public class FurnitureManager : MonoBehaviour
         if (roomManager == null)
         {
             roomManager = FindObjectOfType<RoomManager>();
+        }
+        
+        if (gridBuilder == null)
+        {
+            gridBuilder = FindObjectOfType<RoomPlacementGridBuilder>();
         }
 
         RebuildMapsFromInventory();
@@ -176,7 +182,6 @@ public class FurnitureManager : MonoBehaviour
         string instanceId,
         int roomID,
         Vector2Int gridCell,
-        Vector3 worldPos,
         int rotationDeg
     )
     {
@@ -206,10 +211,17 @@ public class FurnitureManager : MonoBehaviour
             return null;
         }
         
+        // Get Position
+        
+        // roomID 로 grid 받아서 cell 위치 중심 반환
+        Vector3 goPos = gridBuilder.grids[roomID].GridCenterToWorld(gridCell.x, gridCell.y);
+        
         // Instantiate Prefab
         Quaternion rot = Quaternion.Euler(0f, rotationDeg, 0f);
-        GameObject go = Instantiate(def.prefab, worldPos, rot);
+        GameObject go = Instantiate(def.prefab, goPos, rot);
         Furniture furniture = go.GetComponent<Furniture>();
+        
+        Debug.Log("PlaceItem: " + goPos + " 에 가구 배치 (roomID=" + roomID + ", cell=" + gridCell + ")");
 
         // Renew Data
         item.isPlaced = true;
@@ -262,11 +274,11 @@ public class FurnitureManager : MonoBehaviour
                 roomManager.RemoveFurnitureFromRoom(placed.gameObject, item.roomID);
             }
 
-            // 🔹 그 다음 실제 GameObject 제거
+            // Destroy gameObject in Scene
             GameObject go = placed.gameObject;
             if (go != null)
             {
-                GameObject.Destroy(go);
+                Destroy(go);
             }
         }
         placedRuntimeMap.Remove(instanceId);
@@ -302,8 +314,6 @@ public class FurnitureManager : MonoBehaviour
 
         // Remove at inventory
         inventory.Remove(item);
-        
-        //
     }
 
     // Util
