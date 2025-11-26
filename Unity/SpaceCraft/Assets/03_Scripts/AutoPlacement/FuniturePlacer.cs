@@ -451,4 +451,70 @@ public class FurniturePlacer : MonoBehaviour
         return item.wallDir.back || item.wallDir.front || item.wallDir.left || item.wallDir.right;
     }
 
+
+    /// 가구를 삭제하고, 차지하고 있던 그리드 영역을 다시 '사용 가능(초록색)'으로 복구합니다.
+    public void UnplaceFurniture(string instanceId)
+    {
+        // 1. 데이터 조회 (매니저에게 요청)
+        FurnitureItemData item = furnitureManager.GetItemByInstanceId(instanceId);
+
+        // 예외 처리: 아이템이 없거나, 아직 배치되지 않은 상태라면 삭제만 진행
+        if (item == null)
+        {
+            Debug.LogWarning("Item not found: " + instanceId);
+            return;
+        }
+
+        if (!item.isPlaced)
+        {
+            furnitureManager.DeleteFurnitureItem(instanceId);
+            return;
+        }
+
+        // 2. 그리드 정보 가져오기
+        RoomPlacementGrid grid = FindGridByRoomId(item.roomID);
+
+        if (grid != null)
+        {
+            // 3. 차지하고 있던 영역(Footprint) 재계산
+            // (삭제하기 전에 미리 계산해야 함)
+            float cellSize = (grid.cellSize > 0) ? grid.cellSize : 0.1f;
+            Vector2Int sizeInCells = ComputeFootprintCells(item.sizeCentimeters, cellSize, item.rotation);
+
+            // 4. ★ 그리드 복구 (Unmasking: False -> True) ★
+            UnmarkGrid(grid, item.gridCell, sizeInCells);
+
+            // 5. 화면 갱신 (빨간색 타일 제거)
+            gridBuilder.BuildRuntimeGridVisuals(item.roomID);
+        }
+
+        // 6. 실제 데이터 및 오브젝트 삭제 (매니저 호출)
+        // 상황에 따라 UnplaceItem(인벤토리 회수) 또는 DeleteFurnitureItem(완전 삭제) 선택
+        furnitureManager.DeleteFurnitureItem(instanceId);
+
+        Debug.Log($"[FurniturePlacer] Removed {instanceId} and restored grid.");
+    }
+
+    ///  점유된 그리드 영역을 다시 '배치 가능' 상태로 되돌립니다.
+    private void UnmarkGrid(RoomPlacementGrid grid, Vector2Int origin, Vector2Int size)
+    {
+        for (int dz = 0; dz < size.y; dz++)
+        {
+            for (int dx = 0; dx < size.x; dx++)
+            {
+                int gx = origin.x + dx;
+                int gz = origin.y + dz;
+
+                if (grid.InBounds(gx, gz))
+                {
+                    // 로직용: 다시 배치 가능하도록 true로 복구
+                    grid.placementMask[gx, gz] = true;
+
+                    // 시각화용: 점유 상태 해제 (빨간색 끄기)
+                    if (grid.occupiedMask != null)
+                        grid.occupiedMask[gx, gz] = false;
+                }
+            }
+        }
+    }
 }
