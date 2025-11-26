@@ -151,6 +151,7 @@ MonoBehaviour:
     left: 0
     right: 0
   keepBottomOnScale: 1
+  snapToFloor: 1
 --- !u!65 &753669514944541571
 BoxCollider:
   m_ObjectHideFlags: 0

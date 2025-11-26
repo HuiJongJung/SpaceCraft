@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using NUnit.Framework.Internal;
+using System.Collections.Generic;
 using UnityEngine;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ToolTip;
 
 /// - RoomPlacementGridBuilder가 만든 방별 그리드를 이용해서
 ///   "가구를 어디에 놓을 수 있는지" 판단하고,
@@ -411,6 +413,9 @@ public class FurniturePlacer : MonoBehaviour
                 return "";
         }
 
+        string closest = ClosestDir(dir);
+        Debug.Log($"[GetGridSideByRotation] rotationDeg={rotationDeg}, side={side}, dir={dir}, closestGridSide={closest}");
+
         return ClosestDir(dir);
     }
 
@@ -455,7 +460,7 @@ public class FurniturePlacer : MonoBehaviour
     /// 가구를 삭제하고, 차지하고 있던 그리드 영역을 다시 '사용 가능(초록색)'으로 복구합니다.
     public void UnplaceFurniture(string instanceId)
     {
-        // 1. 데이터 조회 (매니저에게 요청)
+        // 데이터 조회 (매니저에게 요청)
         FurnitureItemData item = furnitureManager.GetItemByInstanceId(instanceId);
 
         // 예외 처리: 아이템이 없거나, 아직 배치되지 않은 상태라면 삭제만 진행
@@ -471,24 +476,27 @@ public class FurniturePlacer : MonoBehaviour
             return;
         }
 
-        // 2. 그리드 정보 가져오기
+        // 그리드 정보 가져오기
         RoomPlacementGrid grid = FindGridByRoomId(item.roomID);
 
         if (grid != null)
         {
-            // 3. 차지하고 있던 영역(Footprint) 재계산
+            //  차지하고 있던 영역(Footprint) 재계산
             // (삭제하기 전에 미리 계산해야 함)
             float cellSize = (grid.cellSize > 0) ? grid.cellSize : 0.1f;
             Vector2Int sizeInCells = ComputeFootprintCells(item.sizeCentimeters, cellSize, item.rotation);
 
-            // 4. ★ 그리드 복구 (Unmasking: False -> True) ★
-            UnmarkGrid(grid, item.gridCell, sizeInCells);
+            // 저장된 gridCell(Pivot)을 그대로 쓰지 말고, Origin으로 변환함
+            Vector2Int origin = ComputeOriginFromPivot(item.gridCell, sizeInCells);
 
-            // 5. 화면 갱신 (빨간색 타일 제거)
+            // 변환된 origin 좌표로 마스킹 해제
+            UnmarkGrid(grid, origin, sizeInCells);
+
+            // 화면 갱신 (빨간색 타일 제거)
             gridBuilder.BuildRuntimeGridVisuals(item.roomID);
         }
 
-        // 6. 실제 데이터 및 오브젝트 삭제 (매니저 호출)
+        // 실제 데이터 및 오브젝트 삭제 (매니저 호출)
         // 상황에 따라 UnplaceItem(인벤토리 회수) 또는 DeleteFurnitureItem(완전 삭제) 선택
         furnitureManager.DeleteFurnitureItem(instanceId);
 
@@ -516,5 +524,14 @@ public class FurniturePlacer : MonoBehaviour
                 }
             }
         }
+    }
+
+    // 중심점(Pivot)과 크기를 알 때, 왼쪽-아래(Origin) 좌표를 역계산하는 함수
+    private Vector2Int ComputeOriginFromPivot(Vector2Int pivot, Vector2Int size)
+    {
+        int offsetX = (size.x - 1) / 2;
+        int offsetZ = (size.y - 1) / 2;
+
+        return new Vector2Int(pivot.x - offsetX, pivot.y - offsetZ);
     }
 }
