@@ -10,6 +10,7 @@ public class FurniturePlacer : MonoBehaviour
     [Header("References")]
     [SerializeField] private RoomPlacementGridBuilder gridBuilder;
     [SerializeField] private FurnitureManager furnitureManager;
+    public RoomManager roomManager;
 
     // 나중에 gridBuilder.cellSize를 직접 써도 되지만,
     // 필요하다면 여기서 override 할 수도 있게 빼둠.
@@ -23,6 +24,9 @@ public class FurniturePlacer : MonoBehaviour
 
         if (furnitureManager == null)
             Debug.LogError($"[FurniturePlacer] furnitureManager is not assigned!", this);
+
+        if(roomManager == null)
+            roomManager = FindObjectOfType<RoomManager>();
 
         // gridBuilder가 이미 Start에서 RebuildAll()을 돌렸다고 가정.
         // 필요한 경우 여기서도 RebuildAll()을 호출 가능.
@@ -160,7 +164,7 @@ public class FurniturePlacer : MonoBehaviour
                     // 플래그가 true일 때만 화면 갱신 (일괄 배치 시 false로 끄기 위함)
                     if (updateVisuals)
                     {
-                        gridBuilder.BuildRuntimeGridVisuals();
+                        gridBuilder.BuildRuntimeGridVisuals(roomManager.currentRoomID);
                     }
 
                     return true;
@@ -192,7 +196,7 @@ public class FurniturePlacer : MonoBehaviour
         Debug.Log($"[AutoPlace] Batch Complete. Success: {successCount} / {unplacedItems.Count}");
 
         // 3. 모든 배치가 끝난 후, 화면을 딱 한 번만 갱신
-        gridBuilder.BuildRuntimeGridVisuals();
+        gridBuilder.BuildRuntimeGridVisuals(roomManager.currentRoomID);
     }
 
     /// 방 ID로 RoomPlacementGrid 찾기.
