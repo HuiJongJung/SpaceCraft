@@ -11,6 +11,7 @@ public class PlaceSceneUI : MonoBehaviour
     [SerializeField] private SpaceData spaceData;
     [SerializeField] private FurnitureManager furnitureManager;
     [SerializeField] private RoomManager roomManager;
+    [SerializeField] private FurniturePlacementController placementController;
     
     [Header("Panels")]
     public GameObject mainPanel;
@@ -530,10 +531,15 @@ public class PlaceSceneUI : MonoBehaviour
     // LeftClick -> Place Mode
     public void OnLeftClickFurnitureSlot(string instanceId)
     {
-        Debug.Log("[PlaceSceneUI] Left Click Slot - instanceId: " + instanceId);
-        
-        // 1) 배치 모드 시작
-        // 2) 프리뷰 가구 생성
+        FurnitureItemData item = furnitureManager.GetItemByInstanceId(instanceId);
+        if (item == null)
+        {
+            Debug.LogWarning("OnClickFurnitureSlot: item not found: " + instanceId);
+            return;
+        }
+
+        // 배치 모드 시작
+        placementController.BeginPlacement(item, roomManager.currentRoomID);
     }
     
     // RightClick -> Show Detail Panel (RO)

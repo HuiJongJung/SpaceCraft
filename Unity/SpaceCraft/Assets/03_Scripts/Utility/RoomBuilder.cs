@@ -128,10 +128,13 @@ public class RoomBuilder : MonoBehaviour
                 mc.sharedMesh = m;
             }
             
-            // 6. Recenter Pivot
+            // 6. Set Layer
+            go.layer = LayerMask.NameToLayer("Floor");
+            
+            // 7. Recenter Pivot
             RecenterPivot(mf, new Vector3(fd.vertices[0].x, fd.vertices[0].y, fd.vertices[0].z));
             
-            // 7. Assign RoomObject & Register to RoomManager (직접 fd.roomID 사용)
+            // 8. Assign RoomObject & Register to RoomManager (직접 fd.roomID 사용)
             if (roomManager != null)
             {
                 if (fd.roomID != null && fd.roomID.Count > 0)
