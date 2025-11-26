@@ -120,7 +120,7 @@ public class FurniturePlacementController : MonoBehaviour
                         }
                     }
 
-                    gridBuilder.BuildRuntimeGridVisuals();
+                    gridBuilder.BuildRuntimeGridVisuals(currentRoomID);
                 }
 
                 CancelPlacement();

@@ -21,6 +21,7 @@ public class FurnitureManager : MonoBehaviour
     [Header("Refs")]
     [SerializeField] private RoomManager roomManager;
     [SerializeField] private RoomPlacementGridBuilder gridBuilder;
+    [SerializeField] private FurniturePlacer furniturePlacer;
 
     [SerializeField] private int nextInstanceIndex = 1;
 
@@ -43,6 +44,11 @@ public class FurnitureManager : MonoBehaviour
         if (gridBuilder == null)
         {
             gridBuilder = FindObjectOfType<RoomPlacementGridBuilder>();
+        }
+
+        if (furniturePlacer == null)
+        {
+            furniturePlacer = FindObjectOfType<FurniturePlacer>();
         }
 
         RebuildMapsFromInventory();
@@ -281,6 +287,11 @@ public class FurnitureManager : MonoBehaviour
                 Destroy(go);
             }
         }
+
+        // Unplace Function (Refresh Grid Visual)
+        furniturePlacer.UnplaceFurniture(instanceId);
+        
+        // Remove Object From RuntimeMap
         placedRuntimeMap.Remove(instanceId);
 
         // Renew Data

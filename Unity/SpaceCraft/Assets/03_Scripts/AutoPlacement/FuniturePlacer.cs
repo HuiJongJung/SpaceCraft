@@ -463,22 +463,15 @@ public class FurniturePlacer : MonoBehaviour
         // 데이터 조회 (매니저에게 요청)
         FurnitureItemData item = furnitureManager.GetItemByInstanceId(instanceId);
 
-        // 예외 처리: 아이템이 없거나, 아직 배치되지 않은 상태라면 삭제만 진행
         if (item == null)
         {
             Debug.LogWarning("Item not found: " + instanceId);
             return;
         }
 
-        if (!item.isPlaced)
-        {
-            furnitureManager.DeleteFurnitureItem(instanceId);
-            return;
-        }
-
         // 그리드 정보 가져오기
         RoomPlacementGrid grid = FindGridByRoomId(item.roomID);
-
+        
         if (grid != null)
         {
             //  차지하고 있던 영역(Footprint) 재계산
@@ -495,10 +488,6 @@ public class FurniturePlacer : MonoBehaviour
             // 화면 갱신 (빨간색 타일 제거)
             gridBuilder.BuildRuntimeGridVisuals(item.roomID);
         }
-
-        // 실제 데이터 및 오브젝트 삭제 (매니저 호출)
-        // 상황에 따라 UnplaceItem(인벤토리 회수) 또는 DeleteFurnitureItem(완전 삭제) 선택
-        furnitureManager.DeleteFurnitureItem(instanceId);
 
         Debug.Log($"[FurniturePlacer] Removed {instanceId} and restored grid.");
     }
