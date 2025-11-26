@@ -6,12 +6,20 @@ public class RoomManager : MonoBehaviour
     [Header("Refs")]
     [SerializeField] private SpaceData spaceData;
     [SerializeField] private RoomPlacementGridBuilder gridBuilder;
-
     private SpaceLayout layout;
 
+    
     // roomID -> runtime data
     private Dictionary<int, RoomRuntimeData> roomsById =
         new Dictionary<int, RoomRuntimeData>();
+
+    // currentRoomID
+    public int currentRoomID;
+
+    public int GetRoomCount()
+    {
+        return roomsById.Count;
+    }
 
     // 디버그용 인스펙터 확인
     [SerializeField] private List<RoomRuntimeData> debugRooms =
@@ -209,6 +217,9 @@ public class RoomManager : MonoBehaviour
 
         // 4) Camera Focus
         FocusCameraOnRoom(roomID);
+        
+        // 5) Set currentRoomID
+        currentRoomID = roomID;
     }
 
     // Show All Rooms
@@ -237,48 +248,34 @@ public class RoomManager : MonoBehaviour
     }
 
     // ===== Getters =====
-
-    public List<GameObject> GetWallsOfRoom(int roomID)
+    
+    // RoomDef Getter
+    public RoomDef GetRoomDefById(int roomID)
     {
-        RoomRuntimeData roomData;
-        bool found = roomsById.TryGetValue(roomID, out roomData);
-        if (found && roomData != null)
+        if (layout == null)
         {
-            return roomData.walls;
+            return null;
         }
-        return null;
-    }
 
-    public List<GameObject> GetFloorsOfRoom(int roomID)
-    {
-        RoomRuntimeData roomData;
-        bool found = roomsById.TryGetValue(roomID, out roomData);
-        if (found && roomData != null)
+        if (layout.rooms == null)
         {
-            return roomData.floors;
+            return null;
         }
-        return null;
-    }
 
-    public List<GameObject> GetOpeningsOfRoom(int roomID)
-    {
-        RoomRuntimeData roomData;
-        bool found = roomsById.TryGetValue(roomID, out roomData);
-        if (found && roomData != null)
+        for (int i = 0; i < layout.rooms.Count; i++)
         {
-            return roomData.openings;
-        }
-        return null;
-    }
+            RoomDef r = layout.rooms[i];
+            if (r == null)
+            {
+                continue;
+            }
 
-    public List<GameObject> GetFurnituresOfRoom(int roomID)
-    {
-        RoomRuntimeData roomData;
-        bool found = roomsById.TryGetValue(roomID, out roomData);
-        if (found && roomData != null)
-        {
-            return roomData.furnitures;
+            if (r.roomID == roomID)
+            {
+                return r;
+            }
         }
+
         return null;
     }
 }

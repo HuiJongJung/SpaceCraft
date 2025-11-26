@@ -10,7 +10,6 @@ public class PlaceSceneUI : MonoBehaviour
     [Header("External Systems")]
     [SerializeField] private SpaceData spaceData;
     [SerializeField] private FurnitureManager furnitureManager;
-    private FurnitureDatabase furnitureDatabase;
     [SerializeField] private RoomManager roomManager;
     
     [Header("Panels")]
@@ -31,9 +30,6 @@ public class PlaceSceneUI : MonoBehaviour
     public TextMeshProUGUI roomNameText;
     public TextMeshProUGUI indexText;
     public Button saveButton;
-    
-    private List<RoomDef> rooms;
-    [SerializeField] private int currentRoomID = 0;
     
     [Header("Detail Panel (ReadOnly)")]
     public Image roFurnitureImage;
@@ -122,11 +118,6 @@ public class PlaceSceneUI : MonoBehaviour
         {
             roomManager = FindObjectOfType<RoomManager>();
         }
-
-        if (furnitureManager != null)
-        {
-            furnitureDatabase = furnitureManager.GetDB();
-        }
         
         // Save Button
         saveButton.onClick.RemoveAllListeners();
@@ -153,16 +144,14 @@ public class PlaceSceneUI : MonoBehaviour
             return;
         }
 
-        rooms = spaceData._layout.rooms;
-
-        if (rooms.Count == 0)
+        if (roomManager.GetRoomCount() == 0)
         {
             Debug.LogWarning("[RoomSelectUI] 방이 0개임.");
             return;
         }
 
         // 처음 방으로 초기화
-        currentRoomID = 0;
+        roomManager.SetActiveOnly(0);
         UpdateRoomView();
     }
     
@@ -234,7 +223,7 @@ public class PlaceSceneUI : MonoBehaviour
     private void BuildCategoryList()
     {
         // Validate
-        if (furnitureDatabase == null)
+        if (furnitureManager.GetDB() == null)
         {
             return;
         }
@@ -242,16 +231,16 @@ public class PlaceSceneUI : MonoBehaviour
         // Reset Children
         ClearChildren(categoryListRoot);
 
-        if (furnitureDatabase.definitions == null)
+        if (furnitureManager.GetDB().definitions == null)
         {
             return;
         }
         
         // Load All Definitions in DB
-        for (int i = 0; i < furnitureDatabase.definitions.Length; i++)
+        for (int i = 0; i < furnitureManager.GetDB().definitions.Length; i++)
         {
             
-            FurnitureDefinition def = furnitureDatabase.definitions[i];
+            FurnitureDefinition def = furnitureManager.GetDB().definitions[i];
             if (def == null)
             {
                 continue;
@@ -468,7 +457,7 @@ public class PlaceSceneUI : MonoBehaviour
 
         // Add Furniture
         furnitureManager.AddItemToRoomInventory(
-            currentRoomID,
+            roomManager.currentRoomID,
             currentDefinition.id,
             sizeCentimeters,
             wallDir,
@@ -504,7 +493,7 @@ public class PlaceSceneUI : MonoBehaviour
         }
         
         // Get Room Item Lists
-        List<FurnitureItemData> list = furnitureManager.GetItemsInRoom(currentRoomID);
+        List<FurnitureItemData> list = furnitureManager.GetItemsInRoom(roomManager.currentRoomID);
         for (int i = 0; i < list.Count; i++)
         {
             FurnitureItemData item = list[i];
@@ -520,9 +509,9 @@ public class PlaceSceneUI : MonoBehaviour
 
             // 이미지 / 텍스트 세팅
             Image image = itemGo.GetComponentInChildren<Image>();
-            if (image != null && furnitureDatabase != null)
+            if (image != null && furnitureManager.GetDB() != null)
             {
-                FurnitureDefinition def = furnitureDatabase.GetById(item.furnitureId);
+                FurnitureDefinition def = furnitureManager.GetDB().GetById(item.furnitureId);
                 if (def != null && def.sprite != null)
                 {
                     image.sprite = def.sprite;
@@ -532,7 +521,7 @@ public class PlaceSceneUI : MonoBehaviour
             TextMeshProUGUI text = itemGo.GetComponentInChildren<TextMeshProUGUI>();
             if (text != null)
             {
-                text.text = furnitureDatabase.GetById(item.furnitureId).name;
+                text.text = furnitureManager.GetDB().GetById(item.furnitureId).name;
             }
         }
     }
@@ -565,9 +554,9 @@ public class PlaceSceneUI : MonoBehaviour
     {
         string displayName = "이름 : " + item.furnitureId + "\nID : " + item.instanceId;
 
-        if (furnitureDatabase != null)
+        if (furnitureManager.GetDB() != null)
         {
-            FurnitureDefinition def = furnitureDatabase.GetById(item.furnitureId);
+            FurnitureDefinition def = furnitureManager.GetDB().GetById(item.furnitureId);
             if (def != null)
             {
                 displayName = "이름 : " + def.name + "\nID : " + item.instanceId;
@@ -631,16 +620,22 @@ public class PlaceSceneUI : MonoBehaviour
     // Prev Button
     public void OnClickPrevRoom()
     {
-        if (rooms == null || rooms.Count == 0)
+        int roomCnt = roomManager.GetRoomCount();
+        if (roomCnt==0)
         {
             return;
         }
 
-        currentRoomID = currentRoomID - 1;
-        if (currentRoomID < 0)
+        int curRoomID = roomManager.currentRoomID;
+        
+        curRoomID = curRoomID - 1;
+        if (curRoomID < 0)
         {
-            currentRoomID = rooms.Count - 1;
+            curRoomID = roomCnt - 1;
         }
+
+        roomManager.currentRoomID = curRoomID;
+        
         // Refresh List & Room
         RefreshFurnitureList();
         UpdateRoomView();
@@ -649,16 +644,22 @@ public class PlaceSceneUI : MonoBehaviour
     // Next Button
     public void OnClickNextRoom()
     {
-        if (rooms == null || rooms.Count == 0)
+        int roomCnt = roomManager.GetRoomCount();
+        if (roomCnt == 0)
         {
             return;
         }
+        
+        int curRoomID = roomManager.currentRoomID;
 
-        currentRoomID = currentRoomID + 1;
-        if (currentRoomID >= rooms.Count)
+        curRoomID = curRoomID + 1;
+        if (curRoomID >= roomManager.GetRoomCount())
         {
-            currentRoomID = 0;
+            curRoomID = 0;
         }
+        
+        roomManager.currentRoomID = curRoomID;
+        
         // Refresh List & Room
         RefreshFurnitureList();
         UpdateRoomView();
@@ -679,12 +680,14 @@ public class PlaceSceneUI : MonoBehaviour
     // room Name / room Index / RoomManager Update
     private void UpdateRoomView()
     {
-        if (rooms == null || rooms.Count == 0)
+        int roomCnt = roomManager.GetRoomCount();
+        if (roomCnt == 0)
         {
             return;
         }
-
-        RoomDef curRoom = rooms[currentRoomID];
+        
+        int curRoomID = roomManager.currentRoomID;
+        RoomDef curRoom = roomManager.GetRoomDefById(curRoomID);
 
         // RoomName
         if (roomNameText != null)
@@ -703,8 +706,8 @@ public class PlaceSceneUI : MonoBehaviour
         // "현재 / 전체" 표시
         if (indexText != null)
         {
-            int humanIndex = currentRoomID + 1;
-            int total = rooms.Count;
+            int humanIndex = roomManager.currentRoomID + 1;
+            int total = roomCnt;
             indexText.text = humanIndex.ToString() + " / " + total.ToString();
         }
 

@@ -2019,6 +2019,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   furnitureDatabase: {fileID: 11400000, guid: 3b4e744308ca7d34cb487a90a3c9230f, type: 2}
   inventory: []
+  roomManager: {fileID: 0}
   nextInstanceIndex: 1
 --- !u!4 &99871892
 Transform:
@@ -11358,6 +11359,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spaceData: {fileID: 842449624}
   gridBuilder: {fileID: 1091609590}
+  currentRoomID: 0
   debugRooms: []
 --- !u!1 &849426543
 GameObject:
