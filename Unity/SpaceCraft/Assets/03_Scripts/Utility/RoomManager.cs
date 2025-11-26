@@ -10,6 +10,7 @@ public class RoomManager : MonoBehaviour
 
     
     // roomID -> runtime data
+    // Index "-1" Room : List of Objects not belong to Room
     private Dictionary<int, RoomRuntimeData> roomsById =
         new Dictionary<int, RoomRuntimeData>();
 
@@ -18,7 +19,15 @@ public class RoomManager : MonoBehaviour
 
     public int GetRoomCount()
     {
-        return roomsById.Count;
+        int count = 0;
+        foreach (KeyValuePair<int, RoomRuntimeData> pair in roomsById)
+        {
+            if (pair.Key >= 0)
+            {
+                count++;
+            }
+        }
+        return count;
     }
 
     // 디버그용 인스펙터 확인
@@ -48,6 +57,13 @@ public class RoomManager : MonoBehaviour
         {
             gridBuilder = FindObjectOfType<RoomPlacementGridBuilder>();
         }
+        
+        // Add All Room to roomsById (Default)
+        for (int i = 0; i < layout.rooms.Count; i++)
+        {
+            GetOrCreateRoomData(layout.rooms[i].roomID);
+        }
+                      
     }
 
     // ===== Camera Focus =====
