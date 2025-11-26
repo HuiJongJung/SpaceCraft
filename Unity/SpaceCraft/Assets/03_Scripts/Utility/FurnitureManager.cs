@@ -228,13 +228,16 @@ public class FurnitureManager : MonoBehaviour
 
         // Create RoomObject & Register
         RoomObject ro = go.GetComponent<RoomObject>();
-        if (ro != null && roomManager != null)
+        if (ro == null)
         {
+            ro = go.AddComponent<RoomObject>();
+            ro.type = RoomObjectType.Furniture;
+            ro.roomIDs.Add(roomID);
             roomManager.Register(ro, roomID);
+            
+            // Register to RuntimeMap
+            placedRuntimeMap[instanceId] = furniture;
         }
-
-        // Register to RuntimeMap
-        placedRuntimeMap[instanceId] = furniture;
 
         return furniture;
     }
