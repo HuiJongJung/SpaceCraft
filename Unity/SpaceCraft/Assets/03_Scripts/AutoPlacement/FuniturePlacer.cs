@@ -270,7 +270,7 @@ public class FurniturePlacer : MonoBehaviour
 
     /// 배치가 확정된 영역을 그리드에서 '사용 불가(false)'로 처리하고,
     /// '점유됨(occupied)' 상태로 마킹합니다.
-    private void MarkGridAsOccupied(RoomPlacementGrid grid, Vector2Int origin, Vector2Int size)
+    public void MarkGridAsOccupied(RoomPlacementGrid grid, Vector2Int origin, Vector2Int size)
     {
         for (int dz = 0; dz < size.y; dz++)
         {

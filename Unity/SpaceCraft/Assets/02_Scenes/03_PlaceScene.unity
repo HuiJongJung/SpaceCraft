@@ -13507,6 +13507,59 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 1
+--- !u!1 &1019212247
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1019212249}
+  - component: {fileID: 1019212248}
+  m_Layer: 0
+  m_Name: FurniturePlacementController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1019212248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1019212247}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efd04232b063a8d4f9398f848de835b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cam: {fileID: 168886747}
+  placer: {fileID: 1717232560}
+  furnitureManager: {fileID: 99871891}
+  gridBuilder: {fileID: 1091609590}
+  floorMask:
+    serializedVersion: 2
+    m_Bits: 64
+  placeableColor: {r: 0, g: 1, b: 0, a: 0.5}
+  blockedColor: {r: 1, g: 0, b: 0, a: 0.5}
+--- !u!4 &1019212249
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1019212247}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.8906728, y: -6.0273886, z: 1.917908}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1031594788
 GameObject:
   m_ObjectHideFlags: 0
@@ -21771,6 +21824,53 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 1
+--- !u!1 &1717232559
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1717232561}
+  - component: {fileID: 1717232560}
+  m_Layer: 0
+  m_Name: FuniturePlacer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1717232560
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1717232559}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9edc35dc0c761764a9106136142ee605, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridBuilder: {fileID: 1091609590}
+  furnitureManager: {fileID: 99871891}
+  cellSizeMeters: 0.1
+--- !u!4 &1717232561
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1717232559}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1719714645
 GameObject:
   m_ObjectHideFlags: 0
@@ -21824,9 +21924,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 636675dded91598479fd7e7c46547de1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spaceData: {fileID: 0}
+  spaceData: {fileID: 842449624}
   furnitureManager: {fileID: 99871891}
-  roomManager: {fileID: 0}
+  roomManager: {fileID: 846193313}
+  placementController: {fileID: 1019212248}
   mainPanel: {fileID: 2126566703}
   categoryPanel: {fileID: 1072654411}
   sizePanel: {fileID: 1596324971}
@@ -27911,10 +28012,12 @@ SceneRoots:
   m_Roots:
   - {fileID: 168886748}
   - {fileID: 917371908}
+  - {fileID: 2047533971}
   - {fileID: 377666383}
   - {fileID: 846193312}
-  - {fileID: 99871892}
-  - {fileID: 1091609591}
   - {fileID: 842449625}
-  - {fileID: 2047533971}
+  - {fileID: 99871892}
+  - {fileID: 1019212249}
+  - {fileID: 1091609591}
+  - {fileID: 1717232561}
   - {fileID: 1591129512}
