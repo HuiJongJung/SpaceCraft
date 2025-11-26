@@ -151,6 +151,7 @@ public class PlaceSceneUI : MonoBehaviour
         }
 
         // 처음 방으로 초기화
+        roomManager.SetActiveOnly(0);
         UpdateRoomView();
     }
     
