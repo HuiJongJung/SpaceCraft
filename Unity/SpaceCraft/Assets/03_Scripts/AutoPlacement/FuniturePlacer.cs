@@ -268,8 +268,7 @@ public class FurniturePlacer : MonoBehaviour
 
         return pivot;
     }
-   
-
+    
     public bool AutoPlaceOneItem(int roomID)
     {
         List<FurnitureItemData> unplaced = furnitureManager.GetUnplacedItemsInRoom(roomID);
@@ -311,76 +310,68 @@ public class FurniturePlacer : MonoBehaviour
             }
         }
     }
-    /// <summary>
-    /// 가구의 특정 면(side)이 현재 회전각도에서 그리드의 벽 영역(wallZoneMask)과 접촉하고 있는지 검사
-    /// side: "back", "front", "left", "right"
-    /// </summary>
+
+    /// 해당 면의 모든 셀이 벽(또는 허공)과 접촉하고 있는지 검사합니다.
+    /// 단 한 칸이라도 빈 공간(통로)과 접해있다면 실패로 간주합니다.
     private bool CheckSideTouchingWall(RoomPlacementGrid grid, Vector2Int origin, Vector2Int size, int rot, string side)
     {
         string gridSide = GetGridSideByRotation(rot, side);
-        if (string.IsNullOrEmpty(gridSide))
-            return false;
-
-        bool touched = false;
-        int gx, gz;
+        if (string.IsNullOrEmpty(gridSide)) return false;
 
         switch (gridSide)
         {
-            case "bottom":  // Z = origin.y
+            case "bottom": // 아랫면 검사 (Z - 1 위치 확인)
                 for (int dx = 0; dx < size.x; dx++)
                 {
-                    gx = origin.x + dx;
-                    gz = origin.y;
-                    if (IsWallZone(grid, gx, gz))
-                    {
-                        Debug.Log($"[WALL HIT] bottom ({gx},{gz})");
-                        touched = true;
-                    }
+                    // 하나라도 벽이 아니면(빈 공간이면) 즉시 탈락
+                    if (!IsWallOrVoid(grid, origin.x + dx, origin.y - 1))
+                        return false;
                 }
                 break;
 
-            case "top":  // Z = origin.y + size.y - 1
+            case "top": // 윗면 검사 (Z + size.y 위치 확인)
                 for (int dx = 0; dx < size.x; dx++)
                 {
-                    gx = origin.x + dx;
-                    gz = origin.y + size.y - 1;
-                    if (IsWallZone(grid, gx, gz))
-                    {
-                        Debug.Log($"[WALL HIT] top ({gx},{gz})");
-                        touched = true;
-                    }
+                    if (!IsWallOrVoid(grid, origin.x + dx, origin.y + size.y))
+                        return false;
                 }
                 break;
 
-            case "left":  // X = origin.x
+            case "left": // 왼쪽면 검사 (X - 1 위치 확인)
                 for (int dz = 0; dz < size.y; dz++)
                 {
-                    gx = origin.x;
-                    gz = origin.y + dz;
-                    if (IsWallZone(grid, gx, gz))
-                    {
-                        Debug.Log($"[WALL HIT] left ({gx},{gz})");
-                        touched = true;
-                    }
+                    if (!IsWallOrVoid(grid, origin.x - 1, origin.y + dz))
+                        return false;
                 }
                 break;
 
-            case "right": // X = origin.x + size.x - 1
+            case "right": // 오른쪽면 검사 (X + size.x 위치 확인)
                 for (int dz = 0; dz < size.y; dz++)
                 {
-                    gx = origin.x + size.x - 1;
-                    gz = origin.y + dz;
-                    if (IsWallZone(grid, gx, gz))
-                    {
-                        Debug.Log($"[WALL HIT] right ({gx},{gz})");
-                        touched = true;
-                    }
+                    if (!IsWallOrVoid(grid, origin.x + size.x, origin.y + dz))
+                        return false;
                 }
                 break;
         }
 
-        Debug.Log($"[RESULT] side={side}, gridSide={gridSide}, touched={touched}");
-        return touched;
+        // 루프를 무사히 통과했다면, 모든 칸이 벽에 닿아있다는 뜻임
+        return true;
+    }
+
+    /// 해당 좌표가 벽, 허공, 혹은 배치 불가능한 구역인지 확인합니다.
+    private bool IsWallOrVoid(RoomPlacementGrid grid, int gx, int gz)
+    {
+        // 1. 그리드 밖이면 -> 무조건 벽(Void)
+        if (!grid.InBounds(gx, gz)) return true;
+
+        // 2. 만약 문(Door) 구역이라면? -> 벽이 아님 (통로/허공 취급)
+        // 벽 배치 로직에서 "문에는 붙지 마라"는 의미가 됩니다.
+        if (grid.doorMask != null && grid.doorMask[gx, gz]) return false;
+
+        // 3. 그 외에 배치가 불가능한 곳(진짜 벽, 기둥 등) -> 벽
+        if (!grid.placementMask[gx, gz]) return true;
+
+        return false; // 빈 땅
     }
 
 
@@ -440,14 +431,6 @@ public class FurniturePlacer : MonoBehaviour
         if (dotR > maxDot) { maxDot = dotR; best = "right"; }
 
         return best;
-    }
-
-
-    private bool IsWallZone(RoomPlacementGrid grid, int gx, int gz)
-    {
-        if (!grid.InBounds(gx, gz)) return false;
-        // wallZoneMask가 생성되어 있고 true라면 벽 인접 구역임
-        return (grid.wallZoneMask != null && grid.wallZoneMask[gx, gz]);
     }
 
     private bool IsWallPlacementRequired(FurnitureItemData item)

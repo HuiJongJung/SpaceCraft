@@ -17,6 +17,7 @@ public class RoomPlacementGrid
     public bool[,] occupiedMask;
     // 벽 인접 여부
     public bool[,] wallZoneMask;
+    public bool[,] doorMask;
 
     // 월드↔그리드 간단 변환 유틸
     public Vector2Int WorldToGrid(Vector3 worldPos)

@@ -102,6 +102,8 @@ public class RoomPlacementGridBuilder : MonoBehaviour
             }
 
             grid.occupiedMask = new bool[cols, rows];
+            grid.doorMask = new bool[cols, rows];
+
             IdentifyWallZones(grid);
             grids.Add(grid);
         }
@@ -452,6 +454,10 @@ public class RoomPlacementGridBuilder : MonoBehaviour
                             if (u >= uMin && u <= uMax && t >= tMin && t <= tMax)
                             {
                                 g.placementMask[gx, gz] = false;
+
+                                if (g.doorMask != null)
+                                    g.doorMask[gx, gz] = true;
+
                                 anyBlockedMain = true;
                             }
                         }
@@ -492,6 +498,10 @@ public class RoomPlacementGridBuilder : MonoBehaviour
                                     t >= tMinCommon && t <= tMaxCommon)
                                 {
                                     g.placementMask[gx, gz] = false;
+
+                                    if (g.doorMask != null)
+                                        g.doorMask[gx, gz] = true;
+
                                     anyBlockedOpp = true;
                                 }
                             }
@@ -532,6 +542,10 @@ public class RoomPlacementGridBuilder : MonoBehaviour
                             if (u >= uMin && u <= uMax && t >= tMin && t <= tMax)
                             {
                                 g.placementMask[gx, gz] = false;
+
+                                if (g.doorMask != null)
+                                    g.doorMask[gx, gz] = true;
+
                                 anyBlockedSlide = true;
                             }
                         }
