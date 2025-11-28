@@ -18,6 +18,12 @@ public class FurniturePlacer : MonoBehaviour
     // 필요하다면 여기서 override 할 수도 있게 빼둠.
     [Header("Grid Settings")]
     [SerializeField] private float cellSizeMeters = 0.1f;   // 10cm
+    private struct PlacementCandidate
+    {
+        public Vector2Int origin;      // 배치 위치 (좌측 하단)
+        public int rotation;           // 회전 각도
+        public Vector2Int sizeInCells; // 차지하는 공간 크기 (여유공간 포함)
+    }
 
     private void Awake()
     {
@@ -129,51 +135,107 @@ public class FurniturePlacer : MonoBehaviour
         RoomPlacementGrid grid = FindGridByRoomId(roomID);
         if (grid == null) return false;
 
-        float cellSize = grid.cellSize;
-        if (cellSize <= 0f) cellSize = cellSizeMeters;
+        float cellSize = grid.cellSize > 0 ? grid.cellSize : cellSizeMeters;
+        int[] rotations = { 0, 90, 180, 270 }; // 필요시 셔플 추가
 
-        int[] rotations = { 0, 90, 180, 270 };
+        List<PlacementCandidate> candidates = new List<PlacementCandidate>();
 
         for (int rIndex = 0; rIndex < rotations.Length; rIndex++)
         {
             int rot = rotations[rIndex];
 
+            // 1. 가구 본체 크기 계산
+            Vector2Int bodySize = ComputeFootprintCells(item.sizeCentimeters, cellSize, rot);
+            if (bodySize.x <= 0 || bodySize.y <= 0) continue;
+
+            // 2. 회전된 여유 공간 계산 (Cell 단위)
+            // (이미 추가하신 GetRotatedClearanceInCells 함수 사용)
+            var clearance = GetRotatedClearanceInCells(item, cellSize, rot);
+
+            // 3. 전체 필요 영역(Total Footprint) 계산
+            //    (왼쪽 여백 + 본체 + 오른쪽 여백, 아래 여백 + 본체 + 위쪽 여백)
+            Vector2Int totalSize = new Vector2Int(
+                clearance.left + bodySize.x + clearance.right,
+                clearance.bottom + bodySize.y + clearance.top
+            );
+
+            // 4. 전체 영역 기준으로 탐색
             for (int gz = 0; gz < grid.rows; gz++)
             {
                 for (int gx = 0; gx < grid.cols; gx++)
                 {
-                    Vector2Int origin = new Vector2Int(gx, gz);
-                    
-                    Vector2Int sizeInCells; // CanPlaceBasic에서 채워줄 값
-                    if (!CanPlaceBasic(item, roomID, origin, rot, out sizeInCells))
-                    {
-                        continue;
-                    }
-                    
-                    // --- 배치 성공 시---
-                    Vector2Int pivotCell = ComputePivotCell(origin, sizeInCells);
+                    Vector2Int totalOrigin = new Vector2Int(gx, gz);
 
-                    furnitureManager.PlaceItem(
-                        item.instanceId,
-                        roomID,
-                        pivotCell,
-                        rot
+                    // A. 전체 영역(가구+여유공간)이 빈 땅인지 검사
+                    // (이미 추가하신 CheckAreaValid 함수 사용)
+                    if (!CheckAreaValid(grid, totalOrigin, totalSize))
+                        continue;
+
+                    // B. 본체의 실제 위치(Origin) 계산
+                    //    전체 시작점에서 왼쪽/아래 여백만큼 안으로 들어간 좌표
+                    Vector2Int bodyOrigin = new Vector2Int(
+                        totalOrigin.x + clearance.left,
+                        totalOrigin.y + clearance.bottom
                     );
 
-                    // 그리드 마스킹 (데이터 갱신)
-                    MarkGridAsOccupied(grid, origin, sizeInCells);
-
-                    // 플래그가 true일 때만 화면 갱신 (일괄 배치 시 false로 끄기 위함)
-                    if (updateVisuals)
+                    // C. 벽 배치 조건 검사 (가구 본체 기준 검사!)
+                    int wallMatchCount = 0;
+                    if (IsWallPlacementRequired(item))
                     {
-                        gridBuilder.BuildRuntimeGridVisuals(roomManager.currentRoomID);
+                        bool backOk = !item.wallDir.back || CheckSideTouchingWall(grid, bodyOrigin, bodySize, rot, "back");
+                        bool frontOk = !item.wallDir.front || CheckSideTouchingWall(grid, bodyOrigin, bodySize, rot, "front");
+                        bool leftOk = !item.wallDir.left || CheckSideTouchingWall(grid, bodyOrigin, bodySize, rot, "left");
+                        bool rightOk = !item.wallDir.right || CheckSideTouchingWall(grid, bodyOrigin, bodySize, rot, "right");
+
+                        if (!backOk || !frontOk || !leftOk || !rightOk) continue;
+
+                        // 점수 계산 (많이 붙을수록 좋음)
+                        if (item.wallDir.back && backOk) wallMatchCount++;
+                        if (item.wallDir.front && frontOk) wallMatchCount++;
+                        if (item.wallDir.left && leftOk) wallMatchCount++;
+                        if (item.wallDir.right && rightOk) wallMatchCount++;
                     }
 
-                    return true;
+                    // 후보 등록 (위치는 '전체 영역' 기준, 사이즈도 '전체 사이즈' 저장)
+                    candidates.Add(new PlacementCandidate
+                    {
+                        origin = totalOrigin,
+                        rotation = rot,
+                        sizeInCells = totalSize
+                        // (나중에 wallMatchCount도 구조체에 넣어서 정렬 가능)
+                    });
                 }
             }
         }
-        return false;
+
+        // 후보가 없으면 실패
+        if (candidates.Count == 0) return false;
+
+        // 최적 후보 선정 (지금은 첫 번째, 나중엔 정렬)
+        PlacementCandidate best = candidates[0];
+
+        // --- 최종 배치 (좌표 보정) ---
+
+        // 1. Pivot 계산을 위해 여유 공간/본체 크기 다시 계산
+        var bestClearance = GetRotatedClearanceInCells(item, cellSize, best.rotation);
+        Vector2Int finalBodySize = ComputeFootprintCells(item.sizeCentimeters, cellSize, best.rotation);
+
+        // 2. 본체 시작점 재계산 (전체 Origin + 여백)
+        Vector2Int finalBodyOrigin = new Vector2Int(
+            best.origin.x + bestClearance.left,
+            best.origin.y + bestClearance.bottom
+        );
+
+        // 3. 실제 가구 생성 (본체 중심점 기준)
+        Vector2Int finalBodyPivot = ComputePivotCell(finalBodyOrigin, finalBodySize);
+        furnitureManager.PlaceItem(item.instanceId, roomID, finalBodyPivot, best.rotation);
+
+        // 4. 그리드 마스킹은 '전체 영역(Total Size)'을 덮어버림 (여유 공간 확보)
+        MarkGridAsOccupied(grid, best.origin, best.sizeInCells);
+
+        if (updateVisuals) gridBuilder.BuildRuntimeGridVisuals(roomManager.currentRoomID);
+
+        return true;
     }
 
     public void AutoPlaceAllUnplacedItems(int roomID)
@@ -443,36 +505,54 @@ public class FurniturePlacer : MonoBehaviour
     /// 가구를 삭제하고, 차지하고 있던 그리드 영역을 다시 '사용 가능(초록색)'으로 복구합니다.
     public void UnplaceFurniture(string instanceId)
     {
-        // 데이터 조회 (매니저에게 요청)
+        // 1. 데이터 조회 (이미 매니저에 의해 삭제 중일 수 있으므로 데이터만 참조)
         FurnitureItemData item = furnitureManager.GetItemByInstanceId(instanceId);
 
         if (item == null)
         {
-            Debug.LogWarning("Item not found: " + instanceId);
+            // 이미 삭제되었거나 데이터가 없으면 패스
             return;
         }
 
-        // 그리드 정보 가져오기
+        // 2. 그리드 정보 가져오기
         RoomPlacementGrid grid = FindGridByRoomId(item.roomID);
-        
+
         if (grid != null)
         {
-            //  차지하고 있던 영역(Footprint) 재계산
-            // (삭제하기 전에 미리 계산해야 함)
             float cellSize = (grid.cellSize > 0) ? grid.cellSize : 0.1f;
-            Vector2Int sizeInCells = ComputeFootprintCells(item.sizeCentimeters, cellSize, item.rotation);
 
-            // 저장된 gridCell(Pivot)을 그대로 쓰지 말고, Origin으로 변환함
-            Vector2Int origin = ComputeOriginFromPivot(item.gridCell, sizeInCells);
+            //  여유 공간을 포함한 전체 영역 역계산 
 
-            // 변환된 origin 좌표로 마스킹 해제
-            UnmarkGrid(grid, origin, sizeInCells);
+            // A. 가구 본체(Body) 크기 계산
+            Vector2Int bodySize = ComputeFootprintCells(item.sizeCentimeters, cellSize, item.rotation);
 
-            // 화면 갱신 (빨간색 타일 제거)
+            // B. 가구 본체의 시작점(Origin) 계산
+            //    (저장된 item.gridCell은 '본체 중심(Pivot)'이므로 역산해야 함)
+            Vector2Int bodyOrigin = ComputeOriginFromPivot(item.gridCell, bodySize);
+
+            // C. 여유 공간(Clearance) 계산
+            var clearance = GetRotatedClearanceInCells(item, cellSize, item.rotation);
+
+            // D. 전체 영역(Total)의 시작점 계산
+            //    (본체 시작점에서 여유 공간만큼 왼쪽/아래로 더 이동)
+            Vector2Int totalOrigin = new Vector2Int(
+                bodyOrigin.x - clearance.left,
+                bodyOrigin.y - clearance.bottom
+            );
+
+            // E. 전체 영역(Total) 크기 계산
+            Vector2Int totalSize = new Vector2Int(
+                clearance.left + bodySize.x + clearance.right,
+                clearance.bottom + bodySize.y + clearance.top
+            );
+
+            // 3. 전체 영역에 대해 마스킹 해제 (빨강 -> 초록 복구)
+            UnmarkGrid(grid, totalOrigin, totalSize);
+
+            // 4. 화면 갱신
             gridBuilder.BuildRuntimeGridVisuals(item.roomID);
         }
-
-        Debug.Log($"[FurniturePlacer] Removed {instanceId} and restored grid.");
+        Debug.Log($"[FurniturePlacer] Restored grid for {instanceId} (Cleared Area: {item.furnitureId})");
     }
 
     ///  점유된 그리드 영역을 다시 '배치 가능' 상태로 되돌립니다.
@@ -505,5 +585,52 @@ public class FurniturePlacer : MonoBehaviour
         int offsetZ = (size.y - 1) / 2;
 
         return new Vector2Int(pivot.x - offsetX, pivot.y - offsetZ);
+    }
+
+    // 회전된 상태에서의 상하좌우 여유 공간(Cell 단위)을 계산
+    // 반환 순서: (Bottom, Top, Left, Right)
+    private (int bottom, int top, int left, int right) GetRotatedClearanceInCells(FurnitureItemData item, float cellSize, int rot)
+    {
+        // 1. cm -> cell 변환 (100cm = 1m)
+        // 예: 60cm / 10cm(0.1m) = 6칸
+        int cFront = Mathf.CeilToInt(item.clearance.front * 0.01f / cellSize);
+        int cBack = Mathf.CeilToInt(item.clearance.back * 0.01f / cellSize);
+        int cLeft = Mathf.CeilToInt(item.clearance.left * 0.01f / cellSize);
+        int cRight = Mathf.CeilToInt(item.clearance.right * 0.01f / cellSize);
+
+        // 2. 회전 변환 (Grid 기준: Bottom(-Z), Top(+Z), Left(-X), Right(+X))
+        int normRot = (rot % 360 + 360) % 360;
+
+        // 0도: Front=Top(+Z), Back=Bottom(-Z), Left=Left(-X), Right=Right(+X)
+        if (normRot == 0) return (cBack, cFront, cLeft, cRight);
+
+        // 90도: Front=Right, Back=Left, Left=Top, Right=Bottom
+        if (normRot == 90) return (cRight, cLeft, cBack, cFront);
+
+        // 180도: Front=Bottom, Back=Top, Left=Right, Right=Left
+        if (normRot == 180) return (cFront, cBack, cRight, cLeft);
+
+        // 270도: Front=Left, Back=Right, Left=Bottom, Right=Top
+        if (normRot == 270) return (cLeft, cRight, cFront, cBack);
+
+        return (0, 0, 0, 0);
+    }
+
+    // 전체 영역이 유효한지(범위 안, 마스크 True) 검사하는 함수
+    private bool CheckAreaValid(RoomPlacementGrid grid, Vector2Int origin, Vector2Int size)
+    {
+        for (int dz = 0; dz < size.y; dz++)
+        {
+            for (int dx = 0; dx < size.x; dx++)
+            {
+                int gx = origin.x + dx;
+                int gz = origin.y + dz;
+
+                // 그리드 밖이거나, 이미 점유/벽인 경우 실패
+                if (!grid.InBounds(gx, gz) || !grid.placementMask[gx, gz])
+                    return false;
+            }
+        }
+        return true;
     }
 }
