@@ -1,41 +1,39 @@
 using System;
-using UnityEngine;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
-using Debug = UnityEngine.Debug;
+using UnityEditorInternal;
+using UnityEngine;
 
 /* ========================== */
 /*   Floor Plan Interpreter   */
 /* ========================== */
-/*
- * Unity에서 평면도 분석에 필요한 처리를 담당
- */
 
 public class FloorPlanInterpreter : MonoBehaviour
 {
-    public static FloorPlanInterpreter instance = null;
+    public FloorPlanUI floorPlanUI;
 
-    private Process process = null;
-    private SynchronizationContext unityCtx;
+    private Process inferProcess = null;
+    private Process convProcess = null;
 
+    // Program Path
+    private string inferencePath;
+    private string convertPath;
 
-    //todo : 빌드 이후에 사용하려면 dataPath말고 streamingAssetsPath 로 써야함
-    private string exePath => System.IO.Path.Combine(Application.dataPath, "07_Python", "Infer_WallMask.exe");
+    // Output Path
+    private string outMaskPath;
+    private string outJsonPath;
 
-    public bool IsRunning => process != null && !process.HasExited;
+    private bool isProcessing = false;
+    private bool isFinished = false;
+
 
     void Awake()
     {
-        if (instance == null)
-            instance = this;
-        else if(instance != this)
-            Destroy(gameObject);
+        inferencePath = Path.Combine(Application.streamingAssetsPath, "FloorPlan", "Inference_FloorPlan", "Inference_FloorPlan.exe");
+        convertPath = Path.Combine(Application.streamingAssetsPath, "FloorPlan", "Convert_FloorPlan", "Convert_FloorPlan.exe");
 
-        DontDestroyOnLoad(gameObject);
-
-        
-        unityCtx = SynchronizationContext.Current;
+        outMaskPath = Path.Combine(Application.persistentDataPath, "UserData", "floorplan_mask.png");
+        outJsonPath = Path.Combine(Application.persistentDataPath, "UserData", "space.json");
     }
 
     void OnApplicationQuit()
@@ -43,114 +41,222 @@ public class FloorPlanInterpreter : MonoBehaviour
         TerminateBackground();
     }
 
-    /* ================================== */
-    /*      백그라운드 프로세스 생성      */
-    /* ================================== */
-    void ExecuteBackground(string inputFilePath)
+    void Update()
     {
-        // process는 하나만 생성할 예정
-        if (process != null)
+        if (isFinished)
         {
-            UnityEngine.Debug.Log("Background process already running");
+            floorPlanUI.ApplyOutput();
+            isFinished = false;
+        }
+    }
+
+
+    public void InterpretFloorPlan(string inputFilePath)
+    {
+        // 입력된 이미지로 평면도 분석
+
+        // 한 번에 하나의 프로세스만 실행
+        if (isProcessing)
+        {
+            UnityEngine.Debug.LogWarning("[Interpreter] 프로세스가 이미 실행 중입니다.");
             return;
         }
 
-        // 실행 파일에 전달할 인자
-        string modelPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(exePath), "wall_deeplabv3p_best.pth"));
-        string outputPath = Path.Combine(Path.GetDirectoryName(inputFilePath), "Output_WallMask");
-        var args = $"--ckpt \"{modelPath}\" --inputs \"{inputFilePath}\" --out_dir \"{outputPath}\" --size 1024 --th 0.5";
+        // 입력 파일 검사
+        if (string.IsNullOrEmpty(inputFilePath) || !File.Exists(inputFilePath))
+        {
+            UnityEngine.Debug.LogError($"[Interpreter] 입력 파일이 유효하지 않습니다 : {inputFilePath}");
+            return;
+        }
 
-        UnityEngine.Debug.Log($"Running with args: {args}"); // 디버깅용 로그
+        // 프로세스 시작
+        isProcessing = true;
+        UnityEngine.Debug.Log("[Interpreter] 평면도 분석 시작 (Step : Inference)");
+
+        ExecuteInferenceProcess(inputFilePath);
+    }
+
+
+    /* ================================== */
+    /*      백그라운드 프로세스 로직      */
+    /* ================================== */
+
+    #region Inference
+    void ExecuteInferenceProcess(string inputFilePath)
+    {
+        // 기존 프로세스 정리
+        if (inferProcess != null)
+        {
+            if(!inferProcess.HasExited)
+                inferProcess.Kill();
+            
+            inferProcess.Dispose();
+        }
+        
+        // Process 생성
+        var args = $"--input \"{inputFilePath}\" --output \"{outMaskPath}\"";
 
         var startInfo = new ProcessStartInfo
         {
-            FileName = exePath,
-            Arguments = args, //필요시 인자
-            WorkingDirectory = System.IO.Path.GetDirectoryName(exePath),
-            UseShellExecute = false, // 꼭 false (리다이렉트/백그라운드)
-            CreateNoWindow = true, // 콘솔 창 숨김
+            FileName = inferencePath,
+            Arguments = args,
+            WorkingDirectory = Path.GetDirectoryName(inferencePath),
+            UseShellExecute = false,    // 백그라운드 실행(false)
+            CreateNoWindow = true,      // 콘솔 창 숨김(true)
             WindowStyle = ProcessWindowStyle.Hidden,
-            RedirectStandardOutput = true, //로그 읽기 원하면
+            RedirectStandardOutput = true, // Process 로그 읽기
             RedirectStandardError = true,
-            RedirectStandardInput = false //stdin 통신 원하면 true
+            RedirectStandardInput = false  // stdin 통신
         };
 
-        process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
-        process.OutputDataReceived += (_, e) =>
-        {
-            if (!string.IsNullOrEmpty(e.Data)) UnityEngine.Debug.Log($"[PY] {e.Data}");
-        };
-        process.ErrorDataReceived += (_, e) =>
-        {
-            if (!string.IsNullOrEmpty(e.Data)) UnityEngine.Debug.LogError($"[PY ERR] {e.Data}");
-        };
+        inferProcess = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
 
-        if (process.Start())
+        // 로그 연결
+        inferProcess.OutputDataReceived += (s, e) 
+            => { if (!string.IsNullOrEmpty(e.Data)) UnityEngine.Debug.Log($"[Inference] {e.Data}"); };
+        inferProcess.ErrorDataReceived += (s, e) 
+            => { if (!string.IsNullOrEmpty(e.Data)) UnityEngine.Debug.LogError($"[Inference Error] {e.Data}"); };
+
+        // 프로세스 종료까지 대기
+        inferProcess.Exited += OnInferenceExited;
+
+        try
         {
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            UnityEngine.Debug.Log("Interpreter Started");
+            inferProcess.Start();
+            inferProcess.BeginOutputReadLine();
+            inferProcess.BeginErrorReadLine();
+        }
+        catch (Exception e)
+        {
+            UnityEngine.Debug.LogError($"[Interpreter] Inference 실행 실패: {e.Message}");
+            ResetState(); // 에러 발생 시 상태 초기화
+        }
+    }
+
+    private void OnInferenceExited(object sender, EventArgs e)
+    {
+        // 별도의 스레드에서 실행
+        
+        int exitCode = inferProcess.ExitCode;
+        UnityEngine.Debug.Log($"[Interpreter] Inference 종료 (ExitCode: {exitCode})");
+
+        if (exitCode == 0)
+        {
+            // 성공 시 다음 단계 실행
+            UnityEngine.Debug.Log("[Interpreter] 마스크 생성 완료. (Step 2: Convert)");
+            ExecuteConvertProcess();
         }
         else
         {
-            UnityEngine.Debug.LogError("Failed to start Interpreter");
+            UnityEngine.Debug.LogError("[Interpreter] Inference 과정에서 오류가 발생하여 중단합니다.");
+            ResetState();
         }
     }
+    #endregion
 
-    /* ================================== */
-    /*   실행한 백그라운드 종료될 경우    */
-    /* ================================== */
-    private void OnInterpreterExited()
+    #region Convert
+    private void ExecuteConvertProcess()
     {
+        // 기존 프로세스 정리
+        if (convProcess != null && !convProcess.HasExited) convProcess.Kill();
+        convProcess?.Dispose();
+
+        // Inference에서 생성된 outMaskPath를 입력으로 사용
+        var args = $"--input \"{outMaskPath}\" --output \"{outJsonPath}\"";
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = convertPath,
+            Arguments = args,
+            WorkingDirectory = Path.GetDirectoryName(convertPath),
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Hidden,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            RedirectStandardInput = false
+        };
+
+        convProcess = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+
+        convProcess.OutputDataReceived += (s, e) => { if (!string.IsNullOrEmpty(e.Data)) UnityEngine.Debug.Log($"[Convert] {e.Data}"); };
+        convProcess.ErrorDataReceived += (s, e) => { if (!string.IsNullOrEmpty(e.Data)) UnityEngine.Debug.LogError($"[Convert Error] {e.Data}"); };
+
+        // [중요] Convert 종료 이벤트 연결
+        convProcess.Exited += OnConvertExited;
+
         try
         {
-            int code = process.ExitCode;
-            Debug.Log($"Interpreter exited. code = {code}");
-
-            // todo : 평면도 분석 완료 -> 다음 화면으로 넘어가기
+            convProcess.Start();
+            convProcess.BeginOutputReadLine();
+            convProcess.BeginErrorReadLine();
         }
-        catch(Exception ex)
-        { 
-            Debug.LogError(ex);
-        }
-        finally
+        catch (Exception e)
         {
-            process.Dispose();
-            process = null;
+            UnityEngine.Debug.LogError($"Convert 실행 실패: {e.Message}");
+            ResetState();
         }
     }
 
+    // Convert 종료 콜백
+    private void OnConvertExited(object sender, EventArgs e)
+    {
+        int exitCode = convProcess.ExitCode;
+        UnityEngine.Debug.Log($"Convert 종료 (ExitCode: {exitCode})");
+
+        if (exitCode == 0)
+        {
+            // 프로세스 실행 완료 후 로직
+        }
+        else
+        {
+            UnityEngine.Debug.LogError("Convert 과정에서 오류가 발생했습니다.");
+        }
+
+        // 작업 완료 -> 상태 초기화 (다시 실행 가능하도록)
+        ResetState();
+    }
+
+    #endregion
+
 
     /* ================================== */
-    /*  실행한 백그라운드 프로세스 종료   */
+    /*           유틸리티 / 종료          */
     /* ================================== */
+    // 상태 초기화 함수
+    private void ResetState()
+    {
+        isFinished = true;
+        isProcessing = false;
+        // 필요하다면 프로세스 핸들 정리
+        // Dispose는 다음 실행 시 또는 종료 시 처리됨
+    }
+
     void TerminateBackground()
     {
         try
         {
-            if (process != null && !process.HasExited)
-            {
-                process.Kill();
-            }
+            if (inferProcess != null && !inferProcess.HasExited) inferProcess.Kill();
         }
-        catch
+        catch { /* Ignore */ }
+        finally { inferProcess?.Dispose(); inferProcess = null; }
+
+        try
         {
-            // 
+            if (convProcess != null && !convProcess.HasExited) convProcess.Kill();
         }
-        finally
-        {
-            process?.Dispose();
-            process = null;
-        }
+        catch { /* Ignore */ }
+        finally { convProcess?.Dispose(); convProcess = null; }
+
+        isProcessing = false;
     }
 
-
-    /* ========================== */
-    /*         평면도 입력        */
-    /* ========================== */
-    // 파일 탐색기 열어서 이미지 파일만 하나 선택
-    // 선택된 이미지 파일은 imgPath 에 저장
-    public void SelectFloorPlan()
+/* ========================== */
+/*         평면도 입력        */
+/* ========================== */
+// 파일 탐색기 열어서 이미지 파일만 하나 선택
+// 선택된 이미지 파일은 imgPath 에 저장
+public void SelectFloorPlan()
     {
         // 파일 선택(이미지 필터)
         var exts = new[] { new SFB.ExtensionFilter("Image", "png", "jpg", "jpeg", "bmp", "tga", "gif") };
@@ -169,13 +275,4 @@ public class FloorPlanInterpreter : MonoBehaviour
         UnityEngine.Debug.Log($"런타임 복사 완료: {dst}");
     }
 
-    /* ========================== */
-    /*         평면도 분석        */
-    /* ========================== */
-    public void InterpretFloorPlan(string inputFilePath)
-    {
-        ExecuteBackground(inputFilePath);
-
-        // Background 프로세스가 종료될 때까지 대기 (loading 창 보여주기)
-    }
 }
