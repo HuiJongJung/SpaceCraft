@@ -21,8 +21,11 @@ public class SpaceData : MonoBehaviour {
     //Load Data
     public void LoadData()
     {
-        _layout = SpaceJsonLoader.LoadSpaceLayout(roomsJson);
-        CreateOpeningsByWallMap();
+        if (roomsJson != null)
+        {
+            _layout = SpaceJsonLoader.LoadSpaceLayout(roomsJson);
+            CreateOpeningsByWallMap();
+        }
     }
     
     // Create Wall-Openings Dictionary (Called at the time of LoadData)

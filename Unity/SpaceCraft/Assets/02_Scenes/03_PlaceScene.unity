@@ -11323,7 +11323,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e52dcdc1b62a624498d3657a1da02ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data: {fileID: 842449624}
+  data: {fileID: 0}
   roomManager: {fileID: 846193313}
   addCollider: 1
   floorMaterial: {fileID: 2100000, guid: 7c13e7fdf4b73ec4c92fe5ade055eb8b, type: 2}
@@ -11358,7 +11358,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7402ef7a5c58347488f389f3bf80b6de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spaceData: {fileID: 842449624}
+  spaceData: {fileID: 0}
   gridBuilder: {fileID: 1091609590}
   currentRoomID: 0
   debugRooms: []
@@ -14540,7 +14540,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5ac2e8960be6a342ac17b60ecc431b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data: {fileID: 842449624}
+  data: {fileID: 0}
   cellSize: 0.1
   drawGizmos: 0
   gizmoAlpha: 0.35
