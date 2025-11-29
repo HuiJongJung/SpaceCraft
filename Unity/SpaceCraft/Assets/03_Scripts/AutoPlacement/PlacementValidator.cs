@@ -2,7 +2,7 @@ using UnityEngine;
 
 public static class PlacementValidator
 {
-    // ÀüÃ¼ ¿µ¿ªÀÌ À¯È¿ÇÑÁö(¹üÀ§ ¾È, ¸¶½ºÅ© True) °Ë»çÇÏ´Â ÇÔ¼ö
+    // ì „ì²´ ì˜ì—­ì´ ìœ íš¨í•œì§€(ë²”ìœ„ ì•ˆ, ë§ˆìŠ¤í¬ True) ê²€ì‚¬í•˜ëŠ” í•¨ìˆ˜
     public static bool CheckAreaValid(RoomPlacementGrid grid, Vector2Int origin, Vector2Int size)
     {
         for (int dz = 0; dz < size.y; dz++)
@@ -12,7 +12,7 @@ public static class PlacementValidator
                 int gx = origin.x + dx;
                 int gz = origin.y + dz;
 
-                // ±×¸®µå ¹ÛÀÌ°Å³ª, ÀÌ¹Ì Á¡À¯/º®ÀÎ °æ¿ì ½ÇÆĞ
+                // ê·¸ë¦¬ë“œ ë°–ì´ê±°ë‚˜, ì´ë¯¸ ì ìœ /ë²½ì¸ ê²½ìš° ì‹¤íŒ¨
                 if (!grid.InBounds(gx, gz) || !grid.placementMask[gx, gz])
                     return false;
             }
@@ -20,8 +20,8 @@ public static class PlacementValidator
         return true;
     }
 
-    /// ÇØ´ç ¸éÀÇ ¸ğµç ¼¿ÀÌ º®(¶Ç´Â Çã°ø)°ú Á¢ÃËÇÏ°í ÀÖ´ÂÁö °Ë»çÇÕ´Ï´Ù.
-    /// ´Ü ÇÑ Ä­ÀÌ¶óµµ ºó °ø°£(Åë·Î)°ú Á¢ÇØÀÖ´Ù¸é ½ÇÆĞ·Î °£ÁÖÇÕ´Ï´Ù.
+    /// í•´ë‹¹ ë©´ì˜ ëª¨ë“  ì…€ì´ ë²½(ë˜ëŠ” í—ˆê³µ)ê³¼ ì ‘ì´‰í•˜ê³  ìˆëŠ”ì§€ ê²€ì‚¬í•©ë‹ˆë‹¤.
+    /// ë‹¨ í•œ ì¹¸ì´ë¼ë„ ë¹ˆ ê³µê°„(í†µë¡œ)ê³¼ ì ‘í•´ìˆë‹¤ë©´ ì‹¤íŒ¨ë¡œ ê°„ì£¼í•©ë‹ˆë‹¤.
     public static bool CheckSideTouchingWall(RoomPlacementGrid grid, Vector2Int origin, Vector2Int size, int rot, string side)
     {
         string gridSide = PlacementCalculator.GetGridSideByRotation(rot, side);
@@ -29,16 +29,16 @@ public static class PlacementValidator
 
         switch (gridSide)
         {
-            case "bottom": // ¾Æ·§¸é °Ë»ç (Z - 1 À§Ä¡ È®ÀÎ)
+            case "bottom": // ì•„ë«ë©´ ê²€ì‚¬ (Z - 1 ìœ„ì¹˜ í™•ì¸)
                 for (int dx = 0; dx < size.x; dx++)
                 {
-                    // ÇÏ³ª¶óµµ º®ÀÌ ¾Æ´Ï¸é(ºó °ø°£ÀÌ¸é) Áï½Ã Å»¶ô
+                    // í•˜ë‚˜ë¼ë„ ë²½ì´ ì•„ë‹ˆë©´(ë¹ˆ ê³µê°„ì´ë©´) ì¦‰ì‹œ íƒˆë½
                     if (!IsWallOrVoid(grid, origin.x + dx, origin.y - 1))
                         return false;
                 }
                 break;
 
-            case "top": // À­¸é °Ë»ç (Z + size.y À§Ä¡ È®ÀÎ)
+            case "top": // ìœ—ë©´ ê²€ì‚¬ (Z + size.y ìœ„ì¹˜ í™•ì¸)
                 for (int dx = 0; dx < size.x; dx++)
                 {
                     if (!IsWallOrVoid(grid, origin.x + dx, origin.y + size.y))
@@ -46,7 +46,7 @@ public static class PlacementValidator
                 }
                 break;
 
-            case "left": // ¿ŞÂÊ¸é °Ë»ç (X - 1 À§Ä¡ È®ÀÎ)
+            case "left": // ì™¼ìª½ë©´ ê²€ì‚¬ (X - 1 ìœ„ì¹˜ í™•ì¸)
                 for (int dz = 0; dz < size.y; dz++)
                 {
                     if (!IsWallOrVoid(grid, origin.x - 1, origin.y + dz))
@@ -54,7 +54,7 @@ public static class PlacementValidator
                 }
                 break;
 
-            case "right": // ¿À¸¥ÂÊ¸é °Ë»ç (X + size.x À§Ä¡ È®ÀÎ)
+            case "right": // ì˜¤ë¥¸ìª½ë©´ ê²€ì‚¬ (X + size.x ìœ„ì¹˜ í™•ì¸)
                 for (int dz = 0; dz < size.y; dz++)
                 {
                     if (!IsWallOrVoid(grid, origin.x + size.x, origin.y + dz))
@@ -63,25 +63,25 @@ public static class PlacementValidator
                 break;
         }
 
-        // ·çÇÁ¸¦ ¹«»çÈ÷ Åë°úÇß´Ù¸é, ¸ğµç Ä­ÀÌ º®¿¡ ´ê¾ÆÀÖ´Ù´Â ¶æÀÓ
+        // ë£¨í”„ë¥¼ ë¬´ì‚¬íˆ í†µê³¼í–ˆë‹¤ë©´, ëª¨ë“  ì¹¸ì´ ë²½ì— ë‹¿ì•„ìˆë‹¤ëŠ” ëœ»ì„
         return true;
     }
 
-    /// ÇØ´ç ÁÂÇ¥°¡ º®, Çã°ø, È¤Àº ¹èÄ¡ ºÒ°¡´ÉÇÑ ±¸¿ªÀÎÁö È®ÀÎÇÕ´Ï´Ù.
+    /// í•´ë‹¹ ì¢Œí‘œê°€ ë²½, í—ˆê³µ, í˜¹ì€ ë°°ì¹˜ ë¶ˆê°€ëŠ¥í•œ êµ¬ì—­ì¸ì§€ í™•ì¸í•©ë‹ˆë‹¤.
     private static bool IsWallOrVoid(RoomPlacementGrid grid, int gx, int gz)
     {
-        // 1. ±×¸®µå ¹ÛÀÌ¸é -> ¹«Á¶°Ç º®
+        // 1. ê·¸ë¦¬ë“œ ë°–ì´ë©´ -> ë¬´ì¡°ê±´ ë²½
         if (!grid.InBounds(gx, gz)) return true;
 
-        // 2. ¹®(Door) ±¸¿ª -> º® ¾Æ´Ô (Çã°ø)
+        // 2. ë¬¸(Door) êµ¬ì—­ -> ë²½ ì•„ë‹˜ (í—ˆê³µ)
         if (grid.doorMask != null && grid.doorMask[gx, gz]) return false;
 
-        // 3. ´Ù¸¥ °¡±¸°¡ ÀÖ´Â °÷(Occupied) -> º® ¾Æ´Ô (Àå¾Ö¹°ÀÏ »Ó)
+        // 3. ë‹¤ë¥¸ ê°€êµ¬ê°€ ìˆëŠ” ê³³(Occupied) -> ë²½ ì•„ë‹˜ (ì¥ì• ë¬¼ì¼ ë¿)
         if (grid.occupiedMask != null && grid.occupiedMask[gx, gz]) return false;
 
-        // 4. ±× ¿Ü¿¡ ¹èÄ¡ ºÒ°¡´ÉÇÑ °÷(ÁøÂ¥ º®, ±âµÕ) -> º®
+        // 4. ê·¸ ì™¸ì— ë°°ì¹˜ ë¶ˆê°€ëŠ¥í•œ ê³³(ì§„ì§œ ë²½, ê¸°ë‘¥) -> ë²½
         if (!grid.placementMask[gx, gz]) return true;
 
-        return false; // ºó ¶¥
+        return false; // ë¹ˆ ë•…
     }
 }

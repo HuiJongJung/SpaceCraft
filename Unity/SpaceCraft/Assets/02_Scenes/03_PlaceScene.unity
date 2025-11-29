@@ -2021,6 +2021,8 @@ MonoBehaviour:
   inventory: []
   roomManager: {fileID: 846193313}
   gridBuilder: {fileID: 1091609590}
+  furniturePlacer: {fileID: 1717232560}
+  placeSceneUI: {fileID: 1719714647}
   nextInstanceIndex: 1
 --- !u!4 &99871892
 Transform:
@@ -14549,6 +14551,7 @@ MonoBehaviour:
   showRuntimeGrid: 1
   gridMaterial: {fileID: 0}
   gridOccupiedMaterial: {fileID: 0}
+  gridClearanceMaterial: {fileID: 0}
   gridRoot: {fileID: 0}
 --- !u!4 &1091609591
 Transform:
@@ -21987,6 +21990,7 @@ MonoBehaviour:
   privacyLeftToggle: {fileID: 2135663135}
   privacyRightToggle: {fileID: 2089829633}
   addFurnitureButton: {fileID: 1384629551}
+  slots: []
 --- !u!1 &1724916881
 GameObject:
   m_ObjectHideFlags: 0

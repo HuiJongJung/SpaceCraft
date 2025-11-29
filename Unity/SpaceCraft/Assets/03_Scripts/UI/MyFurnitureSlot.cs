@@ -6,7 +6,12 @@ public class MyFurnitureSlot : MonoBehaviour, IPointerClickHandler
 {
     public string instanceId;
 
+    public Image img;
+
     private PlaceSceneUI placeSceneUI;
+    
+    [SerializeField] private Color placedColor = Color.green;
+    [SerializeField] private Color unplacedColor = Color.white;
 
     public void Setup(PlaceSceneUI ui, string instanceId)
     {
@@ -18,6 +23,16 @@ public class MyFurnitureSlot : MonoBehaviour, IPointerClickHandler
         {
             button.onClick.RemoveAllListeners();
         }
+    }
+    
+    // Set Color of Slot
+    public void SetColor(bool placed)
+    {
+        if (img == null) return;
+        
+        //Set Color
+        if (placed) img.color = placedColor;
+        else img.color = unplacedColor;
     }
     
     public void OnPointerClick(PointerEventData eventData)

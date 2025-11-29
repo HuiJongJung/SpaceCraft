@@ -106,6 +106,10 @@ public class PlaceSceneUI : MonoBehaviour
     private FurnitureSizeTemplate currentTemplate;
     private bool hasCurrentTemplate = false;
     
+    // Slot Manage
+    private Dictionary<string, MyFurnitureSlot> slotMap =
+        new Dictionary<string, MyFurnitureSlot>();
+    
     void Start()
     {
         ShowLoading();
@@ -154,6 +158,18 @@ public class PlaceSceneUI : MonoBehaviour
         // 처음 방으로 초기화
         roomManager.SetActiveOnly(0);
         UpdateRoomView();
+    }
+    
+    public void SetSlotColor(string instanceId, bool isPlaced)
+    {
+        MyFurnitureSlot slot;
+        bool found = slotMap.TryGetValue(instanceId, out slot);
+        if (!found || slot == null)
+        {
+            return;
+        }
+
+        slot.SetColor(isPlaced);
     }
     
     #region PanelControl
@@ -493,6 +509,8 @@ public class PlaceSceneUI : MonoBehaviour
             return;
         }
         
+        slotMap.Clear();
+        
         // Get Room Item Lists
         List<FurnitureItemData> list = furnitureManager.GetItemsInRoom(roomManager.currentRoomID);
         for (int i = 0; i < list.Count; i++)
@@ -506,19 +524,28 @@ public class PlaceSceneUI : MonoBehaviour
             if (slot != null)
             {
                 slot.Setup(this, item.instanceId);
+                
+                if (!slotMap.ContainsKey(item.instanceId))
+                {
+                    slotMap.Add(item.instanceId, slot);
+                }
+
+                // Set Color
+                slot.SetColor(item.isPlaced);
             }
 
-            // 이미지 / 텍스트 세팅
+            // Image / Text
             Image image = itemGo.GetComponentInChildren<Image>();
             if (image != null && furnitureManager.GetDB() != null)
             {
                 FurnitureDefinition def = furnitureManager.GetDB().GetById(item.furnitureId);
                 if (def != null && def.sprite != null)
                 {
+                    slot.img = image;
                     image.sprite = def.sprite;
                 }
             }
-
+            
             TextMeshProUGUI text = itemGo.GetComponentInChildren<TextMeshProUGUI>();
             if (text != null)
             {
@@ -531,15 +558,25 @@ public class PlaceSceneUI : MonoBehaviour
     // LeftClick -> Place Mode
     public void OnLeftClickFurnitureSlot(string instanceId)
     {
+        // 0. No Furniture -> return
         FurnitureItemData item = furnitureManager.GetItemByInstanceId(instanceId);
         if (item == null)
         {
-            Debug.LogWarning("OnClickFurnitureSlot: item not found: " + instanceId);
+            Debug.LogWarning("OnLeftClickFurnitureSlot: item not found: " + instanceId);
             return;
         }
-
-        // 배치 모드 시작
-        placementController.BeginPlacement(item, roomManager.currentRoomID);
+        
+        // 1. if isPlaced -> RePosition
+        if (item.isPlaced)
+        {
+            // 이미 배치된 가구 → 원래 위치에서 재배치 모드
+            placementController.BeginRepositionExisting(item);
+        }
+        // 2. else -> Begin Placement
+        else
+        {
+            placementController.BeginPlacement(item, roomManager.currentRoomID);
+        }
     }
     
     // RightClick -> Show Detail Panel (RO)

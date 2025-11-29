@@ -49,6 +49,27 @@ public class FurniturePlacementController : MonoBehaviour
         DisableColliders(ghost);
         SetGhostMaterial(ghost, placeableColor);
     }
+    
+    public void BeginRepositionExisting(FurnitureItemData item)
+    {
+        int roomID = item.roomID;
+
+        RoomPlacementGrid grid = FindGridByRoomId(roomID);
+        if (grid == null)
+        {
+            Debug.LogWarning("[BeginRepositionExisting] No grid for roomID=" + roomID);
+            return;
+        }
+        
+        // 1. UnplaceFurniture
+        // Destroy Object & Update Grid
+        furnitureManager.UnplaceItem(item.instanceId);
+
+        // 2. BeginPlacement    
+        // Assign Rotation
+        BeginPlacement(item, roomID);
+        currentRotDeg = item.rotation;
+    }
 
     public void CancelPlacement()
     {
@@ -155,7 +176,7 @@ public class FurniturePlacementController : MonoBehaviour
 
         // 2) 이 origin에서 배치 가능한지 검사 + footprint 크기 얻기
         Vector2Int sizeInCells;
-        bool ok = placer.CanPlaceBasic(item, currentRoomID, originCell, currentRotDeg, out sizeInCells);
+        bool ok = placer.CanPlaceOnGrid(item, currentRoomID, originCell, currentRotDeg, out sizeInCells);
 
         // 3) origin과 footprint로 pivotCell 계산
         Vector2Int pivotCell = ComputePivotCell(originCell, sizeInCells);

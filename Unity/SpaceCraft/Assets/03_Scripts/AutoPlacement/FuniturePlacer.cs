@@ -42,6 +42,68 @@ public class FurniturePlacer : MonoBehaviour
         // gridBuilder가 이미 Start에서 RebuildAll()을 돌렸다고 가정.
         // 필요한 경우 여기서도 RebuildAll()을 호출 가능.
     }
+    
+    
+    // 수동 배치용 배치 함수 
+    // 조건 무시 후 그리드 위에 배치 가능한지만 판단
+    public bool CanPlaceOnGrid(
+        FurnitureItemData item,
+        int roomID,
+        Vector2Int originCell,
+        int rotationDeg,
+        out Vector2Int sizeInCells
+    )
+    {
+        sizeInCells = Vector2Int.zero;
+    
+        RoomPlacementGrid grid = FindGridByRoomId(roomID);
+        if (grid == null)
+        {
+            Debug.LogWarning("[FurniturePlacer] No grid found for roomID=" + roomID);
+            return false;
+        }
+    
+        float cellSize = grid.cellSize;
+        if (cellSize <= 0f)
+        {
+            cellSize = cellSizeMeters;
+        }
+    
+        // footprint 계산
+        sizeInCells = PlacementCalculator.ComputeFootprintCells(
+            item.sizeCentimeters,
+            cellSize,
+            rotationDeg
+        );
+    
+        if (sizeInCells.x <= 0 || sizeInCells.y <= 0)
+        {
+            return false;
+        }
+    
+        // 그리드 범위 + placementMask 검사
+        for (int dz = 0; dz < sizeInCells.y; dz++)
+        {
+            for (int dx = 0; dx < sizeInCells.x; dx++)
+            {
+                int gx = originCell.x + dx;
+                int gz = originCell.y + dz;
+    
+                if (!grid.InBounds(gx, gz))
+                {
+                    return false;
+                }
+    
+                if (!grid.placementMask[gx, gz])
+                {
+                    return false;
+                }
+            }
+        }
+    
+        return true;
+    }
+
 
     /// [필수조건용 기본 판정 함수]
     /// 주어진 방(roomID)의 그리드에서 originCell을 "시작 셀"로 했을 때,

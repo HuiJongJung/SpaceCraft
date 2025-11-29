@@ -22,6 +22,7 @@ public class FurnitureManager : MonoBehaviour
     [SerializeField] private RoomManager roomManager;
     [SerializeField] private RoomPlacementGridBuilder gridBuilder;
     [SerializeField] private FurniturePlacer furniturePlacer;
+    [SerializeField] private PlaceSceneUI placeSceneUI;
 
     [SerializeField] private int nextInstanceIndex = 1;
 
@@ -49,6 +50,11 @@ public class FurnitureManager : MonoBehaviour
         if (furniturePlacer == null)
         {
             furniturePlacer = FindObjectOfType<FurniturePlacer>();
+        }
+        
+        if (placeSceneUI == null)
+        {
+            placeSceneUI = FindObjectOfType<PlaceSceneUI>();
         }
 
         RebuildMapsFromInventory();
@@ -249,14 +255,21 @@ public class FurnitureManager : MonoBehaviour
         if (ro == null)
         {
             ro = go.AddComponent<RoomObject>();
-            ro.type = RoomObjectType.Furniture;
-            ro.roomIDs.Add(roomID);
-            roomManager.Register(ro, roomID);
-            
-            // Register to RuntimeMap
-            placedRuntimeMap[instanceId] = furniture;
         }
-
+        ro.type = RoomObjectType.Furniture;
+        
+        // roomIDs에 roomID 중복 추가 방지
+        if (!ro.roomIDs.Contains(roomID))
+        {
+            ro.roomIDs.Add(roomID);
+        }
+        
+        // Register furniture to roomManager & runtimeMap
+        roomManager.Register(ro, roomID);
+        placedRuntimeMap[instanceId] = furniture;
+        
+        // Set Slot Color
+        placeSceneUI.SetSlotColor(instanceId, true);
         return furniture;
     }
 
@@ -287,8 +300,8 @@ public class FurnitureManager : MonoBehaviour
                 Destroy(go);
             }
         }
-
-        // Unplace Function (Refresh Grid Visual)
+        
+        // Refresh Grid Visual
         furniturePlacer.UnplaceFurniture(instanceId);
         
         // Remove Object From RuntimeMap
@@ -296,8 +309,6 @@ public class FurnitureManager : MonoBehaviour
 
         // Renew Data
         item.isPlaced = false;
-        item.gridCell = new Vector2Int(0, 0);
-        item.rotation = 0;
 
         // Apply in Inventory Lists
         int index = FindInventoryIndex(instanceId);
@@ -306,6 +317,9 @@ public class FurnitureManager : MonoBehaviour
             inventory[index] = item;
         }
         byInstanceId[instanceId] = item;
+        
+        // Set Slot Color
+        placeSceneUI.SetSlotColor(instanceId, false);
     }
 
     // Delete
