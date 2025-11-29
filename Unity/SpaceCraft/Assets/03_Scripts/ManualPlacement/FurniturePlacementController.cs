@@ -59,9 +59,17 @@ public class FurniturePlacementController : MonoBehaviour
     // Called When Placement Start
     public void BeginPlacement(FurnitureItemData item, int roomID)
     {
+        ClearPreviewMask();
+        
         currentItem = item;
         currentRoomID = roomID;
         currentRotDeg = 0;
+        
+        canPlaceHere = false;
+        hasPreviewArea = false;
+        currentOriginCell = Vector2Int.zero;
+        currentSizeCells = Vector2Int.zero;
+        currentPivotCell = Vector2Int.zero;
 
         FurnitureDefinition def = furnitureManager.GetDB().GetById(item.furnitureId);
         if (def == null)
@@ -106,6 +114,9 @@ public class FurniturePlacementController : MonoBehaviour
     public void CancelPlacement()
     {
         currentItem = null;
+        canPlaceHere = false;
+        hasPreviewArea = false;
+        
         if (ghost != null)
         {
             Destroy(ghost);
@@ -142,53 +153,52 @@ public class FurniturePlacementController : MonoBehaviour
         // Left Click -> Place Item
         if (Input.GetMouseButtonDown(0))
         {
-            if (canPlaceHere)
+            if (!isPlacing || !hasPreviewArea || !canPlaceHere)
             {
-                RoomPlacementGrid grid = FindGridByRoomId(currentRoomID);
-                if (grid == null) return;
-
-                float cellSize = (grid.cellSize > 0) ? grid.cellSize : 0.1f;
-
-                // 1. 여유 공간 및 본체 영역 계산 (Calculator 사용)
-                // (수동 배치는 마우스 위치가 Total Origin인지 Body Origin인지 정책에 따라 다름)
-                // 현재 코드 흐름상 마우스 위치(currentOriginCell)를 '본체 위치'로 가정하고 배치합니다.
-
-                // 1-1. body Size
-                Vector2Int bodySize = currentSizeCells;
-                Vector2Int bodyOrigin = currentOriginCell;
-
-                // 1-2. Compute Clearance
-                var clearance = PlacementCalculator.GetRotatedClearanceInCells(currentItem, cellSize, currentRotDeg);
-
-                // 1-3. Compute Total Origin & Size
-                Vector2Int totalOrigin = new Vector2Int(
-                    bodyOrigin.x - clearance.left,
-                    bodyOrigin.y - clearance.bottom
-                );
-                Vector2Int totalSize = new Vector2Int(
-                    clearance.left + bodySize.x + clearance.right,
-                    clearance.bottom + bodySize.y + clearance.top
-                );
-
-                // 2. Place Furniture
-                furnitureManager.PlaceItem(
-                    currentItem.instanceId,
-                    currentRoomID,
-                    currentPivotCell,
-                    currentRotDeg
-                );
-                
-                // 3. Update Grid Data
-                GridManipulator.MarkGridAsOccupied(grid, totalOrigin, totalSize, bodyOrigin, bodySize);
-                
-                hasPreviewArea = false;
-
-                // 4. Update Grid Visual
-                gridBuilder.BuildRuntimeGridVisuals(currentRoomID);
-                
-                // 5. Cancel Place Mode
-                CancelPlacement();
+                return;
             }
+            
+            RoomPlacementGrid grid = FindGridByRoomId(currentRoomID);
+            if (grid == null) return;
+
+            // 1. Compute Size
+            float cellSize = (grid.cellSize > 0) ? grid.cellSize : 0.1f;
+
+            // 1-1. body Size
+            Vector2Int bodySize = currentSizeCells;
+            Vector2Int bodyOrigin = currentOriginCell;
+
+            // 1-2. Compute Clearance
+            var clearance = PlacementCalculator.GetRotatedClearanceInCells(currentItem, cellSize, currentRotDeg);
+
+            // 1-3. Compute Total Origin & Size
+            Vector2Int totalOrigin = new Vector2Int(
+                bodyOrigin.x - clearance.left,
+                bodyOrigin.y - clearance.bottom
+            );
+            Vector2Int totalSize = new Vector2Int(
+                clearance.left + bodySize.x + clearance.right,
+                clearance.bottom + bodySize.y + clearance.top
+            );
+
+            // 2. Place Furniture
+            furnitureManager.PlaceItem(
+                currentItem.instanceId,
+                currentRoomID,
+                currentPivotCell,
+                currentRotDeg
+            );
+            
+            // 3. Update Grid Data
+            GridManipulator.MarkGridAsOccupied(grid, totalOrigin, totalSize, bodyOrigin, bodySize);
+            
+            hasPreviewArea = false;
+
+            // 4. Update Grid Visual
+            gridBuilder.BuildRuntimeGridVisuals(currentRoomID);
+            
+            // 5. Cancel Place Mode
+            CancelPlacement();
         }
 
         // Right Click -> Cancel Place Mode
