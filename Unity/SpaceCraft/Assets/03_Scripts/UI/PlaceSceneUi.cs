@@ -529,9 +529,6 @@ public class PlaceSceneUI : MonoBehaviour
                 {
                     slotMap.Add(item.instanceId, slot);
                 }
-
-                // Set Color
-                slot.SetColor(item.isPlaced);
             }
 
             // Image / Text
@@ -543,6 +540,9 @@ public class PlaceSceneUI : MonoBehaviour
                 {
                     slot.img = image;
                     image.sprite = def.sprite;
+                    
+                    // Set Color
+                    slot.SetColor(item.isPlaced);
                 }
             }
             

@@ -2,12 +2,12 @@ using UnityEngine;
 
 public static class PlacementCalculator 
 {
-    /// °¡±¸ÀÇ sizeCentimeters¿Í cellSize, rotation¿¡ µû¶ó
-    /// "°¡·Î ¸î ¼¿ x ¼¼·Î(±íÀÌ) ¸î ¼¿À» Â÷ÁöÇÏ´ÂÁö" °è»ê.
-    /// - sizeCentimeters.x = width (°¡·Î, X)
-    /// - sizeCentimeters.z = depth (¼¼·Î, Z)
+    /// ê°€êµ¬ì˜ sizeCentimetersì™€ cellSize, rotationì— ë”°ë¼
+    /// "ê°€ë¡œ ëª‡ ì…€ x ì„¸ë¡œ(ê¹Šì´) ëª‡ ì…€ì„ ì°¨ì§€í•˜ëŠ”ì§€" ê³„ì‚°.
+    /// - sizeCentimeters.x = width (ê°€ë¡œ, X)
+    /// - sizeCentimeters.z = depth (ì„¸ë¡œ, Z)
     /// - rotation 0/180:  width=X, depth=Z
-    /// - rotation 90/270: width=Z, depth=X (È¸ÀüÀ¸·Î µÚ¹Ù²ñ)
+    /// - rotation 90/270: width=Z, depth=X (íšŒì „ìœ¼ë¡œ ë’¤ë°”ë€œ)
     public static Vector2Int ComputeFootprintCells(Vector3 sizeCentimeters, float cellSizeMeter, int rotationDeg)
     {
         const float CM_TO_M = 0.01f;
@@ -18,7 +18,7 @@ public static class PlacementCalculator
         int normalizedRot = Mathf.Abs(rotationDeg) % 360;
         if (normalizedRot == 90 || normalizedRot == 270)
         {
-            // 90/270ÀÏ ¶§ Æø/±íÀÌ ½º¿Ò
+            // 90/270ì¼ ë•Œ í­/ê¹Šì´ ìŠ¤ì™‘
             float tmp = widthCm;
             widthCm = depthCm;
             depthCm = tmp;
@@ -38,8 +38,8 @@ public static class PlacementCalculator
         return new Vector2Int(wCells, dCells);
     }
 
-    /// originCell(ÁÂÃø-ÇÏ´Ü)°ú footprint ¼¿ Å©±â(sizeInCells)¸¦ ±âÁØÀ¸·Î
-    /// °¡±¸ÀÇ "Áß½É ¼¿" À» °è»ê
+    /// originCell(ì¢Œì¸¡-í•˜ë‹¨)ê³¼ footprint ì…€ í¬ê¸°(sizeInCells)ë¥¼ ê¸°ì¤€ìœ¼ë¡œ
+    /// ê°€êµ¬ì˜ "ì¤‘ì‹¬ ì…€" ì„ ê³„ì‚°
     public static Vector2Int ComputePivotCell(Vector2Int originCell, Vector2Int sizeInCells)
     {
         int offsetX = (sizeInCells.x - 1) / 2;
@@ -53,7 +53,7 @@ public static class PlacementCalculator
         return pivot;
     }
 
-    // Áß½ÉÁ¡(Pivot)°ú Å©±â¸¦ ¾Ë ¶§, ¿ŞÂÊ-¾Æ·¡(Origin) ÁÂÇ¥¸¦ ¿ª°è»êÇÏ´Â ÇÔ¼ö
+    // ì¤‘ì‹¬ì (Pivot)ê³¼ í¬ê¸°ë¥¼ ì•Œ ë•Œ, ì™¼ìª½-ì•„ë˜(Origin) ì¢Œí‘œë¥¼ ì—­ê³„ì‚°í•˜ëŠ” í•¨ìˆ˜
     public static Vector2Int ComputeOriginFromPivot(Vector2Int pivot, Vector2Int size)
     {
         int offsetX = (size.x - 1) / 2;
@@ -62,45 +62,45 @@ public static class PlacementCalculator
         return new Vector2Int(pivot.x - offsetX, pivot.y - offsetZ);
     }
 
-    // È¸ÀüµÈ »óÅÂ¿¡¼­ÀÇ »óÇÏÁÂ¿ì ¿©À¯ °ø°£(Cell ´ÜÀ§)À» °è»ê
-    // ¹İÈ¯ ¼ø¼­: (Bottom, Top, Left, Right)
+    // íšŒì „ëœ ìƒíƒœì—ì„œì˜ ìƒí•˜ì¢Œìš° ì—¬ìœ  ê³µê°„(Cell ë‹¨ìœ„)ì„ ê³„ì‚°
+    // ë°˜í™˜ ìˆœì„œ: (Bottom, Top, Left, Right)
     public static (int bottom, int top, int left, int right) GetRotatedClearanceInCells(FurnitureItemData item, float cellSize, int rot)
     {
-        // 1. cm -> cell º¯È¯ (100cm = 1m)
-        // ¿¹: 60cm / 10cm(0.1m) = 6Ä­
+        // 1. cm -> cell ë³€í™˜ (100cm = 1m)
+        // ì˜ˆ: 60cm / 10cm(0.1m) = 6ì¹¸
         int cFront = Mathf.CeilToInt(item.clearance.front * 0.01f / cellSize);
         int cBack = Mathf.CeilToInt(item.clearance.back * 0.01f / cellSize);
         int cLeft = Mathf.CeilToInt(item.clearance.left * 0.01f / cellSize);
         int cRight = Mathf.CeilToInt(item.clearance.right * 0.01f / cellSize);
 
-        // 2. È¸Àü º¯È¯ (Grid ±âÁØ: Bottom(-Z), Top(+Z), Left(-X), Right(+X))
+        // 2. íšŒì „ ë³€í™˜ (Grid ê¸°ì¤€: Bottom(-Z), Top(+Z), Left(-X), Right(+X))
         int normRot = (rot % 360 + 360) % 360;
 
-        // 0µµ: Front=Top(+Z), Back=Bottom(-Z), Left=Left(-X), Right=Right(+X)
+        // 0ë„: Front=Top(+Z), Back=Bottom(-Z), Left=Left(-X), Right=Right(+X)
         if (normRot == 0) return (cBack, cFront, cLeft, cRight);
 
-        // 90µµ: Front=Right, Back=Left, Left=Top, Right=Bottom
+        // 90ë„: Front=Right, Back=Left, Left=Top, Right=Bottom
         if (normRot == 90) return (cRight, cLeft, cBack, cFront);
 
-        // 180µµ: Front=Bottom, Back=Top, Left=Right, Right=Left
+        // 180ë„: Front=Bottom, Back=Top, Left=Right, Right=Left
         if (normRot == 180) return (cFront, cBack, cRight, cLeft);
 
-        // 270µµ: Front=Left, Back=Right, Left=Bottom, Right=Top
+        // 270ë„: Front=Left, Back=Right, Left=Bottom, Right=Top
         if (normRot == 270) return (cLeft, cRight, cFront, cBack);
 
         return (0, 0, 0, 0);
     }
 
-    /// rotationDeg(0/90/180/270)°ú °¡±¸ ·ÎÄÃ ¹æÇâ("front/back/left/right")À» ¹Ş¾Æ¼­
-    /// ±×¸®µå ±âÁØ ¹æÇâ("top/bottom/left/right") ¹®ÀÚ¿­·Î º¯È¯.
+    /// rotationDeg(0/90/180/270)ê³¼ ê°€êµ¬ ë¡œì»¬ ë°©í–¥("front/back/left/right")ì„ ë°›ì•„ì„œ
+    /// ê·¸ë¦¬ë“œ ê¸°ì¤€ ë°©í–¥("top/bottom/left/right") ë¬¸ìì—´ë¡œ ë³€í™˜.
     public static string GetGridSideByRotation(int rotationDeg, string side)
     {
-        // È¸Àü ÈÄ °¡±¸ÀÇ forward / right º¤ÅÍ °è»ê
+        // íšŒì „ í›„ ê°€êµ¬ì˜ forward / right ë²¡í„° ê³„ì‚°
         Quaternion q = Quaternion.Euler(0f, rotationDeg, 0f);
-        Vector3 fwd = q * Vector3.forward; // °¡±¸ÀÇ '¾Õ'
-        Vector3 right = q * Vector3.right;   // °¡±¸ÀÇ '¿À¸¥ÂÊ'
+        Vector3 fwd = q * Vector3.forward; // ê°€êµ¬ì˜ 'ì•'
+        Vector3 right = q * Vector3.right;   // ê°€êµ¬ì˜ 'ì˜¤ë¥¸ìª½'
 
-        // side¿¡ µû¶ó ¾î¶² ¹æÇâ º¤ÅÍ¸¦ ¾µÁö °áÁ¤
+        // sideì— ë”°ë¼ ì–´ë–¤ ë°©í–¥ ë²¡í„°ë¥¼ ì“¸ì§€ ê²°ì •
         Vector3 dir;
         switch (side)
         {
@@ -149,7 +149,7 @@ public static class PlacementCalculator
 
     public static bool IsWallPlacementRequired(FurnitureItemData item)
     {
-        // 4¹æÇâ Áß ÇÏ³ª¶óµµ true¸é º® ¹èÄ¡ °¡±¸
+        // 4ë°©í–¥ ì¤‘ í•˜ë‚˜ë¼ë„ trueë©´ ë²½ ë°°ì¹˜ ê°€êµ¬
         return item.wallDir.back || item.wallDir.front || item.wallDir.left || item.wallDir.right;
     }
 }
