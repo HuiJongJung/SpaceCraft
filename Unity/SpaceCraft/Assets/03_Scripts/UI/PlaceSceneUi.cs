@@ -375,8 +375,8 @@ public class PlaceSceneUI : MonoBehaviour
         heightInput.text = size.y.ToString();
 
         // Reset Options
-        wallFrontToggle.isOn = false;
-        wallBackToggle.isOn = false;
+        wallFrontToggle.isOn = false;    
+        wallBackToggle.isOn = true; // Default Option : WallBack
         wallLeftToggle.isOn = false;
         wallRightToggle.isOn = false;
         
