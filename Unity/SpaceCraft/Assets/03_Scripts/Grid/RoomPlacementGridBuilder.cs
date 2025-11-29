@@ -29,6 +29,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
     [SerializeField] private Material gridClearanceMaterial;
     [SerializeField] private Transform gridRoot; // 그리드 오브젝트들을 담아둘 부모
 
+    private Dictionary<int, MeshRenderer[,]> _tileCache = new Dictionary<int, MeshRenderer[,]>();
     private Dictionary<int, GameObject> roomGridRoots = new Dictionary<int, GameObject>();
 
     // 결과물: 방별 그리드
@@ -53,6 +54,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
 #endif
 
         grids.Clear();
+        _tileCache.Clear();
 
         if (data == null || data._layout == null || data._layout.rooms == null)
         {
@@ -688,101 +690,120 @@ public class RoomPlacementGridBuilder : MonoBehaviour
             gridClearanceMaterial.color = new Color(1f, 0.64f, 0f, 0.4f); // 주황 (여유 공간)
         }
     }
-    // [수정] targetRoomID 인자 추가 (기본값 -1: 전체 갱신)
+
+    /// 그리드를 그립니다. 이미 생성되어 있다면 머테리얼만 갱신(Refresh)하고, 없다면 생성(Create)합니다.
     public void BuildRuntimeGridVisuals(int targetRoomID = -1)
     {
         EnsureGridMaterial();
+        if (gridRoot == null) gridRoot = this.transform;
 
-        if (gridRoot == null)
-            gridRoot = this.transform;
-
-        // 1. 기존 그리드 오브젝트 삭제 (청소)
-        if (targetRoomID == -1)
-        {
-            // 전체 갱신일 경우: 싹 다 지우고 초기화
-            for (int i = gridRoot.childCount - 1; i >= 0; i--)
-            {
-                Destroy(gridRoot.GetChild(i).gameObject);
-            }
-            roomGridRoots.Clear();
-        }
-        else
-        {
-            // 특정 방 갱신일 경우: 해당 방의 오브젝트만 찾아서 삭제
-            if (roomGridRoots.TryGetValue(targetRoomID, out GameObject oldRoot))
-            {
-                if (oldRoot != null) Destroy(oldRoot);
-                roomGridRoots.Remove(targetRoomID);
-            }
-        }
-
-        // 2. 그리드 재생성 루프
         foreach (RoomPlacementGrid grid in grids)
         {
-            // [추가] 타겟 방이 지정되어 있고, 현재 처리 중인 그리드 ID와 다르면 건너뜀
             if (targetRoomID != -1 && grid.roomID != targetRoomID) continue;
 
-            // 🔹 방별 루트 오브젝트 생성
-            GameObject roomRootGO = new GameObject($"Grid_Room_{grid.roomID}");
-            roomRootGO.transform.SetParent(gridRoot, false);
-
-            // 딕셔너리에 등록 (나중에 삭제할 때 찾기 위함)
-            roomGridRoots[grid.roomID] = roomRootGO;
-
-            for (int gz = 0; gz < grid.rows; gz++)
+            // 1. 캐시 확인: 이미 타일이 만들어져 있는가?
+            if (_tileCache.ContainsKey(grid.roomID) && roomGridRoots.ContainsKey(grid.roomID))
             {
-                for (int gx = 0; gx < grid.cols; gx++)
+                // 있으면 -> 색깔만 갱신 (Refresh)
+                RefreshGridMaterials(grid);
+            }
+            else
+            {
+                // 없으면 -> 오브젝트 생성 (Create)
+                CreateGridObjects(grid);
+            }
+        }
+    }
+
+    // 타일 오브젝트를 처음 생성하는 함수
+    private void CreateGridObjects(RoomPlacementGrid grid)
+    {
+        if (roomGridRoots.TryGetValue(grid.roomID, out GameObject oldRoot)) Destroy(oldRoot);
+
+        GameObject roomRootGO = new GameObject($"Grid_Room_{grid.roomID}");
+        roomRootGO.transform.SetParent(gridRoot, false);
+        roomGridRoots[grid.roomID] = roomRootGO;
+
+        // 캐시 배열 할당
+        MeshRenderer[,] renderers = new MeshRenderer[grid.cols, grid.rows];
+
+        for (int gz = 0; gz < grid.rows; gz++)
+        {
+            for (int gx = 0; gx < grid.cols; gx++)
+            {
+                // 안 그릴 곳(벽 등)은 패스
+                if (!IsTileVisible(grid, gx, gz)) continue;
+
+                Vector3 c = grid.GridCenterToWorld(gx, gz, 0f);
+                c.y += 0.01f;
+
+                GameObject tile = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                tile.name = $"Tile_{gx}_{gz}";
+                tile.transform.SetParent(roomRootGO.transform, false);
+                tile.transform.position = c;
+                tile.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+                float s = grid.cellSize * 0.98f;
+                tile.transform.localScale = new Vector3(s, s, 1f);
+
+                Destroy(tile.GetComponent<Collider>());
+
+                // 렌더러 캐싱 & 초기 색상 설정
+                MeshRenderer mr = tile.GetComponent<MeshRenderer>();
+                renderers[gx, gz] = mr;
+
+                mr.material = GetMaterialForGrid(grid, gx, gz);
+            }
+        }
+        _tileCache[grid.roomID] = renderers;
+    }
+
+    // 이미 있는 타일의 색상만 바꾸는 함수 (최적화)
+    private void RefreshGridMaterials(RoomPlacementGrid grid)
+    {
+        MeshRenderer[,] renderers = _tileCache[grid.roomID];
+
+        for (int gz = 0; gz < grid.rows; gz++)
+        {
+            for (int gx = 0; gx < grid.cols; gx++)
+            {
+                MeshRenderer mr = renderers[gx, gz];
+                if (mr == null) continue;
+
+                // 현재 상태에 맞는 머테리얼 가져오기
+                Material correctMat = GetMaterialForGrid(grid, gx, gz);
+
+                // 다를 때만 교체
+                if (correctMat != null && mr.sharedMaterial != correctMat)
                 {
-                    // 어떤 재질을 쓸지 결정하는 로직
-                    Material matToUse = null;
-
-                    // 1순위: 물리적 본체 (Physical Body) -> 빨간색
-                    if (grid.physicalBodyMask != null && grid.physicalBodyMask[gx, gz])
-                    {
-                        matToUse = gridOccupiedMaterial;
-                    }
-                    // 2순위: 점유는 됐는데 본체는 아님 (즉, 여유 공간) -> 주황색
-                    else if (grid.occupiedMask != null && grid.occupiedMask[gx, gz])
-                    {
-                        matToUse = gridClearanceMaterial;
-                    }
-                    // 3순위: 배치 가능 (빈 땅) -> 초록색
-                    else if (grid.placementMask[gx, gz])
-                    {
-                        matToUse = gridMaterial;
-                    }
-                    // 그 외 (벽, 문) -> 안 그림
-                    else
-                    {
-                        continue;
-                    }
-
-                    // 타일 생성
-                    Vector3 c = grid.GridCenterToWorld(gx, gz, 0f);
-                    c.y += 0.01f;
-
-                    GameObject tile = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                    tile.name = $"Grid_{grid.roomID}_{gx}_{gz}";
-                    tile.transform.SetParent(roomRootGO.transform, false);
-                    tile.transform.position = c;
-                    tile.transform.rotation = Quaternion.Euler(90f, 0f, 0f);  // 위쪽(+Y) 바라보게
-                    float s = grid.cellSize * 0.98f;
-                    tile.transform.localScale = new Vector3(s, s, 1f);
-
-                    var mr = tile.GetComponent<MeshRenderer>();
-                    if (matToUse != null)
-                        mr.material = matToUse; // 결정된 재질 할당
-
-                    var col = tile.GetComponent<Collider>();
-                    if (col != null) Destroy(col);
+                    mr.material = correctMat;
                 }
             }
         }
+    }
 
-        if (targetRoomID == -1)
-            Debug.Log($"[GridVisual] Rebuilt ALL grids. ({roomGridRoots.Count} rooms)");
-        else
-            Debug.Log($"[GridVisual] Rebuilt grid for Room {targetRoomID}.");
+    // 상태에 따른 머테리얼 결정 로직
+    private Material GetMaterialForGrid(RoomPlacementGrid grid, int gx, int gz)
+    {
+        if (grid.physicalBodyMask != null && grid.physicalBodyMask[gx, gz])
+            return gridOccupiedMaterial; // 빨강 (본체)
+
+        if (grid.occupiedMask != null && grid.occupiedMask[gx, gz])
+            return gridClearanceMaterial; // 주황 (여유 공간)
+
+        // (디버그용) 벽 구역도 보고 싶으면 주석 해제
+        // if (grid.wallZoneMask != null && grid.wallZoneMask[gx, gz]) return gridMaterial; 
+
+        if (grid.placementMask[gx, gz])
+            return gridMaterial; // 초록 (빈 땅)
+
+        return null;
+    }
+
+    // 타일을 생성할지 말지 결정
+    private bool IsTileVisible(RoomPlacementGrid grid, int gx, int gz)
+    {
+        return grid.placementMask[gx, gz] ||
+               (grid.occupiedMask != null && grid.occupiedMask[gx, gz]);
     }
 
     public void ShowOnlyRoomGrid(int roomID)
