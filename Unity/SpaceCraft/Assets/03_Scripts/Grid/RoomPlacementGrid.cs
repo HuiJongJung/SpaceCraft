@@ -15,6 +15,7 @@ public class RoomPlacementGrid
     public bool[,] placementMask;
     // 가구에 의해 점유된 상태인지 확인용
     public bool[,] occupiedMask;
+    public bool[,] physicalBodyMask;
     // 벽 인접 여부
     public bool[,] wallZoneMask;
     public bool[,] doorMask;

@@ -26,6 +26,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
     [SerializeField] private bool showRuntimeGrid = false;
     [SerializeField] private Material gridMaterial;
     [SerializeField] private Material gridOccupiedMaterial;
+    [SerializeField] private Material gridClearanceMaterial;
     [SerializeField] private Transform gridRoot; // 그리드 오브젝트들을 담아둘 부모
 
     private Dictionary<int, GameObject> roomGridRoots = new Dictionary<int, GameObject>();
@@ -102,6 +103,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
             }
 
             grid.occupiedMask = new bool[cols, rows];
+            grid.physicalBodyMask = new bool[cols, rows];
             grid.doorMask = new bool[cols, rows];
 
             IdentifyWallZones(grid);
@@ -624,21 +626,23 @@ public class RoomPlacementGridBuilder : MonoBehaviour
             {
                 for (int gx = 0; gx < grid.cols; gx++)
                 {
-                    // 1. 점유된 곳(가구 있음) -> 빨간색
-                    if (grid.occupiedMask != null && grid.occupiedMask[gx, gz])
+                    if (grid.physicalBodyMask != null && grid.physicalBodyMask[gx, gz])
                     {
-                        Gizmos.color = new Color(1f, 0f, 0f, gizmoAlpha); // Red
+                        Gizmos.color = new Color(1f, 0f, 0f, gizmoAlpha); // Red (Body)
                     }
-                    // 2. 비어있고 배치 가능한 곳 -> 초록색
+                    else if (grid.occupiedMask != null && grid.occupiedMask[gx, gz])
+                    {
+                        Gizmos.color = new Color(1f, 0.64f, 0f, gizmoAlpha); // Orange (Clearance)
+                    }
+                    else if (grid.wallZoneMask != null && grid.wallZoneMask[gx, gz])
+                    {
+                        Gizmos.color = new Color(0f, 0f, 1f, gizmoAlpha); // Blue (Wall Zone - 디버깅용)
+                    }
                     else if (grid.placementMask[gx, gz])
                     {
-                        Gizmos.color = new Color(0f, 1f, 0f, gizmoAlpha); // Green
+                        Gizmos.color = new Color(0f, 1f, 0f, gizmoAlpha); // Green (Empty)
                     }
-                    // 3. 둘 다 아니면(벽, 문 등) -> 그리지 않음
-                    else
-                    {
-                        continue;
-                    }
+                    else continue;
 
                     // 큐브 그리기 (기존 코드 유지)
                     Vector3 c = grid.GridCenterToWorld(gx, gz, y);
@@ -676,6 +680,12 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         {
             gridOccupiedMaterial = new Material(Shader.Find("Unlit/Color"));
             gridOccupiedMaterial.color = new Color(1f, 0f, 0f); // 빨간색 반투명
+        }
+
+        if (gridClearanceMaterial == null)
+        {
+            gridClearanceMaterial = new Material(Shader.Find("Unlit/Color"));
+            gridClearanceMaterial.color = new Color(1f, 0.64f, 0f, 0.4f); // 주황 (여유 공간)
         }
     }
     // [수정] targetRoomID 인자 추가 (기본값 -1: 전체 갱신)
@@ -726,17 +736,22 @@ public class RoomPlacementGridBuilder : MonoBehaviour
                     // 어떤 재질을 쓸지 결정하는 로직
                     Material matToUse = null;
 
-                    // 1순위: 가구에 의해 점유된 곳 -> 빨간색
-                    if (grid.occupiedMask != null && grid.occupiedMask[gx, gz])
+                    // 1순위: 물리적 본체 (Physical Body) -> 빨간색
+                    if (grid.physicalBodyMask != null && grid.physicalBodyMask[gx, gz])
                     {
                         matToUse = gridOccupiedMaterial;
                     }
-                    // 2순위: 비어있고 배치 가능한 곳 -> 초록색
+                    // 2순위: 점유는 됐는데 본체는 아님 (즉, 여유 공간) -> 주황색
+                    else if (grid.occupiedMask != null && grid.occupiedMask[gx, gz])
+                    {
+                        matToUse = gridClearanceMaterial;
+                    }
+                    // 3순위: 배치 가능 (빈 땅) -> 초록색
                     else if (grid.placementMask[gx, gz])
                     {
                         matToUse = gridMaterial;
                     }
-                    // 3순위: 벽이나 문 영역 -> 그리지 않음
+                    // 그 외 (벽, 문) -> 안 그림
                     else
                     {
                         continue;
