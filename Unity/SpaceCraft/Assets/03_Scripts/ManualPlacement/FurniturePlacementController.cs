@@ -7,6 +7,7 @@ public class FurniturePlacementController : MonoBehaviour
     [SerializeField] private FurniturePlacer placer;
     [SerializeField] private FurnitureManager furnitureManager;
     [SerializeField] private RoomPlacementGridBuilder gridBuilder;
+    [SerializeField] private PlaceSceneUI placeSceneUI;
 
     [Header("Raycast")]
     [SerializeField] private LayerMask floorMask;
@@ -88,6 +89,12 @@ public class FurniturePlacementController : MonoBehaviour
         SetGhostMaterial(ghost, placeableColor);
 
         isPlacing = true;
+        
+        // Lock UI
+        if (placeSceneUI != null)
+        {
+            placeSceneUI.SetPlacementMode(isPlacing);
+        }
     }
     
     public void BeginRepositionExisting(FurnitureItemData item)
@@ -122,7 +129,14 @@ public class FurniturePlacementController : MonoBehaviour
             Destroy(ghost);
         }
         ghost = null;
+        
         isPlacing = false;
+        
+        // Unlock UI
+        if (placeSceneUI != null)
+        {
+            placeSceneUI.SetPlacementMode(isPlacing);
+        }
     }
 
     private void Update()

@@ -7,7 +7,7 @@ public class MyFurnitureSlot : MonoBehaviour, IPointerClickHandler
     public string instanceId;
 
     public Image img;
-
+    private Button button;
     private PlaceSceneUI placeSceneUI;
     
     [SerializeField] private Color placedColor = Color.green;
@@ -18,7 +18,7 @@ public class MyFurnitureSlot : MonoBehaviour, IPointerClickHandler
         placeSceneUI = ui;
         this.instanceId = instanceId;
 
-        Button button = GetComponent<Button>();
+        button = GetComponent<Button>();
         if (button != null)
         {
             button.onClick.RemoveAllListeners();
@@ -52,6 +52,18 @@ public class MyFurnitureSlot : MonoBehaviour, IPointerClickHandler
         {
             // 우클릭 → 가구 정보창
             placeSceneUI.OnRightClickFurnitureSlot(instanceId);
+        }
+    }
+    
+    public void SetInteractable(bool interactable)
+    {
+        if (button == null)
+        {
+            return;
+        }
+        if (button != null)
+        {
+            button.interactable = interactable;
         }
     }
 }

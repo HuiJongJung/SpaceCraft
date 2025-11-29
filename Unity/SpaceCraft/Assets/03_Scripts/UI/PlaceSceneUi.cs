@@ -12,6 +12,7 @@ public class PlaceSceneUI : MonoBehaviour
     [SerializeField] private FurnitureManager furnitureManager;
     [SerializeField] private RoomManager roomManager;
     [SerializeField] private FurniturePlacementController placementController;
+    [SerializeField] private RoomPlacementGridBuilder gridBuilder;
     
     [Header("Panels")]
     public GameObject mainPanel;
@@ -19,18 +20,26 @@ public class PlaceSceneUI : MonoBehaviour
     public GameObject sizePanel;
     public GameObject detailPanel;
     public GameObject loadingPanel;
-
     public GameObject detailPanelReadOnly;
     public GameObject autoPlacePanel;
+    public GameObject simulationPanel;
 
     [Header("Main UI (My Furniture List)")]
+    public Button returnButton;
     public Transform myFurnitureListRoot;
     public GameObject furnitureSlotPrefab;
     public Button prevButton;
     public Button nextButton;
+    public Button roomNameButton;
+    public Button saveButton;
+    public Button categoryButton;
+    public Button autoPlaceButton;
     public TextMeshProUGUI roomNameText;
     public TextMeshProUGUI indexText;
-    public Button saveButton;
+
+    [Header("AutoPlace UI")]
+    public Button closeAutoPlaceButton;
+    public Button startAutoPlaceButton;
     
     [Header("Detail Panel (ReadOnly)")]
     public Image roFurnitureImage;
@@ -57,14 +66,17 @@ public class PlaceSceneUI : MonoBehaviour
     public Toggle roPrivacyBackToggle;
     public Toggle roPrivacyLeftToggle;
     public Toggle roPrivacyRightToggle;
-    
+
+    public Button closeDetailPanelReadOnlyButton;
     public Button deleteFurnitureButton;
-    
-    [Header("Category UI")]
+
+    [Header("Category UI")] 
+    public Button returnToMainButton;
     public Transform categoryListRoot;   
     public GameObject categorySlotPrefab;
 
-    [Header("Size UI")]
+    [Header("Size UI")] 
+    public Button returnToCategoryButton;
     public Transform sizeListRoot;
     public GameObject sizeItemPrefab;
 
@@ -95,8 +107,11 @@ public class PlaceSceneUI : MonoBehaviour
     public Toggle privacyLeftToggle;
     public Toggle privacyRightToggle;
 
+    public Button closeDetailButton;
     public Button addFurnitureButton;
-    
+
+    [Header("Simulation Panel")] 
+    public Button returnToPlaceButton;
     
     // 현재 선택 상태
     private string currentReadOnlyInstanceId;
@@ -109,6 +124,9 @@ public class PlaceSceneUI : MonoBehaviour
     // Slot Manage
     private Dictionary<string, MyFurnitureSlot> slotMap =
         new Dictionary<string, MyFurnitureSlot>();
+    
+    // Placce Mode Manage
+    private bool isPlacementMode = false;
     
     void Start()
     {
@@ -123,25 +141,13 @@ public class PlaceSceneUI : MonoBehaviour
         {
             roomManager = FindObjectOfType<RoomManager>();
         }
-        
-        // Save Button
-        saveButton.onClick.RemoveAllListeners();
-        saveButton.onClick.AddListener(OnClickSaveButton);
-        
-        // Prev Button & next Button
-        prevButton.onClick.RemoveAllListeners();
-        prevButton.onClick.AddListener(OnClickPrevRoom);
-        
-        nextButton.onClick.RemoveAllListeners();
-        nextButton.onClick.AddListener(OnClickNextRoom);
-        
-        // Add Function
-        addFurnitureButton.onClick.RemoveAllListeners();
-        addFurnitureButton.onClick.AddListener(OnClickAddFurnitureButton);
-        
-        // Delete Function
-        deleteFurnitureButton.onClick.RemoveAllListeners();
-        deleteFurnitureButton.onClick.AddListener(OnClickDeleteFurnitureButton);
+
+        if (gridBuilder == null)
+        {
+            gridBuilder = FindObjectOfType<RoomPlacementGridBuilder>();
+        }
+
+        SetButtonListeners();
         
         if (spaceData == null || spaceData._layout == null || spaceData._layout.rooms == null)
         {
@@ -158,6 +164,72 @@ public class PlaceSceneUI : MonoBehaviour
         // 처음 방으로 초기화
         roomManager.SetActiveOnly(0);
         UpdateRoomView();
+    }
+
+    public void SetButtonListeners()
+    { 
+        // Return Button
+        returnButton.onClick.RemoveAllListeners();
+        returnButton.onClick.AddListener(OnClickReturnButton);
+        
+        // Save Button
+        saveButton.onClick.RemoveAllListeners();
+        saveButton.onClick.AddListener(OnClickSaveButton);
+        
+        // Prev Button & next Button
+        prevButton.onClick.RemoveAllListeners();
+        prevButton.onClick.AddListener(OnClickPrevRoom);
+        
+        nextButton.onClick.RemoveAllListeners();
+        nextButton.onClick.AddListener(OnClickNextRoom);
+        
+        // Add Function
+        addFurnitureButton.onClick.RemoveAllListeners();
+        addFurnitureButton.onClick.AddListener(OnClickAddFurnitureButton);
+        
+        // Close Detail Panel Read Only 
+        closeDetailPanelReadOnlyButton.onClick.RemoveAllListeners();
+        closeDetailPanelReadOnlyButton.onClick.AddListener(OnClickCloseDetailPanelReadOnly);
+        
+        // Delete Function
+        deleteFurnitureButton.onClick.RemoveAllListeners();
+        deleteFurnitureButton.onClick.AddListener(OnClickDeleteFurnitureButton);
+        
+        // roomName Button
+        roomNameButton.onClick.RemoveAllListeners();
+        roomNameButton.onClick.AddListener(OnClickRoomNameButton);
+        
+        // category Button
+        categoryButton.onClick.RemoveAllListeners();
+        categoryButton.onClick.AddListener(OnClickCategoryButton);
+        
+        // AutoPlace Button
+        autoPlaceButton.onClick.RemoveAllListeners();
+        autoPlaceButton.onClick.AddListener(OnClickAutoPlaceButton);
+        
+        // Close Auto Place Button
+        closeAutoPlaceButton.onClick.RemoveAllListeners();
+        closeAutoPlaceButton.onClick.AddListener(OnClickCloseAutoPlaceButton);
+        
+        // Start Auto Place Button
+        startAutoPlaceButton.onClick.RemoveAllListeners();
+        startAutoPlaceButton.onClick.AddListener(OnClickStartAutoPlaceButton);
+
+        // Return To Main Button 
+        returnToMainButton.onClick.RemoveAllListeners();
+        returnToMainButton.onClick.AddListener(ShowMain);
+        
+        // Return To Category Button
+        returnToCategoryButton.onClick.RemoveAllListeners();
+        returnToCategoryButton.onClick.AddListener(ShowCategory);
+        
+        // close Detail Button
+        closeDetailButton.onClick.RemoveAllListeners();
+        closeDetailButton.onClick.AddListener(OnClickCloseDetailPanel);
+        
+        // Return To Place Button
+        returnToPlaceButton.onClick.RemoveAllListeners();
+        returnToPlaceButton.onClick.AddListener(OnClickReturnToPlaceButton);
     }
     
     public void SetSlotColor(string instanceId, bool isPlaced)
@@ -182,6 +254,7 @@ public class PlaceSceneUI : MonoBehaviour
         loadingPanel.SetActive(false);
         detailPanelReadOnly.SetActive(false);
         autoPlacePanel.SetActive(false);
+        simulationPanel.SetActive(false);
     }
 
     public void ShowMain()
@@ -207,30 +280,24 @@ public class PlaceSceneUI : MonoBehaviour
         sizePanel.SetActive(true);
     }
 
-    public void ShowDetail()
+    public void SetDetailPanel(bool isActive)
     {
-        detailPanel.SetActive(true);
+        detailPanel.SetActive(isActive);
     }
 
-    public void CloseDetail()
+    public void SetDetailPanelReadOnly(bool isActive)
     {
-        detailPanel.SetActive(false);
+        detailPanelReadOnly.SetActive(isActive);
     }
 
-    public void ShowDetailPanelReadOnly()
+    public void SetAutoPlacePanel(bool isActive)
     {
-        detailPanelReadOnly.SetActive(true);
+        autoPlacePanel.SetActive(isActive);
     }
-
-    public void CloseDetailPanelReadOnly()
+    
+    public void SetSimulationPanel(bool isActive)
     {
-        detailPanelReadOnly.SetActive(false);
-    }
-
-    public void ToggleAutoPlacePanel()
-    {
-        if (autoPlacePanel.activeSelf) autoPlacePanel.SetActive(false);
-        else autoPlacePanel.SetActive(true);
+        simulationPanel.SetActive(isActive);
     }
     
     #endregion
@@ -410,11 +477,17 @@ public class PlaceSceneUI : MonoBehaviour
         privacyLeftToggle.isOn = false;
         privacyRightToggle.isOn = false;
 
-        ShowDetail();
+        SetDetailPanel(true);
     }
     #endregion
     
     #region DetailPanelMethod
+
+    public void OnClickCloseDetailPanel()
+    {
+        SetDetailPanel(false);
+    }
+    
     public void OnClickAddFurnitureButton()
     {
         if (furnitureManager == null)
@@ -494,6 +567,169 @@ public class PlaceSceneUI : MonoBehaviour
     #endregion
     
     #region MainPanelMethod
+    
+    // Prev Button
+    public void OnClickPrevRoom()
+    {
+        int roomCnt = roomManager.GetRoomCount();
+        if (roomCnt==0)
+        {
+            return;
+        }
+
+        int curRoomID = roomManager.currentRoomID;
+        
+        curRoomID = curRoomID - 1;
+        if (curRoomID < 0)
+        {
+            curRoomID = roomCnt - 1;
+        }
+
+        roomManager.currentRoomID = curRoomID;
+        
+        // Refresh List & Room
+        RefreshFurnitureList();
+        UpdateRoomView();
+    }
+
+    // Next Button
+    public void OnClickNextRoom()
+    {
+        int roomCnt = roomManager.GetRoomCount();
+        if (roomCnt == 0)
+        {
+            return;
+        }
+        
+        int curRoomID = roomManager.currentRoomID;
+
+        curRoomID = curRoomID + 1;
+        if (curRoomID >= roomManager.GetRoomCount())
+        {
+            curRoomID = 0;
+        }
+        
+        roomManager.currentRoomID = curRoomID;
+        
+        // Refresh List & Room
+        RefreshFurnitureList();
+        UpdateRoomView();
+    }
+    
+    // Save Button
+    public void OnClickSaveButton()
+    {
+        // Show All Rooms
+        roomManager.SetAllRoomsActive(true);
+        
+        // Hide All Grids
+        gridBuilder.HideAllRoomGrids();
+        
+        // Save Datas
+        
+        // Spawn Player
+        
+        // Show Simulation UI
+        DeactiveAllPanels();
+        SetSimulationPanel(true);
+    }
+    
+    // LeftClick -> Place Mode
+    public void OnLeftClickFurnitureSlot(string instanceId)
+    {
+        // 0. No Furniture -> return
+        FurnitureItemData item = furnitureManager.GetItemByInstanceId(instanceId);
+        if (item == null)
+        {
+            Debug.LogWarning("OnLeftClickFurnitureSlot: item not found: " + instanceId);
+            return;
+        }
+        
+        // 1. if isPlaced -> RePosition
+        if (item.isPlaced)
+        {
+            // 이미 배치된 가구 → 원래 위치에서 재배치 모드
+            placementController.BeginRepositionExisting(item);
+        }
+        // 2. else -> Begin Placement
+        else
+        {
+            placementController.BeginPlacement(item, roomManager.currentRoomID);
+        }
+    }
+    
+    // RightClick -> Show Detail Panel (RO)
+    public void OnRightClickFurnitureSlot(string instanceId)
+    {
+        FurnitureItemData item = furnitureManager.GetItemByInstanceId(instanceId);
+        if (item == null)
+        {
+            return;
+        }
+
+        currentReadOnlyInstanceId = instanceId;
+        ApplyReadOnlyDetail(item);
+        SetDetailPanelReadOnly(true);
+    }
+
+    public void OnClickCloseDetailPanelReadOnly()
+    {
+        SetDetailPanelReadOnly(false);
+    }
+    
+    public void OnClickDeleteFurnitureButton()
+    {
+        if (string.IsNullOrEmpty(currentReadOnlyInstanceId))
+        {
+            return;
+        }
+
+        if (furnitureManager == null)
+        {
+            return;
+        }
+
+        // Delete ( inventory + roomMap + object )
+        furnitureManager.DeleteFurnitureItem(currentReadOnlyInstanceId);
+
+        // Refresh
+        RefreshFurnitureList();
+
+        // Close ReadOnly Panel
+        SetDetailPanelReadOnly(false);
+
+        // Reset current ID
+        currentReadOnlyInstanceId = null;
+    }
+
+    // OnClick Room Name -> Rename room
+    public void OnClickRoomNameButton()
+    {
+        // Rename Room
+        Debug.Log("Set Room Name");
+    }
+
+    public void OnClickCategoryButton()
+    {
+        ShowCategory();
+    }
+
+    public void OnClickAutoPlaceButton()
+    {
+        SetAutoPlacePanel(true);
+    }
+
+    public void OnClickCloseAutoPlaceButton()
+    {
+        SetAutoPlacePanel(false);
+    }
+
+    public void OnClickStartAutoPlaceButton()
+    {
+        Debug.Log("Start Auto Place");
+        // *** 추가 예정 *** 
+    }
+    
     // Refresh Furniture List
     private void RefreshFurnitureList()
     {
@@ -553,45 +789,6 @@ public class PlaceSceneUI : MonoBehaviour
             }
         }
     }
-    
-    
-    // LeftClick -> Place Mode
-    public void OnLeftClickFurnitureSlot(string instanceId)
-    {
-        // 0. No Furniture -> return
-        FurnitureItemData item = furnitureManager.GetItemByInstanceId(instanceId);
-        if (item == null)
-        {
-            Debug.LogWarning("OnLeftClickFurnitureSlot: item not found: " + instanceId);
-            return;
-        }
-        
-        // 1. if isPlaced -> RePosition
-        if (item.isPlaced)
-        {
-            // 이미 배치된 가구 → 원래 위치에서 재배치 모드
-            placementController.BeginRepositionExisting(item);
-        }
-        // 2. else -> Begin Placement
-        else
-        {
-            placementController.BeginPlacement(item, roomManager.currentRoomID);
-        }
-    }
-    
-    // RightClick -> Show Detail Panel (RO)
-    public void OnRightClickFurnitureSlot(string instanceId)
-    {
-        FurnitureItemData item = furnitureManager.GetItemByInstanceId(instanceId);
-        if (item == null)
-        {
-            return;
-        }
-
-        currentReadOnlyInstanceId = instanceId;
-        ApplyReadOnlyDetail(item);
-        ShowDetailPanelReadOnly();
-    }
 
     private void ApplyReadOnlyDetail(FurnitureItemData item)
     {
@@ -633,91 +830,6 @@ public class PlaceSceneUI : MonoBehaviour
         roPrivacyBackToggle.isOn  = item.privacyDir.back;
         roPrivacyLeftToggle.isOn  = item.privacyDir.left;
         roPrivacyRightToggle.isOn = item.privacyDir.right;
-    }
-    
-    public void OnClickDeleteFurnitureButton()
-    {
-        if (string.IsNullOrEmpty(currentReadOnlyInstanceId))
-        {
-            return;
-        }
-
-        if (furnitureManager == null)
-        {
-            return;
-        }
-
-        // Delete ( inventory + roomMap + object )
-        furnitureManager.DeleteFurnitureItem(currentReadOnlyInstanceId);
-
-        // Refresh
-        RefreshFurnitureList();
-
-        // Close ReadOnly Panel
-        CloseDetailPanelReadOnly();
-
-        // Reset current ID
-        currentReadOnlyInstanceId = null;
-    }
-    
-    // Prev Button
-    public void OnClickPrevRoom()
-    {
-        int roomCnt = roomManager.GetRoomCount();
-        if (roomCnt==0)
-        {
-            return;
-        }
-
-        int curRoomID = roomManager.currentRoomID;
-        
-        curRoomID = curRoomID - 1;
-        if (curRoomID < 0)
-        {
-            curRoomID = roomCnt - 1;
-        }
-
-        roomManager.currentRoomID = curRoomID;
-        
-        // Refresh List & Room
-        RefreshFurnitureList();
-        UpdateRoomView();
-    }
-
-    // Next Button
-    public void OnClickNextRoom()
-    {
-        int roomCnt = roomManager.GetRoomCount();
-        if (roomCnt == 0)
-        {
-            return;
-        }
-        
-        int curRoomID = roomManager.currentRoomID;
-
-        curRoomID = curRoomID + 1;
-        if (curRoomID >= roomManager.GetRoomCount())
-        {
-            curRoomID = 0;
-        }
-        
-        roomManager.currentRoomID = curRoomID;
-        
-        // Refresh List & Room
-        RefreshFurnitureList();
-        UpdateRoomView();
-    }
-    
-    // Save Button
-    public void OnClickSaveButton()
-    {
-        // Show All Rooms
-        roomManager.SetAllRoomsActive(true);
-        // Save Datas
-        
-        // Spawn Player
-        
-        // Show Simulation UI
     }
 
     // room Name / room Index / RoomManager Update
@@ -767,6 +879,54 @@ public class PlaceSceneUI : MonoBehaviour
         }
     }
     
+    // Place Mode -> Deactive All Buttons
+    public void SetPlacementMode(bool isPlacing)
+    {
+        isPlacementMode = isPlacing;
+
+        // isPlacing -> interact false
+        bool interact = !isPlacing;
+
+        // 상단 네비게이션 버튼 잠금
+        if (returnButton != null) returnButton.interactable = interact;
+        if (roomNameButton != null) roomNameButton.interactable = interact;
+        if (prevButton != null) prevButton.interactable = interact;
+        if (nextButton != null) nextButton.interactable = interact;
+        if (saveButton != null) saveButton.interactable = interact;
+        if (autoPlaceButton != null)  autoPlaceButton.interactable  = interact;
+        if (categoryButton != null) categoryButton.interactable = interact;
+
+        // 하단 가구 슬롯 버튼 잠금
+        foreach (KeyValuePair<string, MyFurnitureSlot> kvp in slotMap)
+        {
+            MyFurnitureSlot slot = kvp.Value;
+            if (slot != null)
+            {
+                slot.SetInteractable(interact);
+            }
+        }
+    }
+
+    public bool IsPlacementMode()
+    {
+        return isPlacementMode;
+    }
+    
+    
+    #endregion
+    
+    #region Simulation Panel
+
+    public void OnClickReturnToPlaceButton()
+    {
+        // Active index 0 room
+        roomManager.currentRoomID = 0;
+        UpdateRoomView();
+        
+        // Show Main Panel
+        ShowMain();
+    }
+    
     #endregion
 
     #region Others
@@ -788,8 +948,9 @@ public class PlaceSceneUI : MonoBehaviour
     }
     
     //go to Floor Plan Scene
-    public void OnClickFloorPlanButton()
+    public void OnClickReturnButton()
     {
+        
         SceneManager.LoadScene("02_FloorPlanScene");
     }
     
