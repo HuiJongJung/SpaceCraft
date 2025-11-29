@@ -2021,6 +2021,7 @@ MonoBehaviour:
   inventory: []
   roomManager: {fileID: 0}
   gridBuilder: {fileID: 0}
+  furniturePlacer: {fileID: 0}
   nextInstanceIndex: 1
 --- !u!4 &99871892
 Transform:
@@ -17864,6 +17865,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1335195082}
   m_CullTransparentMesh: 1
+--- !u!1 &1342091808
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1342091810}
+  - component: {fileID: 1342091809}
+  m_Layer: 0
+  m_Name: FurniturePlacementController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1342091809
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1342091808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efd04232b063a8d4f9398f848de835b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cam: {fileID: 1142824146}
+  placer: {fileID: 1304543416}
+  furnitureManager: {fileID: 99871891}
+  gridBuilder: {fileID: 1387516483}
+  floorMask:
+    serializedVersion: 2
+    m_Bits: 64
+  placeableColor: {r: 0, g: 1, b: 0, a: 0.5}
+  blockedColor: {r: 1, g: 0, b: 0, a: 0.5}
+--- !u!4 &1342091810
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1342091808}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.8906728, y: -6.0273886, z: 1.917908}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1348233158
 GameObject:
   m_ObjectHideFlags: 0
@@ -18194,6 +18248,7 @@ MonoBehaviour:
   showRuntimeGrid: 1
   gridMaterial: {fileID: 0}
   gridOccupiedMaterial: {fileID: 0}
+  gridClearanceMaterial: {fileID: 0}
   gridRoot: {fileID: 0}
 --- !u!4 &1387516484
 Transform:
@@ -21887,7 +21942,7 @@ MonoBehaviour:
   spaceData: {fileID: 842449624}
   furnitureManager: {fileID: 99871891}
   roomManager: {fileID: 846193313}
-  placementController: {fileID: 0}
+  placementController: {fileID: 1342091809}
   mainPanel: {fileID: 2126566703}
   categoryPanel: {fileID: 1072654411}
   sizePanel: {fileID: 1596324971}
@@ -24210,7 +24265,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   roomManager: {fileID: 846193313}
   placer: {fileID: 1304543416}
-  testRoomID: 2
+  furnitureManager: {fileID: 0}
 --- !u!4 &1898412556
 Transform:
   m_ObjectHideFlags: 0
@@ -28028,3 +28083,4 @@ SceneRoots:
   - {fileID: 1387516484}
   - {fileID: 1898412556}
   - {fileID: 1304543417}
+  - {fileID: 1342091810}

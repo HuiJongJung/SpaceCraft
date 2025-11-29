@@ -91,37 +91,45 @@ public class FurniturePlacementController : MonoBehaviour
             if (canPlaceHere)
             {
                 RoomPlacementGrid grid = FindGridByRoomId(currentRoomID);
+                if (grid == null) return;
 
+                float cellSize = (grid.cellSize > 0) ? grid.cellSize : 0.1f;
+
+                // 1. 여유 공간 및 본체 영역 계산 (Calculator 사용)
+                // (수동 배치는 마우스 위치가 Total Origin인지 Body Origin인지 정책에 따라 다름)
+                // 현재 코드 흐름상 마우스 위치(currentOriginCell)를 '본체 위치'로 가정하고 배치합니다.
+
+                // A. 본체 크기 (이미 currentSizeCells에 있음)
+                Vector2Int bodySize = currentSizeCells;
+                Vector2Int bodyOrigin = currentOriginCell;
+
+                // B. 여유 공간 계산
+                var clearance = PlacementCalculator.GetRotatedClearanceInCells(currentItem, cellSize, currentRotDeg);
+
+                // C. 전체 영역(Total) 계산 (본체 기준으로 확장)
+                Vector2Int totalOrigin = new Vector2Int(
+                    bodyOrigin.x - clearance.left,
+                    bodyOrigin.y - clearance.bottom
+                );
+
+                Vector2Int totalSize = new Vector2Int(
+                    clearance.left + bodySize.x + clearance.right,
+                    clearance.bottom + bodySize.y + clearance.top
+                );
+
+                // 2. 실제 가구 생성
                 furnitureManager.PlaceItem(
                     currentItem.instanceId,
                     currentRoomID,
-                    currentPivotCell,     // 최종 배치는 pivotCell
+                    currentPivotCell,
                     currentRotDeg
                 );
 
-                if (grid != null)
-                {
-                    // originCell 기준으로 점유 표시
-                    for (int dz = 0; dz < currentSizeCells.y; dz++)
-                    {
-                        for (int dx = 0; dx < currentSizeCells.x; dx++)
-                        {
-                            int gx = currentOriginCell.x + dx;
-                            int gz = currentOriginCell.y + dz;
+                // 3. [수정] GridManipulator를 사용하여 제대로 마스킹 (빨강+주황)
+                GridManipulator.MarkGridAsOccupied(grid, totalOrigin, totalSize, bodyOrigin, bodySize);
 
-                            if (grid.InBounds(gx, gz))
-                            {
-                                grid.placementMask[gx, gz] = false;
-                                if (grid.occupiedMask != null)
-                                {
-                                    grid.occupiedMask[gx, gz] = true;
-                                }
-                            }
-                        }
-                    }
-
-                    gridBuilder.BuildRuntimeGridVisuals(currentRoomID);
-                }
+                // 4. 화면 갱신
+                gridBuilder.BuildRuntimeGridVisuals(currentRoomID);
 
                 CancelPlacement();
             }
