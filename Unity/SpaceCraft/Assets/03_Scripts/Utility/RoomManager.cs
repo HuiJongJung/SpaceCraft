@@ -6,6 +6,7 @@ public class RoomManager : MonoBehaviour
     [Header("Refs")]
     [SerializeField] private SpaceData spaceData;
     [SerializeField] private RoomPlacementGridBuilder gridBuilder;
+    [SerializeField] private PlaceCameraController cameraController;
     private SpaceLayout layout;
 
     
@@ -13,6 +14,9 @@ public class RoomManager : MonoBehaviour
     // Index "-1" Room : List of Objects not belong to Room
     private Dictionary<int, RoomRuntimeData> roomsById =
         new Dictionary<int, RoomRuntimeData>();
+    
+    private Dictionary<int, Vector3> roomCenterWorldById =
+        new Dictionary<int, Vector3>();
 
     // currentRoomID
     public int currentRoomID;
@@ -41,6 +45,11 @@ public class RoomManager : MonoBehaviour
             spaceData = SpaceData.Instance;
         }
 
+        if (cameraController == null)
+        {
+            cameraController = FindObjectOfType<PlaceCameraController>();
+        }
+
         if (spaceData != null)
         {
             layout = spaceData._layout;
@@ -57,99 +66,144 @@ public class RoomManager : MonoBehaviour
         {
             gridBuilder = FindObjectOfType<RoomPlacementGridBuilder>();
         }
+
+        if (spaceData == null)
+        {
+            spaceData = SpaceData.Instance;
+        }
+
+        if (spaceData != null)
+        {
+            layout = spaceData._layout;
+        }
+
+        if (layout == null || layout.rooms == null)
+        {
+            Debug.LogError("[RoomManager] layout 또는 rooms 가 null 입니다.");
+            return;
+        }
         
         // Add All Room to roomsById (Default)
         for (int i = 0; i < layout.rooms.Count; i++)
         {
+            RoomDef r = layout.rooms[i];
+            if (r == null)
+            {
+                continue;
+            }
             GetOrCreateRoomData(layout.rooms[i].roomID);
         }
-                      
+        
+        // Compute Room Centers
+        BuildRoomCenters();
     }
 
-    // ===== Camera Focus =====
-    private void FocusCameraOnRoom(int roomID)
+    // 특정 방의 중심 좌표
+    public Vector3 GetRoomCenterWorld(int roomID)
     {
-        if (layout == null)
+        Vector3 center;
+        bool found = roomCenterWorldById.TryGetValue(roomID, out center);
+        if (!found)
         {
-            return;
+            Debug.LogWarning($"[RoomManager] GetRoomCenterWorld: roomID={roomID} 의 center 를 찾지 못했습니다. (default 0,0,0 반환)");
+            return Vector3.zero;
         }
+        return center;
+    }
 
-        // 1) roomID에 해당하는 RoomDef 찾기
-        RoomDef room = null;
-        if (layout.rooms != null)
-        {
-            for (int i = 0; i < layout.rooms.Count; i++)
-            {
-                RoomDef r = layout.rooms[i];
-                if (r != null && r.roomID == roomID)
-                {
-                    room = r;
-                    break;
-                }
-            }
-        }
+    // 현재 방의 중심 좌표
+    public Vector3 GetCurrentRoomCenterWorld()
+    {
+        return GetRoomCenterWorld(currentRoomID);
+    }
 
+    public void BuildRoomCenters()
+{
+    roomCenterWorldById.Clear();
+
+    if (layout == null || layout.rooms == null)
+    {
+        Debug.LogError("[RoomManager] BuildRoomCenters: layout 또는 rooms 가 null 입니다.");
+        return;
+    }
+
+    for (int i = 0; i < layout.rooms.Count; i++)
+    {
+        RoomDef room = layout.rooms[i];
         if (room == null)
         {
-            return;
+            Debug.LogWarning($"[RoomManager] rooms[{i}] 가 null 입니다.");
+            continue;
         }
 
-        // 2) 방이 가지고 있는 floor 중 첫 번째 기준으로 중심 계산
+        int roomID = room.roomID;
+
+        // floorIDs 중 첫 번째 바닥 기준
         if (room.floorIDs == null || room.floorIDs.Count == 0)
         {
-            return;
+            continue;
         }
 
         int floorID = room.floorIDs[0];
 
-        FloorDef fd = null;
-        if (layout.floors != null)
+        FloorDef fd = FindFloorById(floorID);
+        if (fd == null)
         {
-            for (int i = 0; i < layout.floors.Count; i++)
-            {
-                FloorDef f = layout.floors[i];
-                if (f != null && f.id == floorID)
-                {
-                    fd = f;
-                    break;
-                }
-            }
+            Debug.LogWarning($"[RoomManager] roomID={roomID} 의 floorID={floorID} 를 찾지 못했습니다.");
+            continue;
         }
 
-        if (fd == null || fd.vertices == null || fd.vertices.Count == 0)
+        if (fd.vertices == null || fd.vertices.Count == 0)
         {
-            return;
+            Debug.LogWarning($"[RoomManager] floorID={floorID} 의 vertices 가 비어있습니다.");
+            continue;
         }
 
-        // 3) 바닥 vertices의 XZ 바운딩 박스 중심 계산
+        // 바닥 vertices의 XZ 바운딩 박스 중심 계산
         float minX = fd.vertices[0].x;
         float maxX = fd.vertices[0].x;
         float minZ = fd.vertices[0].z;
         float maxZ = fd.vertices[0].z;
 
-        for (int i = 1; i < fd.vertices.Count; i++)
+        for (int v = 1; v < fd.vertices.Count; v++)
         {
-            Vec3 v = fd.vertices[i];
-            if (v.x < minX) minX = v.x;
-            if (v.x > maxX) maxX = v.x;
-            if (v.z < minZ) minZ = v.z;
-            if (v.z > maxZ) maxZ = v.z;
+            Vec3 vert = fd.vertices[v];
+
+            if (vert.x < minX) minX = vert.x;
+            if (vert.x > maxX) maxX = vert.x;
+
+            if (vert.z < minZ) minZ = vert.z;
+            if (vert.z > maxZ) maxZ = vert.z;
         }
 
         float centerX = (minX + maxX) * 0.5f;
         float centerZ = (minZ + maxZ) * 0.5f;
 
-        // 4) 메인 카메라 가져와서 XZ만 이동
+        Vector3 center = new Vector3(centerX, 0f, centerZ);
+        roomCenterWorldById[roomID] = center;
+        
+    }
+}
+    
+    private void FocusCameraTopDownOnRoom(int roomID)
+    {
         Camera cam = Camera.main;
         if (cam == null)
         {
             return;
         }
+        Debug.Log("카메라 조정");
+        // roomID 기준 방 중심 좌표 가져오기
+        Vector3 center = GetRoomCenterWorld(roomID);
 
-        Vector3 pos = cam.transform.position;
-        pos.x = centerX;
-        pos.z = centerZ;
+        // 위치: 방 중심 + Y=15
+        Vector3 pos = center;
+        pos.y = 15f;
+
         cam.transform.position = pos;
+
+        // 회전: 수직 위에서 아래로 보는 각도
+        cam.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
     }
 
     // RoomRuntimeData
@@ -231,8 +285,9 @@ public class RoomManager : MonoBehaviour
             gridBuilder.ShowOnlyRoomGrid(roomID);
         }
 
-        // 4) Camera Focus
-        FocusCameraOnRoom(roomID);
+        // 4) Set Camera Focus
+        FocusCameraTopDownOnRoom(roomID);
+        cameraController.ResetViewForRoom();
         
         // 5) Set currentRoomID
         currentRoomID = roomID;
@@ -292,6 +347,24 @@ public class RoomManager : MonoBehaviour
             }
         }
 
+        return null;
+    }
+    
+    private FloorDef FindFloorById(int floorID)
+    {
+        if (layout == null || layout.floors == null)
+        {
+            return null;
+        }
+
+        for (int i = 0; i < layout.floors.Count; i++)
+        {
+            FloorDef f = layout.floors[i];
+            if (f != null && f.id == floorID)
+            {
+                return f;
+            }
+        }
         return null;
     }
 }
