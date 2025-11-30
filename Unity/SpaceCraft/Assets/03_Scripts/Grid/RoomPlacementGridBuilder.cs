@@ -861,4 +861,20 @@ public class RoomPlacementGridBuilder : MonoBehaviour
             }
         }
     }
+    
+    // Util GetGridByRoomId
+    public RoomPlacementGrid GetGridByRoomId(int roomID)
+    {
+        if (grids == null) return null;
+
+        for (int i = 0; i < grids.Count; i++)
+        {
+            RoomPlacementGrid g = grids[i];
+            if (g != null && g.roomID == roomID)
+            {
+                return g;
+            }
+        }
+        return null;
+    }
 }

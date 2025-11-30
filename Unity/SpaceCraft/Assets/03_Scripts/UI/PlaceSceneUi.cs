@@ -13,6 +13,7 @@ public class PlaceSceneUI : MonoBehaviour
     [SerializeField] private RoomManager roomManager;
     [SerializeField] private FurniturePlacementController placementController;
     [SerializeField] private RoomPlacementGridBuilder gridBuilder;
+    public FurniturePlacer placer;
     
     [Header("Panels")]
     public GameObject mainPanel;
@@ -726,8 +727,8 @@ public class PlaceSceneUI : MonoBehaviour
 
     public void OnClickStartAutoPlaceButton()
     {
-        Debug.Log("Start Auto Place");
-        // *** 추가 예정 *** 
+        placer.AutoPlaceAllUnplacedItems(roomManager.currentRoomID);
+        SetAutoPlacePanel(false);
     }
     
     // Refresh Furniture List

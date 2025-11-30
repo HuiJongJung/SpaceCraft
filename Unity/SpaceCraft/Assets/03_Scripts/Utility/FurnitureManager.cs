@@ -226,7 +226,8 @@ public class FurnitureManager : MonoBehaviour
         // Get Position
         
         // roomID 로 grid 받아서 cell 위치 중심 반환
-        Vector3 goPos = gridBuilder.grids[roomID].GridCenterToWorld(gridCell.x, gridCell.y);
+        RoomPlacementGrid grid = gridBuilder.GetGridByRoomId(roomID);
+        Vector3 goPos = grid.GridCenterToWorld(gridCell.x, gridCell.y);
         
         // Instantiate Prefab
         Quaternion rot = Quaternion.Euler(0f, rotationDeg, 0f);
