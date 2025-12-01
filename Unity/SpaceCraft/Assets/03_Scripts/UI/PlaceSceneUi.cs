@@ -932,6 +932,7 @@ public class PlaceSceneUI : MonoBehaviour
         if (saveButton != null) saveButton.interactable = interact;
         if (autoPlaceButton != null)  autoPlaceButton.interactable  = interact;
         if (categoryButton != null) categoryButton.interactable = interact;
+        if (helpButton != null) helpButton.interactable = interact;
 
         // 하단 가구 슬롯 버튼 잠금
         foreach (KeyValuePair<string, MyFurnitureSlot> kvp in slotMap)
