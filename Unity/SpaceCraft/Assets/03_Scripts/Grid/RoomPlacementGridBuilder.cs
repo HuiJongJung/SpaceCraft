@@ -24,9 +24,9 @@ public class RoomPlacementGridBuilder : MonoBehaviour
 
     [Header("Runtime Grid Visual")]
     [SerializeField] private bool showRuntimeGrid = false;
-    [SerializeField] private Material gridMaterial;
-    [SerializeField] private Material gridOccupiedMaterial;
-    [SerializeField] private Material gridClearanceMaterial;
+    public Material gridMaterial;
+    public Material gridOccupiedMaterial;
+    public Material gridClearanceMaterial;
     [SerializeField] private Transform gridRoot; // 그리드 오브젝트들을 담아둘 부모
 
     private Dictionary<int, MeshRenderer[,]> _tileCache = new Dictionary<int, MeshRenderer[,]>();
