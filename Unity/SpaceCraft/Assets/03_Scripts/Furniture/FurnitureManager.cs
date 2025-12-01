@@ -6,6 +6,9 @@ public class FurnitureManager : MonoBehaviour
     [Header("Database")]
     [SerializeField] private FurnitureDatabase furnitureDatabase;
 
+    [Header("External Systems")]
+    [SerializeField] private SpaceData spaceData;
+    
     [Header("Data (Saved / Loaded)")]
     [SerializeField] private List<FurnitureItemData> inventory =
         new List<FurnitureItemData>();   // JSON, Inspector 에 보이는 진짜 데이터
@@ -41,11 +44,6 @@ public class FurnitureManager : MonoBehaviour
         {
             roomManager = FindFirstObjectByType<RoomManager>(FindObjectsInactive.Include);
         }
-        
-        if (gridBuilder == null)
-        {
-            gridBuilder = FindFirstObjectByType<RoomPlacementGridBuilder>(FindObjectsInactive.Include);
-        }
 
         if (furniturePlacer == null)
         {
@@ -58,6 +56,39 @@ public class FurnitureManager : MonoBehaviour
         }
 
         RebuildMapsFromInventory();
+    }
+
+    
+    void Start()
+    {
+        // 1) Get SpaceData
+        if (spaceData == null)
+        {
+            spaceData = SpaceData.Instance;
+        }
+        
+        // 2) Load Json to Inventory & Maps
+        if (spaceData != null && spaceData._layout != null)
+        {
+            LoadInventoryFromLayout(spaceData._layout);
+        }
+        // 3) Get GridBuilder
+        if (gridBuilder == null)
+        {
+            gridBuilder = FindFirstObjectByType<RoomPlacementGridBuilder>(FindObjectsInactive.Include);
+        }
+        
+        if (gridBuilder != null)
+        {
+            // 4) gridBuilder가 비어 있으면 여기서 SpaceData 넣어주고 빌드
+            if (!gridBuilder.IsBuilt)
+            {
+                gridBuilder.BuildFromSpaceData(spaceData);
+            }
+        }
+        
+        // 5) Place Items From Inventory
+        RestorePlacedItemsFromInventory();
     }
 
     // DB Getter
@@ -217,10 +248,25 @@ public class FurnitureManager : MonoBehaviour
             return null;
         }
         
+        // gridBuilder null check
+        if (gridBuilder == null)
+        {
+            Debug.LogError("[PlaceItem] gridBuilder is null.");
+            return null;
+        }
+        
+        // grid null check
+        RoomPlacementGrid grid = gridBuilder.GetGridByRoomId(roomID);
+        if (grid == null)
+        {
+            Debug.LogWarning("[PlaceItem] No RoomPlacementGrid for roomID=" + roomID
+                                                                            + ". (그리드가 아직 만들어지지 않았을 수 있음)");
+            return null;
+        }
+        
         // Get Position
         
         // roomID 로 grid 받아서 cell 위치 중심 반환
-        RoomPlacementGrid grid = gridBuilder.GetGridByRoomId(roomID);
         Vector3 goPos = grid.GridCenterToWorld(gridCell.x, gridCell.y);
         
         // Instantiate Prefab
@@ -304,6 +350,7 @@ public class FurnitureManager : MonoBehaviour
 
         // Renew Data
         item.isPlaced = false;
+        item.rotation = 0;
 
         // Apply in Inventory Lists
         int index = FindInventoryIndex(instanceId);
@@ -369,9 +416,104 @@ public class FurnitureManager : MonoBehaviour
         );
     }
     
+    #region LoadJSON
     // Get Inventory
     public List<FurnitureItemData> GetAllItems()
     {
         return inventory;
     }
+    public void LoadInventoryFromLayout(SpaceLayout layout)
+    {
+        // no layout -> just Clear
+        if (layout == null || layout.furnitures == null)
+        {
+            inventory.Clear();
+            byInstanceId.Clear();
+            placedRuntimeMap.Clear();
+            return;
+        }
+
+        // 1) Assign layout.furnitures to inventory
+        inventory = new List<FurnitureItemData>(layout.furnitures);
+
+        // 2) Rebuild Maps
+        RebuildMapsFromInventory();
+
+        // 3) Update nextInstanceId
+        int maxIndex = nextInstanceIndex;
+        for (int i = 0; i < inventory.Count; i++)
+        {
+            FurnitureItemData item = inventory[i];
+            if (item == null || string.IsNullOrEmpty(item.instanceId))
+            {
+                continue;
+            }
+
+            // 형식: Desk#0001 이런 식이라고 가정
+            int sharpIdx = item.instanceId.LastIndexOf('#');
+            if (sharpIdx >= 0 && sharpIdx + 1 < item.instanceId.Length)
+            {
+                string numStr = item.instanceId.Substring(sharpIdx + 1);
+                int num;
+                if (int.TryParse(numStr, out num))
+                {
+                    if (num >= maxIndex)
+                    {
+                        maxIndex = num + 1;
+                    }
+                }
+            }
+        }
+        nextInstanceIndex = maxIndex;
+    }
+    
+    public void RestorePlacedItemsFromInventory()
+    {
+        if (gridBuilder == null || furniturePlacer == null)
+        {
+            Debug.LogWarning("RestorePlacedItemsFromInventory: gridBuilder 또는 furniturePlacer 없음.");
+            return;
+        }
+
+        for (int i = 0; i < inventory.Count; i++)
+        {
+            FurnitureItemData item = inventory[i];
+            if (item == null)
+            {
+                continue;
+            }
+
+            // JSON 상에서 isPlaced 가 true인 가구만 복원
+            if (!item.isPlaced)
+            {
+                continue;
+            }
+
+            // 이미 씬에 있으면(중복 생성 방지)
+            if (placedRuntimeMap.ContainsKey(item.instanceId))
+            {
+                continue;
+            }
+
+            // 1) 프리팹 생성 + RoomManager, Slot 색, runtimeMap 등록
+            PlaceItem(
+                item.instanceId,
+                item.roomID,
+                item.gridCell,
+                item.rotation
+            );
+
+            // 2) 그리드 점유 상태 복원
+            furniturePlacer.RestoreGridForItem(item);
+        }
+
+        // 3) 현재 방 그리드 비주얼 한 번만 갱신
+        if (roomManager != null && gridBuilder != null)
+        {
+            gridBuilder.BuildRuntimeGridVisuals(-1);
+        }
+
+        Debug.Log("[FurnitureManager] RestorePlacedItemsFromInventory 완료.");
+    }
+    #endregion
 }

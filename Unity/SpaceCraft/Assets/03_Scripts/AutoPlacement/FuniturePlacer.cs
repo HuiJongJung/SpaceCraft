@@ -459,4 +459,66 @@ public class FurniturePlacer : MonoBehaviour
         }
         Debug.Log($"[FurniturePlacer] Restored grid for {instanceId} (Cleared Area: {item.furnitureId})");
     }
+    
+    // JSON Load 후 Item 배치에 사용
+    public void RestoreGridForItem(FurnitureItemData item)
+    {
+        if (item == null)
+        {
+            return;
+        }
+
+        RoomPlacementGrid grid = FindGridByRoomId(item.roomID);
+        if (grid == null)
+        {
+            return;
+        }
+
+        float cellSize = grid.cellSize;
+        if (cellSize <= 0f)
+        {
+            cellSize = 0.1f;
+        }
+
+        // 1) 본체 크기
+        Vector2Int bodySize = PlacementCalculator.ComputeFootprintCells(
+            item.sizeCentimeters,
+            cellSize,
+            item.rotation
+        );
+
+        // 2) pivot(=item.gridCell) -> 본체 origin
+        Vector2Int bodyOrigin = PlacementCalculator.ComputeOriginFromPivot(
+            item.gridCell,
+            bodySize
+        );
+
+        // 3) 여유공간
+        var clearance =
+            PlacementCalculator.GetRotatedClearanceInCells(
+                item,
+                cellSize,
+                item.rotation
+            );
+
+        // 4) 전체 영역
+        Vector2Int totalOrigin = new Vector2Int(
+            bodyOrigin.x - clearance.left,
+            bodyOrigin.y - clearance.bottom
+        );
+
+        Vector2Int totalSize = new Vector2Int(
+            clearance.left + bodySize.x + clearance.right,
+            clearance.bottom + bodySize.y + clearance.top
+        );
+
+        // 5) 점유 마스킹
+        GridManipulator.MarkGridAsOccupied(
+            grid,
+            totalOrigin,
+            totalSize,
+            bodyOrigin,
+            bodySize
+        );
+    }
 }

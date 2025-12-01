@@ -121,7 +121,7 @@ public class FurniturePlacementController : MonoBehaviour
         // Lock UI
         if (placeSceneUI != null)
         {
-            placeSceneUI.SetPlacementMode(isPlacing);
+            placeSceneUI.SetAllButtonsInteractive(false);
         }
     }
     
@@ -163,7 +163,7 @@ public class FurniturePlacementController : MonoBehaviour
         // Unlock UI
         if (placeSceneUI != null)
         {
-            placeSceneUI.SetPlacementMode(isPlacing);
+            placeSceneUI.SetAllButtonsInteractive(true);
         }
     }
 

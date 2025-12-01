@@ -19,6 +19,8 @@ public class PlaceCameraController : MonoBehaviour
     private float pitchSpeed = 90f;
     private float minPitch = 10f;
     private float maxPitch = 89f;
+    
+    private bool controlsEnabled = true;
 
     private void Start()
     {
@@ -54,6 +56,11 @@ public class PlaceCameraController : MonoBehaviour
     private void Update()
     {
         if (targetCamera == null)
+        {
+            return;
+        }
+        
+        if (!controlsEnabled)
         {
             return;
         }
@@ -157,5 +164,20 @@ public class PlaceCameraController : MonoBehaviour
 
         camTransform.position = camPos;
         camTransform.LookAt(targetPos);
+    }
+    
+    public void SetControlsEnabled(bool enabled)
+    {
+        controlsEnabled = enabled;
+    }
+
+    public void LockCameraControl()
+    {
+        controlsEnabled = false;
+    }
+
+    public void UnlockCameraControl()
+    {
+        controlsEnabled = true;
     }
 }

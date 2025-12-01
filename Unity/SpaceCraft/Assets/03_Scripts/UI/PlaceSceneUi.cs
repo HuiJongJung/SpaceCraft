@@ -13,6 +13,8 @@ public class PlaceSceneUI : MonoBehaviour
     [SerializeField] private RoomManager roomManager;
     [SerializeField] private FurniturePlacementController placementController;
     [SerializeField] private RoomPlacementGridBuilder gridBuilder;
+    [SerializeField] private SpaceSaveManager spaceSaveManager;
+    [SerializeField] private PlaceCameraController placeCameraController;
     public FurniturePlacer placer;
     
     [Header("Panels")]
@@ -24,6 +26,7 @@ public class PlaceSceneUI : MonoBehaviour
     public GameObject detailPanelReadOnly;
     public GameObject autoPlacePanel;
     public GameObject simulationPanel;
+    public GameObject savePanel;
 
     [Header("Main UI (My Furniture List)")]
     public Button returnButton;
@@ -98,6 +101,11 @@ public class PlaceSceneUI : MonoBehaviour
     public Button closeDetailButton;
     public Button addFurnitureButton;
 
+    [Header("Save Panel")] 
+    public TMP_InputField inputField_fileName;
+    public Button closeSavePanelButton;
+    public Button startSaveButton;
+
     [Header("Simulation Panel")] 
     public Button returnToPlaceButton;
     public Button helpButton_Simulation;
@@ -137,6 +145,16 @@ public class PlaceSceneUI : MonoBehaviour
             gridBuilder = FindFirstObjectByType<RoomPlacementGridBuilder>(FindObjectsInactive.Include);
         }
 
+        if (spaceSaveManager == null)
+        {
+            spaceSaveManager = FindFirstObjectByType<SpaceSaveManager>(FindObjectsInactive.Include);
+        }
+
+        if (placeCameraController == null)
+        {
+            placeCameraController = FindFirstObjectByType<PlaceCameraController>(FindObjectsInactive.Include);
+        }
+
         SetButtonListeners();
         
         if (spaceData == null || spaceData._layout == null || spaceData._layout.rooms == null)
@@ -166,6 +184,15 @@ public class PlaceSceneUI : MonoBehaviour
         saveButton.onClick.RemoveAllListeners();
         saveButton.onClick.AddListener(OnClickSaveButton);
         
+        // Close Save Button
+        closeSavePanelButton.onClick.RemoveAllListeners();
+        closeSavePanelButton.onClick.AddListener(OnClickCloseSavePanelButton);
+        
+        // Start Save Button
+        startSaveButton.onClick.RemoveAllListeners();
+        startSaveButton.onClick.AddListener(OnClickStartSaveButton);;
+        
+        // Help Button
         helpButton.onClick.RemoveAllListeners();
         helpButton.onClick.AddListener(OnClickHelpButton);
         
@@ -289,12 +316,16 @@ public class PlaceSceneUI : MonoBehaviour
         detailPanelReadOnly.SetActive(false);
         autoPlacePanel.SetActive(false);
         simulationPanel.SetActive(false);
+        savePanel.SetActive(false);
     }
 
     public void ShowMain()
     {
         DeactiveAllPanels();
         mainPanel.SetActive(true);
+        // Active All Buttons & Camera Input
+        placeCameraController.UnlockCameraControl();
+        SetAllButtonsInteractive(true);
         
         // Refresh ToolBar
         RefreshFurnitureList();
@@ -332,6 +363,11 @@ public class PlaceSceneUI : MonoBehaviour
     public void SetSimulationPanel(bool isActive)
     {
         simulationPanel.SetActive(isActive);
+    }
+
+    public void SetSavePanel(bool isActive)
+    {
+        savePanel.SetActive(isActive);
     }
     
     #endregion
@@ -656,22 +692,25 @@ public class PlaceSceneUI : MonoBehaviour
         UpdateRoomView();
     }
     
-    // Save Button
+    // Save Button (UI)
     public void OnClickSaveButton()
     {
-        // Show All Rooms
-        roomManager.SetAllRoomsActive(true);
-        
-        // Hide All Grids
-        gridBuilder.HideAllRoomGrids();
-        
-        // Save Datas
-        
-        // Spawn Player
-        
-        // Show Simulation UI
-        DeactiveAllPanels();
-        SetSimulationPanel(true);
+        ShowMain();
+        // Reset InputField
+        inputField_fileName.text = "";
+        // Deactive All Buttons & Camera Input
+        SetAllButtonsInteractive(false);
+        placeCameraController.LockCameraControl();
+        savePanel.SetActive(true);
+    }
+    
+    // Close Save Button
+    public void OnClickCloseSavePanelButton()
+    {
+        // Active All Buttons & Camera Input
+        SetAllButtonsInteractive(true);
+        placeCameraController.UnlockCameraControl();
+        savePanel.SetActive(false);
     }
 
     public void OnClickHelpButton()
@@ -756,12 +795,16 @@ public class PlaceSceneUI : MonoBehaviour
         }
 
         currentReadOnlyInstanceId = instanceId;
+        // Deactive Camera Input
+        placeCameraController.LockCameraControl();
         ApplyReadOnlyDetail(item);
         SetDetailPanelReadOnly(true);
     }
 
     public void OnClickCloseDetailPanelReadOnly()
     {
+        // Active Camera Input
+        placeCameraController.UnlockCameraControl();
         SetDetailPanelReadOnly(false);
     }
     
@@ -782,7 +825,8 @@ public class PlaceSceneUI : MonoBehaviour
 
         // Refresh
         RefreshFurnitureList();
-
+        // Active Camera Input
+        placeCameraController.UnlockCameraControl();
         // Close ReadOnly Panel
         SetDetailPanelReadOnly(false);
 
@@ -805,16 +849,25 @@ public class PlaceSceneUI : MonoBehaviour
     public void OnClickAutoPlaceButton()
     {
         SetAutoPlacePanel(true);
+        // Deactive All Buttons & Camera Input
+        SetAllButtonsInteractive(false);
+        placeCameraController.LockCameraControl();
     }
 
     public void OnClickCloseAutoPlaceButton()
     {
         SetAutoPlacePanel(false);
+        // Active All Buttons & Camera Input
+        SetAllButtonsInteractive(true);
+        placeCameraController.UnlockCameraControl();
     }
 
     public void OnClickStartAutoPlaceButton()
     {
         placer.AutoPlaceAllUnplacedItems(roomManager.currentRoomID);
+        // Active All Buttons & Camera Input
+        SetAllButtonsInteractive(true);
+        placeCameraController.UnlockCameraControl();
         SetAutoPlacePanel(false);
     }
     
@@ -960,23 +1013,23 @@ public class PlaceSceneUI : MonoBehaviour
     }
     
     // Place Mode -> Deactive All Buttons
-    public void SetPlacementMode(bool isPlacing)
+    public void SetAllButtonsInteractive(bool isActive)
     {
-        isPlacementMode = isPlacing;
+        isPlacementMode = !isActive;
 
         // isPlacing -> interact false
-        bool interact = !isPlacing;
+        
 
         // 상단 네비게이션 버튼 잠금
-        if (returnButton != null) returnButton.interactable = interact;
-        if (roomNameButton != null) roomNameButton.interactable = interact;
-        if (prevButton != null) prevButton.interactable = interact;
-        if (nextButton != null) nextButton.interactable = interact;
-        if (saveButton != null) saveButton.interactable = interact;
-        if (autoPlaceButton != null)  autoPlaceButton.interactable  = interact;
-        if (categoryButton != null) categoryButton.interactable = interact;
-        if (helpButton != null) helpButton.interactable = interact;
-        if (unplaceRoomFurnitureButton != null) unplaceRoomFurnitureButton.interactable = interact;
+        if (returnButton != null) returnButton.interactable = isActive;
+        if (roomNameButton != null) roomNameButton.interactable = isActive;
+        if (prevButton != null) prevButton.interactable = isActive;
+        if (nextButton != null) nextButton.interactable = isActive;
+        if (saveButton != null) saveButton.interactable = isActive;
+        if (autoPlaceButton != null)  autoPlaceButton.interactable  = isActive;
+        if (categoryButton != null) categoryButton.interactable = isActive;
+        if (helpButton != null) helpButton.interactable = isActive;
+        if (unplaceRoomFurnitureButton != null) unplaceRoomFurnitureButton.interactable = isActive;
 
         // 하단 가구 슬롯 버튼 잠금
         foreach (KeyValuePair<string, MyFurnitureSlot> kvp in slotMap)
@@ -984,7 +1037,7 @@ public class PlaceSceneUI : MonoBehaviour
             MyFurnitureSlot slot = kvp.Value;
             if (slot != null)
             {
-                slot.SetInteractable(interact);
+                slot.SetInteractable(isActive);
             }
         }
     }
@@ -1012,6 +1065,34 @@ public class PlaceSceneUI : MonoBehaviour
     public void OnClickHelpButtonSimulation()
     {
         helpText_Simulation.gameObject.SetActive(!helpText_Simulation.IsActive());
+    }
+    
+    #endregion
+    
+    #region SavePanel
+    
+    public void OnClickStartSaveButton()
+    {
+        // Show All Rooms
+        roomManager.SetAllRoomsActive(true);
+        
+        // Hide All Grids
+        gridBuilder.HideAllRoomGrids();
+        
+        // Save Datas
+        if (spaceSaveManager != null && inputField_fileName != null)
+        {
+            string name = inputField_fileName.text;
+            spaceSaveManager.SaveFileToJSON(name);
+        }
+        
+        // Active All Buttons & Camera Input
+        SetAllButtonsInteractive(true);
+        placeCameraController.UnlockCameraControl();
+        
+        // Show Simulation UI
+        DeactiveAllPanels();
+        SetSimulationPanel(true);
     }
     
     #endregion

@@ -34,17 +34,14 @@ public class RoomPlacementGridBuilder : MonoBehaviour
 
     // 결과물: 방별 그리드
     public List<RoomPlacementGrid> grids = new List<RoomPlacementGrid>();
+    
+    public bool IsBuilt { get; private set; }
 
     //public RoomManager roomManager;
 
     void Start()
     {
         if (data == null) data = SpaceData.Instance;
-        //if (roomManager == null)
-        //{
-        //    roomManager = FindObjectOfType<RoomManager>();
-        //}
-        RebuildAll();
     }
 
     public void RebuildAll()
@@ -55,6 +52,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
 
         grids.Clear();
         _tileCache.Clear();
+        roomGridRoots.Clear();
 
         if (data == null || data._layout == null || data._layout.rooms == null)
         {
@@ -119,6 +117,8 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         {
             BuildRuntimeGridVisuals();
         }
+        
+        IsBuilt = true;
     }
 
     // ===== 폴리곤 추출 =====
@@ -876,5 +876,12 @@ public class RoomPlacementGridBuilder : MonoBehaviour
             }
         }
         return null;
+    }
+    
+    // Util 
+    public void BuildFromSpaceData(SpaceData space)
+    {
+        data = space;
+        RebuildAll();
     }
 }
