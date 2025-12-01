@@ -11373,7 +11373,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e52dcdc1b62a624498d3657a1da02ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data: {fileID: 842449624}
+  data: {fileID: 0}
   roomManager: {fileID: 1732223391}
   addCollider: 1
   floorMaterial: {fileID: 2100000, guid: 7c13e7fdf4b73ec4c92fe5ade055eb8b, type: 2}
@@ -22095,7 +22095,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 636675dded91598479fd7e7c46547de1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spaceData: {fileID: 842449624}
+  spaceData: {fileID: 0}
   furnitureManager: {fileID: 99871891}
   roomManager: {fileID: 1732223391}
   placementController: {fileID: 1019212248}
@@ -22405,7 +22405,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7402ef7a5c58347488f389f3bf80b6de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spaceData: {fileID: 842449624}
+  spaceData: {fileID: 0}
   gridBuilder: {fileID: 1091609590}
   cameraController: {fileID: 2075791871}
   currentRoomID: 0
