@@ -1995,7 +1995,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   furnitureDatabase: {fileID: 11400000, guid: 3b4e744308ca7d34cb487a90a3c9230f, type: 2}
   inventory: []
-  roomManager: {fileID: 846193313}
+  roomManager: {fileID: 1732223391}
   gridBuilder: {fileID: 1091609590}
   furniturePlacer: {fileID: 1717232560}
   placeSceneUI: {fileID: 1719714647}
@@ -2009,7 +2009,7 @@ Transform:
   m_GameObject: {fileID: 99871890}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 719.9639, y: 485.79727, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9030,7 +9030,7 @@ RectTransform:
   m_Father: {fileID: 935826544}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -10725,9 +10725,9 @@ RectTransform:
   m_Father: {fileID: 1000771006}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: -17}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &810095417
 MonoBehaviour:
@@ -11328,7 +11328,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd190f501a592864fbccb62440b87fe3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roomsJson: {fileID: 4900000, guid: 2c99fe6fc4f73e14f9a99103beff790a, type: 3}
+  roomsJson: {fileID: 4900000, guid: de27178a4a2e77641aff40d1caaf851a, type: 3}
 --- !u!4 &842449625
 Transform:
   m_ObjectHideFlags: 0
@@ -11354,7 +11354,6 @@ GameObject:
   m_Component:
   - component: {fileID: 846193312}
   - component: {fileID: 846193311}
-  - component: {fileID: 846193313}
   m_Layer: 0
   m_Name: SpaceRoot
   m_TagString: Untagged
@@ -11374,8 +11373,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e52dcdc1b62a624498d3657a1da02ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data: {fileID: 0}
-  roomManager: {fileID: 846193313}
+  data: {fileID: 842449624}
+  roomManager: {fileID: 1732223391}
   addCollider: 1
   floorMaterial: {fileID: 2100000, guid: 7c13e7fdf4b73ec4c92fe5ade055eb8b, type: 2}
   wallMaterial: {fileID: 2100000, guid: 78f64606e219ed2459b0b756226a91fc, type: 2}
@@ -11397,22 +11396,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &846193313
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 846193310}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7402ef7a5c58347488f389f3bf80b6de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spaceData: {fileID: 0}
-  gridBuilder: {fileID: 1091609590}
-  currentRoomID: 0
-  debugRooms: []
 --- !u!1 &849426543
 GameObject:
   m_ObjectHideFlags: 0
@@ -13594,7 +13577,7 @@ Transform:
   m_GameObject: {fileID: 1019212247}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.8906728, y: -6.0273886, z: 1.917908}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14568,7 +14551,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5ac2e8960be6a342ac17b60ecc431b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data: {fileID: 0}
+  data: {fileID: 842449624}
   cellSize: 0.1
   drawGizmos: 0
   gizmoAlpha: 0.35
@@ -14588,7 +14571,7 @@ Transform:
   m_GameObject: {fileID: 1091609589}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -20.367537, y: 0, z: -26.225811}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14766,7 +14749,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 210, y: -63}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &1113514794
 MonoBehaviour:
@@ -19389,7 +19372,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1470296899
 RectTransform:
   m_ObjectHideFlags: 0
@@ -22041,7 +22024,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridBuilder: {fileID: 1091609590}
   furnitureManager: {fileID: 99871891}
-  roomManager: {fileID: 846193313}
+  roomManager: {fileID: 1732223391}
   cellSizeMeters: 0.1
 --- !u!4 &1717232561
 Transform:
@@ -22114,9 +22097,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spaceData: {fileID: 842449624}
   furnitureManager: {fileID: 99871891}
-  roomManager: {fileID: 846193313}
+  roomManager: {fileID: 1732223391}
   placementController: {fileID: 1019212248}
   gridBuilder: {fileID: 1091609590}
+  placer: {fileID: 1717232560}
   mainPanel: {fileID: 2126566703}
   categoryPanel: {fileID: 1072654411}
   sizePanel: {fileID: 1596324971}
@@ -22392,6 +22376,55 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1728573684}
   m_CullTransparentMesh: 1
+--- !u!1 &1732223390
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1732223392}
+  - component: {fileID: 1732223391}
+  m_Layer: 0
+  m_Name: RoomManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1732223391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732223390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7402ef7a5c58347488f389f3bf80b6de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spaceData: {fileID: 842449624}
+  gridBuilder: {fileID: 1091609590}
+  cameraController: {fileID: 2075791871}
+  currentRoomID: 0
+  debugRooms: []
+--- !u!4 &1732223392
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732223390}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.6911, y: -6.055844, z: -0.44414952}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1739372813
 GameObject:
   m_ObjectHideFlags: 0
@@ -26815,7 +26848,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: -0.01, z: 0}
-  m_LocalScale: {x: 10, y: 1, z: 10}
+  m_LocalScale: {x: 50, y: 1, z: 50}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -26915,6 +26948,52 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &2075791868
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2075791870}
+  - component: {fileID: 2075791871}
+  m_Layer: 0
+  m_Name: CameraController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2075791870
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2075791868}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2075791871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2075791868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: baa1620405886c943b47ff4d8525a5c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetCamera: {fileID: 168886747}
+  roomManager: {fileID: 1732223391}
 --- !u!1 &2079148066
 GameObject:
   m_ObjectHideFlags: 0
@@ -27361,7 +27440,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!222 &2126566704
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -28011,7 +28090,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5933600096920818259, guid: a4176396b72b47245a61e47d91e3cac1, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5933600096920818259, guid: a4176396b72b47245a61e47d91e3cac1, type: 3}
       propertyPath: m_AnchorMin.x
@@ -28019,7 +28098,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5933600096920818259, guid: a4176396b72b47245a61e47d91e3cac1, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5933600096920818259, guid: a4176396b72b47245a61e47d91e3cac1, type: 3}
       propertyPath: m_SizeDelta.x
@@ -28059,11 +28138,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5933600096920818259, guid: a4176396b72b47245a61e47d91e3cac1, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 105
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5933600096920818259, guid: a4176396b72b47245a61e47d91e3cac1, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -75
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5933600096920818259, guid: a4176396b72b47245a61e47d91e3cac1, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -28205,8 +28284,10 @@ SceneRoots:
   - {fileID: 377666383}
   - {fileID: 846193312}
   - {fileID: 842449625}
+  - {fileID: 1732223392}
   - {fileID: 99871892}
   - {fileID: 1019212249}
+  - {fileID: 2075791870}
   - {fileID: 1091609591}
   - {fileID: 1717232561}
   - {fileID: 1591129512}

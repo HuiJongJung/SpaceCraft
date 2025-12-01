@@ -2,8 +2,9 @@
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
-/Unity/SpaceCraft/Assets/StreamingAssets/Convert_FloorPlan/
-/Unity/SpaceCraft/Assets/StreamingAssets/Inference_FloorPlan/
+
+/Unity/SpaceCraft/Assets/StreamingAssets/FloorPlan/Convert_FloorPlan/**
+/Unity/SpaceCraft/Assets/StreamingAssets/FloorPlan/Inference_FloorPlan/**
 
 
 .utmp/
