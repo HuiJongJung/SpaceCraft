@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: KitchenSink1
   m_EditorClassIdentifier: 
   id: KitchenSink1
-  name: "\uBD80\uC5CC \uC2F1\uD06C\uB300"
+  displayName: "\uC8FC\uBC29\uC2F1\uD06C\uB300"
   sprite: {fileID: 21300000, guid: 6336cab18226936478c23ab5b105d980, type: 3}
   prefab: {fileID: 2529462248911088063, guid: a5ba42a58d8084949b8142afc41ed2ac, type: 3}
   sizeTemplates:

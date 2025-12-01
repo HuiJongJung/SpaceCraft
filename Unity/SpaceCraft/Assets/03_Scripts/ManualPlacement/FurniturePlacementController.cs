@@ -36,6 +36,34 @@ public class FurniturePlacementController : MonoBehaviour
     private bool canPlaceHere;
 
     private bool isPlacing = false;
+
+    void Start()
+    {
+        if (cam == null)
+        {
+            cam = Camera.main;
+        }
+
+        if (placer == null)
+        {
+            placer = FindFirstObjectByType<FurniturePlacer>(FindObjectsInactive.Include);
+        }
+
+        if (furnitureManager == null)
+        {
+            furnitureManager = FindFirstObjectByType<FurnitureManager>(FindObjectsInactive.Include);
+        }
+
+        if (gridBuilder == null)
+        {
+            gridBuilder = FindFirstObjectByType<RoomPlacementGridBuilder>(FindObjectsInactive.Include);
+        }
+
+        if (placeSceneUI == null)
+        {
+            placeSceneUI = FindFirstObjectByType<PlaceSceneUI>();
+        }
+    }
     
     // Clear Preview
     // not hasPreview -> return

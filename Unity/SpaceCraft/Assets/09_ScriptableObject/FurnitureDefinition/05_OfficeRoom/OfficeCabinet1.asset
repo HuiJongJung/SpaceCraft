@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: OfficeCabinet1
   m_EditorClassIdentifier: 
   id: OfficeCabinet1
-  name: "\uC0AC\uBB34\uC6A9\uCE90\uBE44\uB137"
+  displayName: "\uC0AC\uBB34\uC6A9\uCE90\uBE44\uB137"
   sprite: {fileID: 21300000, guid: e575137435ac57d40b76d504ea02dd65, type: 3}
   prefab: {fileID: 1842174159451776035, guid: f4f20e6b2eee7e44483740a47d0d6d43, type: 3}
   sizeTemplates:

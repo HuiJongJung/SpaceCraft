@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: OfficeDesk1
   m_EditorClassIdentifier: 
   id: OfficeDesk1
-  name: "\uC0AC\uBB34\uC6A9\uCC45\uC0C1"
+  displayName: "\uC0AC\uBB34\uC6A9\uCC45\uC0C1"
   sprite: {fileID: 21300000, guid: 18a964914f4eb4748b3ef913c97a6feb, type: 3}
   prefab: {fileID: 3517846129755535120, guid: aadb51d9720facf458192032085bfffa, type: 3}
   sizeTemplates:

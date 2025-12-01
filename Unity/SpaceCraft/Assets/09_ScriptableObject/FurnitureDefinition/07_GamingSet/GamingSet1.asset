@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GamingSet1
   m_EditorClassIdentifier: 
   id: GamingSet1
-  name: "\uAC8C\uC774\uBC0D\uC138\uD2B8"
+  displayName: "\uAC8C\uC774\uBC0D\uC138\uD2B8"
   sprite: {fileID: 21300000, guid: e7225e8e61a5bb74098fbf491949962a, type: 3}
   prefab: {fileID: 3620269137156011706, guid: 0bfd9b70c650b7e41819f84e40b7c65c, type: 3}
   sizeTemplates:

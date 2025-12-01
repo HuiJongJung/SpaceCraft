@@ -47,7 +47,7 @@ public class RoomManager : MonoBehaviour
 
         if (cameraController == null)
         {
-            cameraController = FindObjectOfType<PlaceCameraController>();
+            cameraController = FindFirstObjectByType<PlaceCameraController>(FindObjectsInactive.Include);
         }
 
         if (spaceData != null)
@@ -64,7 +64,7 @@ public class RoomManager : MonoBehaviour
     {
         if (gridBuilder == null)
         {
-            gridBuilder = FindObjectOfType<RoomPlacementGridBuilder>();
+            gridBuilder = FindFirstObjectByType<RoomPlacementGridBuilder>(FindObjectsInactive.Include);
         }
 
         if (spaceData == null)

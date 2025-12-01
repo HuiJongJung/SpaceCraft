@@ -11,7 +11,7 @@ public class FunitureAutoTester : MonoBehaviour
     {
         if (roomManager == null)
         {
-            roomManager = FindObjectOfType<RoomManager>();
+            roomManager = FindFirstObjectByType<RoomManager>(FindObjectsInactive.Include);
         }
 
         if (roomManager == null)
@@ -21,7 +21,7 @@ public class FunitureAutoTester : MonoBehaviour
         }
 
         if (furnitureManager == null)
-            furnitureManager = FindObjectOfType<FurnitureManager>();
+            furnitureManager = FindFirstObjectByType<FurnitureManager>(FindObjectsInactive.Include);
     }
     void Update()
     {

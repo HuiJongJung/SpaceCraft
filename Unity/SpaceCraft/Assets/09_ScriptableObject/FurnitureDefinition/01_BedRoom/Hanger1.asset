@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Hanger1
   m_EditorClassIdentifier: 
   id: Hanger1
-  name: "\uC640\uC774\uB4DC \uD589\uAC70"
+  displayName: "\uD589\uAC70"
   sprite: {fileID: 21300000, guid: 1760d534e49544e4082ba9abf593544d, type: 3}
   prefab: {fileID: 5819309402860762641, guid: aee384ec931ea4945bfb2e3e8cbe2402, type: 3}
   sizeTemplates:

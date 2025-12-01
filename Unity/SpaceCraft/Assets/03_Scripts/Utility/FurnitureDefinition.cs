@@ -37,7 +37,7 @@ public struct FurnitureSizeTemplate
 public class FurnitureDefinition : ScriptableObject
 {
     public string id;                        // Furniture Type ID ex) "Bed1"
-    public string name;                      // Furniture Name ex) "침대"
+    public string displayName;                      // Furniture Name ex) "침대"
     public Sprite sprite;                    // Sprite Image
     public GameObject prefab;                // Furniture Prefab
     public FurnitureSizeTemplate[] sizeTemplates; // Template List

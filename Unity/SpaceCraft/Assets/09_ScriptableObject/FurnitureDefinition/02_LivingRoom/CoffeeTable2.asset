@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CoffeeTable2
   m_EditorClassIdentifier: 
   id: CoffeeTable2
-  name: "\uCEE4\uD53C\uD14C\uC774\uBE14"
+  displayName: "\uCEE4\uD53C\uD14C\uC774\uBE14"
   sprite: {fileID: 21300000, guid: e116191d1f8190c4ab8e0e4316224754, type: 3}
   prefab: {fileID: 282209939962334691, guid: 42148f790f735954ca9d2a19a49c6ec3, type: 3}
   sizeTemplates:

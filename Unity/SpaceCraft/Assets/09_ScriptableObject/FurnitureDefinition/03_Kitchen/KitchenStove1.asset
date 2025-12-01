@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: KitchenStove1
   m_EditorClassIdentifier: 
   id: KitchenStove1
-  name: "\uBD80\uC5CC \uC2A4\uD1A0\uBE0C"
+  displayName: "\uC8FC\uBC29\uC2A4\uD1A0\uBE0C"
   sprite: {fileID: 21300000, guid: ae71af0cb5bd50d4ab609a08761e0348, type: 3}
   prefab: {fileID: 4906482974072853540, guid: 55b364e7c3a0c4d468128b3feda818d8, type: 3}
   sizeTemplates:

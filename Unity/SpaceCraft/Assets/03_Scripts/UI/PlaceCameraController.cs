@@ -34,6 +34,11 @@ public class PlaceCameraController : MonoBehaviour
             return;
         }
 
+        if (roomManager == null)
+        {
+            roomManager = FindFirstObjectByType<RoomManager>(FindObjectsInactive.Include);
+        }
+
         if (distance < minDistance)
         {
             distance = minDistance;

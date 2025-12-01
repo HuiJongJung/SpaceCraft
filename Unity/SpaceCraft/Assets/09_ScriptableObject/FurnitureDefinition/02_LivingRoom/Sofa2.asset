@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Sofa2
   m_EditorClassIdentifier: 
   id: Sofa2
-  name: "\uC18C\uD30C"
+  displayName: "\uC18C\uD30C"
   sprite: {fileID: 21300000, guid: 4f711b2e2e1fe524c8998f2629474009, type: 3}
   prefab: {fileID: 5642545369002013883, guid: 2d41ae6bdeb2b454f9e2c92ecff9bc68, type: 3}
   sizeTemplates:

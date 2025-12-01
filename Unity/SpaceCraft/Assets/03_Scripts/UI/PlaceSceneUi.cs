@@ -140,12 +140,12 @@ public class PlaceSceneUI : MonoBehaviour
 
         if (roomManager == null)
         {
-            roomManager = FindObjectOfType<RoomManager>();
+            roomManager = FindFirstObjectByType<RoomManager>(FindObjectsInactive.Include);
         }
 
         if (gridBuilder == null)
         {
-            gridBuilder = FindObjectOfType<RoomPlacementGridBuilder>();
+            gridBuilder = FindFirstObjectByType<RoomPlacementGridBuilder>(FindObjectsInactive.Include);
         }
 
         SetButtonListeners();
@@ -231,6 +231,39 @@ public class PlaceSceneUI : MonoBehaviour
         // Return To Place Button
         returnToPlaceButton.onClick.RemoveAllListeners();
         returnToPlaceButton.onClick.AddListener(OnClickReturnToPlaceButton);
+        
+        // wall Toggle
+        if (wallFrontToggle != null)
+        {
+            wallFrontToggle.onValueChanged.RemoveAllListeners();
+            wallFrontToggle.onValueChanged.AddListener(
+                delegate(bool isOn) { OnWallToggleChanged(isOn, clearanceFrontInput); }
+            );
+        }
+
+        if (wallBackToggle != null)
+        {
+            wallBackToggle.onValueChanged.RemoveAllListeners();
+            wallBackToggle.onValueChanged.AddListener(
+                delegate(bool isOn) { OnWallToggleChanged(isOn, clearanceBackInput); }
+            );
+        }
+
+        if (wallLeftToggle != null)
+        {
+            wallLeftToggle.onValueChanged.RemoveAllListeners();
+            wallLeftToggle.onValueChanged.AddListener(
+                delegate(bool isOn) { OnWallToggleChanged(isOn, clearanceLeftInput); }
+            );
+        }
+
+        if (wallRightToggle != null)
+        {
+            wallRightToggle.onValueChanged.RemoveAllListeners();
+            wallRightToggle.onValueChanged.AddListener(
+                delegate(bool isOn) { OnWallToggleChanged(isOn, clearanceRightInput); }
+            );
+        }
     }
     
     public void SetSlotColor(string instanceId, bool isPlaced)
@@ -351,7 +384,7 @@ public class PlaceSceneUI : MonoBehaviour
             TextMeshProUGUI text = itemGo.GetComponentInChildren<TextMeshProUGUI>();
             if (text != null)
             {
-                text.text = def.name;
+                text.text = def.displayName;
             }
         }
     }
@@ -443,7 +476,7 @@ public class PlaceSceneUI : MonoBehaviour
         {
             if (detailNameText != null)
             {   
-                detailNameText.text = "이름 : " + currentDefinition.name;
+                detailNameText.text = "이름 : " + currentDefinition.displayName;
             }
 
             if (detailFurnitureImage != null)
@@ -477,7 +510,10 @@ public class PlaceSceneUI : MonoBehaviour
         privacyBackToggle.isOn = false;
         privacyLeftToggle.isOn = false;
         privacyRightToggle.isOn = false;
-
+        
+        // Sync Wall & Clearance
+        SyncWallAndClearanceUI();
+        
         SetDetailPanel(true);
     }
     #endregion
@@ -487,6 +523,33 @@ public class PlaceSceneUI : MonoBehaviour
     public void OnClickCloseDetailPanel()
     {
         SetDetailPanel(false);
+    }
+    
+    private void OnWallToggleChanged(bool isOn, TMP_InputField clearanceInput)
+    {
+        if (clearanceInput == null)
+        {
+            return;
+        }
+
+        if (isOn)
+        {
+            // 벽 배치 시 여유공간을 0으로 변경
+            clearanceInput.text = "0";
+            clearanceInput.interactable = false;
+        }
+        else
+        {
+            clearanceInput.interactable = true;
+        }
+    }
+    
+    private void SyncWallAndClearanceUI()
+    {
+        OnWallToggleChanged(wallFrontToggle.isOn,  clearanceFrontInput);
+        OnWallToggleChanged(wallBackToggle.isOn,   clearanceBackInput);
+        OnWallToggleChanged(wallLeftToggle.isOn,   clearanceLeftInput);
+        OnWallToggleChanged(wallRightToggle.isOn,  clearanceRightInput);
     }
     
     public void OnClickAddFurnitureButton()
@@ -797,7 +860,7 @@ public class PlaceSceneUI : MonoBehaviour
             TextMeshProUGUI text = itemGo.GetComponentInChildren<TextMeshProUGUI>();
             if (text != null)
             {
-                text.text = furnitureManager.GetDB().GetById(item.furnitureId).name;
+                text.text = furnitureManager.GetDB().GetById(item.furnitureId).displayName;
             }
         }
     }
@@ -811,7 +874,7 @@ public class PlaceSceneUI : MonoBehaviour
             FurnitureDefinition def = furnitureManager.GetDB().GetById(item.furnitureId);
             if (def != null)
             {
-                displayName = "이름 : " + def.name + "\nID : " + item.instanceId;
+                displayName = "이름 : " + def.displayName + "\nID : " + item.instanceId;
                 if (def.sprite != null)
                 {
                     roFurnitureImage.sprite = def.sprite;

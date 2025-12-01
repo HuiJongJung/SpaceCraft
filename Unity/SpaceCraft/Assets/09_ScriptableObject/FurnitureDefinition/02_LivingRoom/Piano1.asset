@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Piano1
   m_EditorClassIdentifier: 
   id: Piano1
-  name: "\uD53C\uC544\uB178"
+  displayName: "\uD53C\uC544\uB178"
   sprite: {fileID: 21300000, guid: c007145a7bbb62a45b0f31948b396ee7, type: 3}
   prefab: {fileID: 3842681360523545429, guid: 991085a5202e33a4ab3dbf07442ba1f7, type: 3}
   sizeTemplates:

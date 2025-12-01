@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Plant1
   m_EditorClassIdentifier: 
   id: Plant1
-  name: "\uD654\uBD84"
+  displayName: "\uD654\uBD84"
   sprite: {fileID: 21300000, guid: a2226d6042d9942419043aa5cc520728, type: 3}
   prefab: {fileID: 2952105884319320314, guid: f29a60d34eba21644a7635e0ce9c171a, type: 3}
   sizeTemplates:

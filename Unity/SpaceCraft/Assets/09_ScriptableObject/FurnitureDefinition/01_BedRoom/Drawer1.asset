@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Drawer1
   m_EditorClassIdentifier: 
   id: Drawer1
-  name: "\uC11C\uB78D"
+  displayName: "\uC11C\uB78D\uC7A5"
   sprite: {fileID: 21300000, guid: c94e9fcb9dcc0bf4f93aff0f3fe27f54, type: 3}
   prefab: {fileID: 3976104005750309446, guid: 055a50252e92d694689752476843ee74, type: 3}
   sizeTemplates:

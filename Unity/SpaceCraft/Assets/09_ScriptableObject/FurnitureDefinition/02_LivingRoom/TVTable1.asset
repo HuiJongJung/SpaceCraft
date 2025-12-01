@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TVTable1
   m_EditorClassIdentifier: 
   id: TVTable1
-  name: "TV\uD14C\uC774\uBE14"
+  displayName: "\uD2F0\uBE44\uD14C\uC774\uBE14"
   sprite: {fileID: 21300000, guid: acba955240b5d324f999e295a5934bea, type: 3}
   prefab: {fileID: 6643068371024058599, guid: 7e38c2f11cb70b44fa7b42a888fda159, type: 3}
   sizeTemplates:

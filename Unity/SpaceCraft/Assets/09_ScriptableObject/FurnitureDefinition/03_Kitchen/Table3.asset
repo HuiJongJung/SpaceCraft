@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Table3
   m_EditorClassIdentifier: 
   id: Table3
-  name: "\uD14C\uC774\uBE14"
+  displayName: "\uD14C\uC774\uBE14"
   sprite: {fileID: 21300000, guid: 34379456b9eb3694cb2dbe75647786f3, type: 3}
   prefab: {fileID: 5091438426423345652, guid: 70fb74bd832f39c4da775a21b6fff9cd, type: 3}
   sizeTemplates:

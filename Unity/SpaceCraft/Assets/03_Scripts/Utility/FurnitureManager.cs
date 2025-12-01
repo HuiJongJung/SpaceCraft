@@ -39,22 +39,22 @@ public class FurnitureManager : MonoBehaviour
 
         if (roomManager == null)
         {
-            roomManager = FindObjectOfType<RoomManager>();
+            roomManager = FindFirstObjectByType<RoomManager>(FindObjectsInactive.Include);
         }
         
         if (gridBuilder == null)
         {
-            gridBuilder = FindObjectOfType<RoomPlacementGridBuilder>();
+            gridBuilder = FindFirstObjectByType<RoomPlacementGridBuilder>(FindObjectsInactive.Include);
         }
 
         if (furniturePlacer == null)
         {
-            furniturePlacer = FindObjectOfType<FurniturePlacer>();
+            furniturePlacer = FindFirstObjectByType<FurniturePlacer>(FindObjectsInactive.Include);
         }
         
         if (placeSceneUI == null)
         {
-            placeSceneUI = FindObjectOfType<PlaceSceneUI>();
+            placeSceneUI = FindFirstObjectByType<PlaceSceneUI>(FindObjectsInactive.Include);
         }
 
         RebuildMapsFromInventory();

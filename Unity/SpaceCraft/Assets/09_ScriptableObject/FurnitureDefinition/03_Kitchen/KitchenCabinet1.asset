@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: KitchenCabinet1
   m_EditorClassIdentifier: 
   id: KitchenCabinet1
-  name: "\uBD80\uC5CC \uD558\uBD80\uC7A5"
+  displayName: "\uC8FC\uBC29\uCE90\uBE44\uB137"
   sprite: {fileID: 21300000, guid: 9ca926a2ca47a2749b20e6fa1fc2a6e7, type: 3}
   prefab: {fileID: 8908767782723522003, guid: f5b356935a33dcd489db9beb7e18b52f, type: 3}
   sizeTemplates:
