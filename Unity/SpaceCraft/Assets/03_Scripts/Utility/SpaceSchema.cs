@@ -106,7 +106,4 @@ public class FurnitureItemData
     // Options
     public WallPlacementDirection wallDir;
     public FunctionalClearanceCm clearance;
-    public bool isPrimaryFurniture;
-    public bool isPrivacyFurniture;
-    public PrivacyDirection privacyDir;
 }

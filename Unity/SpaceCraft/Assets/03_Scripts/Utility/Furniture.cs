@@ -15,10 +15,7 @@ public class Furniture : MonoBehaviour
     public Vector3 sizeCentimeters;
 
     [Header("Options")]
-    public bool isPrimaryFurniture = false;
     public FunctionalClearanceCm clearance;
-    public bool isPrivacyFurniture = false;
-    public PrivacyDirection privacyDir;
     
     [Header("SetSize Options")]
     public bool keepBottomOnScale = true;

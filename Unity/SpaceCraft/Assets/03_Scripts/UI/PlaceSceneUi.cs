@@ -32,6 +32,8 @@ public class PlaceSceneUI : MonoBehaviour
     public Button prevButton;
     public Button nextButton;
     public Button roomNameButton;
+    public Button helpButton;
+    public TextMeshProUGUI helpText;
     public Button saveButton;
     public Button categoryButton;
     public Button autoPlaceButton;
@@ -59,14 +61,6 @@ public class PlaceSceneUI : MonoBehaviour
     public TMP_InputField roClearanceBackText;
     public TMP_InputField roClearanceLeftText;
     public TMP_InputField roClearanceRightText;
-
-    public Toggle roPrimaryToggle;
-    
-    public Toggle roPrivacyToggle;
-    public Toggle roPrivacyFrontToggle;
-    public Toggle roPrivacyBackToggle;
-    public Toggle roPrivacyLeftToggle;
-    public Toggle roPrivacyRightToggle;
 
     public Button closeDetailPanelReadOnlyButton;
     public Button deleteFurnitureButton;
@@ -99,14 +93,6 @@ public class PlaceSceneUI : MonoBehaviour
     public TMP_InputField clearanceBackInput;
     public TMP_InputField clearanceLeftInput;
     public TMP_InputField clearanceRightInput;
-    
-    public Toggle primaryToggle;
-    
-    public Toggle privacyToggle;
-    public Toggle privacyFrontToggle;
-    public Toggle privacyBackToggle;
-    public Toggle privacyLeftToggle;
-    public Toggle privacyRightToggle;
 
     public Button closeDetailButton;
     public Button addFurnitureButton;
@@ -176,6 +162,9 @@ public class PlaceSceneUI : MonoBehaviour
         // Save Button
         saveButton.onClick.RemoveAllListeners();
         saveButton.onClick.AddListener(OnClickSaveButton);
+        
+        helpButton.onClick.RemoveAllListeners();
+        helpButton.onClick.AddListener(OnClickHelpButton);
         
         // Prev Button & next Button
         prevButton.onClick.RemoveAllListeners();
@@ -501,15 +490,6 @@ public class PlaceSceneUI : MonoBehaviour
         clearanceBackInput.text = "0";
         clearanceLeftInput.text = "0";
         clearanceRightInput.text = "0";
-
-        primaryToggle.isOn = false;
-        
-        privacyToggle.isOn = false;
-        
-        privacyFrontToggle.isOn = false;
-        privacyBackToggle.isOn = false;
-        privacyLeftToggle.isOn = false;
-        privacyRightToggle.isOn = false;
         
         // Sync Wall & Clearance
         SyncWallAndClearanceUI();
@@ -596,18 +576,6 @@ public class PlaceSceneUI : MonoBehaviour
         clearance.back = ParseIntOrZero(clearanceBackInput.text);
         clearance.left = ParseIntOrZero(clearanceLeftInput.text);
         clearance.right = ParseIntOrZero(clearanceRightInput.text);
-        
-        // Primary
-        bool isPrimaryFurniture = primaryToggle.isOn;
-        
-        // Privacy & directions
-        bool isPrivacyFurniture = privacyToggle.isOn;
-        
-        PrivacyDirection privacyDir = new PrivacyDirection();
-        privacyDir.front = privacyFrontToggle.isOn;
-        privacyDir.back  = privacyBackToggle.isOn;
-        privacyDir.left  = privacyLeftToggle.isOn;
-        privacyDir.right = privacyRightToggle.isOn;
 
         // Add Furniture
         furnitureManager.AddItemToRoomInventory(
@@ -615,10 +583,7 @@ public class PlaceSceneUI : MonoBehaviour
             currentDefinition.id,
             sizeCentimeters,
             wallDir,
-            clearance,
-            isPrimaryFurniture,
-            isPrivacyFurniture,
-            privacyDir
+            clearance
         );
 
         // Refresh
@@ -696,6 +661,11 @@ public class PlaceSceneUI : MonoBehaviour
         // Show Simulation UI
         DeactiveAllPanels();
         SetSimulationPanel(true);
+    }
+
+    public void OnClickHelpButton()
+    {
+        helpText.gameObject.SetActive(!helpText.IsActive());
     }
     
     // LeftClick -> Place Mode
@@ -897,14 +867,6 @@ public class PlaceSceneUI : MonoBehaviour
         roClearanceBackText.text  = item.clearance.back.ToString();
         roClearanceLeftText.text  = item.clearance.left.ToString();
         roClearanceRightText.text = item.clearance.right.ToString();
-        
-        roPrimaryToggle.isOn = item.isPrimaryFurniture;
-        roPrivacyToggle.isOn = item.isPrivacyFurniture;
-        
-        roPrivacyFrontToggle.isOn = item.privacyDir.front;
-        roPrivacyBackToggle.isOn  = item.privacyDir.back;
-        roPrivacyLeftToggle.isOn  = item.privacyDir.left;
-        roPrivacyRightToggle.isOn = item.privacyDir.right;
     }
 
     // room Name / room Index / RoomManager Update

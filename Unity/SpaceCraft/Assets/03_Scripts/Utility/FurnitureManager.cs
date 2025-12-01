@@ -113,10 +113,7 @@ public class FurnitureManager : MonoBehaviour
         string furnitureId,
         Vector3 sizeCentimeters,
         WallPlacementDirection wallDir,
-        FunctionalClearanceCm clearance,
-        bool isPrimaryFurniture,
-        bool isPrivacyFurniture,
-        PrivacyDirection privacyDir
+        FunctionalClearanceCm clearance
     )
     {
         FurnitureItemData item = new FurnitureItemData();
@@ -132,9 +129,6 @@ public class FurnitureManager : MonoBehaviour
         item.sizeCentimeters = sizeCentimeters;
         item.wallDir = wallDir;
         item.clearance = clearance;
-        item.isPrimaryFurniture = isPrimaryFurniture;
-        item.isPrivacyFurniture = isPrivacyFurniture;
-        item.privacyDir = privacyDir;
 
         inventory.Add(item);
         byInstanceId[item.instanceId] = item;
@@ -365,10 +359,6 @@ public class FurnitureManager : MonoBehaviour
         f.gridCell = item.gridCell;
         f.rotation = item.rotation;
         f.sizeCentimeters = item.sizeCentimeters;
-        f.isPrimaryFurniture = item.isPrimaryFurniture;
-        f.clearance = item.clearance;
-        f.isPrivacyFurniture = item.isPrivacyFurniture;
-        f.privacyDir = item.privacyDir;
 
         // Set Size (width=X, depth=Z, height=Y)
         f.SetSize(
