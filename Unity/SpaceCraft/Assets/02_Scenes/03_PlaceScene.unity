@@ -14558,9 +14558,9 @@ MonoBehaviour:
   wallInset: 0.02
   slidingDoorDepth: 0.5
   showRuntimeGrid: 1
-  gridMaterial: {fileID: 0}
-  gridOccupiedMaterial: {fileID: 0}
-  gridClearanceMaterial: {fileID: 0}
+  gridMaterial: {fileID: 2100000, guid: 94b6fb2daf30f964ea982e5dff4a80c2, type: 2}
+  gridOccupiedMaterial: {fileID: 2100000, guid: 04a88720e4599bf438d07a490e5da51c, type: 2}
+  gridClearanceMaterial: {fileID: 2100000, guid: 49e63ed32ace79a4689eb61fc10b5ab9, type: 2}
   gridRoot: {fileID: 0}
 --- !u!4 &1091609591
 Transform:
