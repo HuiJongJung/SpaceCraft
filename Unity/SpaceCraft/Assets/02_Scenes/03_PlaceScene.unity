@@ -10541,7 +10541,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd190f501a592864fbccb62440b87fe3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roomsJson: {fileID: 4900000, guid: 908dfd0d2c76c424fa40d6e80dca6f72, type: 3}
+  roomsJson: {fileID: 4900000, guid: de27178a4a2e77641aff40d1caaf851a, type: 3}
 --- !u!4 &842449625
 Transform:
   m_ObjectHideFlags: 0

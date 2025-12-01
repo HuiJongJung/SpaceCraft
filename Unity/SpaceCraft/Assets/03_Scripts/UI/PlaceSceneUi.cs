@@ -795,7 +795,8 @@ public class PlaceSceneUI : MonoBehaviour
         }
 
         currentReadOnlyInstanceId = instanceId;
-        // Deactive Camera Input
+        // Deactive All Buttons & Camera Input
+        SetAllButtonsInteractive(false);
         placeCameraController.LockCameraControl();
         ApplyReadOnlyDetail(item);
         SetDetailPanelReadOnly(true);
@@ -803,7 +804,8 @@ public class PlaceSceneUI : MonoBehaviour
 
     public void OnClickCloseDetailPanelReadOnly()
     {
-        // Active Camera Input
+        // Active All Buttons & Camera Input
+        SetAllButtonsInteractive(true);
         placeCameraController.UnlockCameraControl();
         SetDetailPanelReadOnly(false);
     }
