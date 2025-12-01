@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using UnityEditorInternal;
 using UnityEngine;
 
 /* ========================== */
@@ -45,7 +44,7 @@ public class FloorPlanInterpreter : MonoBehaviour
     {
         if (isFinished)
         {
-            floorPlanUI.ApplyOutput();
+            floorPlanUI.ApplyOutput(true);
             isFinished = false;
         }
     }
@@ -59,6 +58,7 @@ public class FloorPlanInterpreter : MonoBehaviour
         if (isProcessing)
         {
             UnityEngine.Debug.LogWarning("[Interpreter] 프로세스가 이미 실행 중입니다.");
+            floorPlanUI.ApplyOutput(false);
             return;
         }
 
@@ -66,6 +66,7 @@ public class FloorPlanInterpreter : MonoBehaviour
         if (string.IsNullOrEmpty(inputFilePath) || !File.Exists(inputFilePath))
         {
             UnityEngine.Debug.LogError($"[Interpreter] 입력 파일이 유효하지 않습니다 : {inputFilePath}");
+            floorPlanUI.ApplyOutput(false);
             return;
         }
 

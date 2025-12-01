@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 
@@ -83,3 +84,4 @@ public static class FitBoxColliderOnPrefabs
         Debug.Log("프리팹 BoxCollider 자동 맞춤 완료. 처리한 프리팹 수: " + processedCount);
     }
 }
+#endif

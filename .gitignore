@@ -5,7 +5,7 @@
 
 /Unity/SpaceCraft/Assets/StreamingAssets/FloorPlan/Convert_FloorPlan/**
 /Unity/SpaceCraft/Assets/StreamingAssets/FloorPlan/Inference_FloorPlan/**
-
+/Build/**
 
 .utmp/
 /[Ll]ibrary/

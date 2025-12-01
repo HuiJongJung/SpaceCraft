@@ -13,7 +13,7 @@ public class MainSceneUI : MonoBehaviour
 
     public void OnClickLoadSpaceButton()
     {
-        string path = UnityEditor.EditorUtility.OpenFilePanel("Select floor image", "", "png,jpg,jpeg");
+        //string path = UnityEditor.EditorUtility.OpenFilePanel("Select floor image", "", "png,jpg,jpeg");
         
         SceneManager.LoadScene("03_PlaceScene");
     }

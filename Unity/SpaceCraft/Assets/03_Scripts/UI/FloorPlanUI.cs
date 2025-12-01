@@ -1,7 +1,5 @@
-using Ookii.Dialogs;
 using System.IO;
 using TMPro;
-using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -17,6 +15,7 @@ public class FloorPlanUI : MonoBehaviour
     public GameObject contentPanel;
     public GameObject noticeNullPlace;
     public GameObject templatePrefab;
+    public GameObject loadingIcon;
 
     [Header("Preview")]
     public Image previewImage = null;
@@ -106,14 +105,21 @@ public class FloorPlanUI : MonoBehaviour
     // EditorUtility에서 지원하는 기능은 Editor에서만 동작하고,
     // 빌드된 파일에서는 작동하지 않는 문제가 있어서 빌드에서도 동작하는 방식으로 "수정 예정"
     /* ======================== */
-    public void ApplyOutput()
+    public void ApplyOutput(bool isSucceed)
     {
-        ApplyJson(Path.Combine(Application.persistentDataPath, "UserData", "space.json"));
-        PreviewUpload();
+        if (isSucceed)
+        {
+            ApplyJson(Path.Combine(Application.persistentDataPath, "UserData", "space.json"));
+            PreviewUpload();
+        }
+
+        loadingIcon.SetActive(false);
     }
 
     public void OnClickUpload() {
-        string path = UnityEditor.EditorUtility.OpenFilePanel("Select floor image", "", "png,jpg,jpeg");
+        loadingIcon.SetActive(true);
+
+        string path = SelectFloorPlan();
         if (!string.IsNullOrEmpty(path)) {
 
             // Save the image file for extract floor plan
@@ -286,5 +292,17 @@ public class FloorPlanUI : MonoBehaviour
             new Vector2(0.5f, 0.5f),
             100f
         );
+    }
+
+    private string SelectFloorPlan()
+    {
+        // 선택한 이미지 파일 경로 반환
+
+        // 파일 선택(이미지 필터)
+        var exts = new[] { new SFB.ExtensionFilter("Select Floor Plan", "png", "jpg", "jpeg") };
+        var paths = SFB.StandaloneFileBrowser.OpenFilePanel("이미지 선택", "", exts, false);
+        if (paths == null || paths.Length == 0 || string.IsNullOrEmpty(paths[0])) return "";
+
+        return paths[0];
     }
 }

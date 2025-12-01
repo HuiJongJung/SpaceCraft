@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using System.IO;
@@ -331,3 +332,4 @@ public class PreviewGenerator : EditorWindow
     #endregion
 
 }
+#endif
