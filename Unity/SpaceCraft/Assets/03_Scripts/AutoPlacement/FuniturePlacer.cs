@@ -44,8 +44,9 @@ public class FurniturePlacer : MonoBehaviour
     }
     
     
-    // 수동 배치용 배치 함수 
-    // 조건 무시 후 그리드 위에 배치 가능한지만 판단
+// 수동 배치용 배치 함수 
+// originCell(본체 좌하단)을 기준으로
+// "본체 + 여유공간(클리어런스)까지" 전부 placementMask 안에 들어가는지 검사
     public bool CanPlaceOnGrid(
         FurnitureItemData item,
         int roomID,
@@ -55,52 +56,76 @@ public class FurniturePlacer : MonoBehaviour
     )
     {
         sizeInCells = Vector2Int.zero;
-    
+
         RoomPlacementGrid grid = FindGridByRoomId(roomID);
         if (grid == null)
         {
-            Debug.LogWarning("[FurniturePlacer] No grid found for roomID=" + roomID);
+            Debug.LogWarning("[FurniturePlacer] CanPlaceOnGrid: No grid for roomID=" + roomID);
             return false;
         }
-    
+
         float cellSize = grid.cellSize;
         if (cellSize <= 0f)
         {
             cellSize = cellSizeMeters;
         }
-    
-        // footprint 계산
-        sizeInCells = PlacementCalculator.ComputeFootprintCells(
+
+        // 1) 본체 footprint (셀 단위) 계산
+        Vector2Int bodySize = PlacementCalculator.ComputeFootprintCells(
             item.sizeCentimeters,
             cellSize,
             rotationDeg
         );
-    
-        if (sizeInCells.x <= 0 || sizeInCells.y <= 0)
+
+        if (bodySize.x <= 0 || bodySize.y <= 0)
         {
             return false;
         }
-    
-        // 그리드 범위 + placementMask 검사
-        for (int dz = 0; dz < sizeInCells.y; dz++)
+
+        // 호출 쪽에서 ghost/프리뷰에 쓸 값은 "본체" 크기 그대로 넘겨줌
+        sizeInCells = bodySize;
+
+        // 2) 회전된 여유공간(클리어런스)을 셀 단위로 계산
+        //    originCell 은 "본체 좌하단" 이라고 가정
+        var clearance = PlacementCalculator.GetRotatedClearanceInCells(
+            item,
+            cellSize,
+            rotationDeg
+        );
+
+        Vector2Int bodyOrigin = originCell;
+
+        // 3) 전체 영역(Total = 본체 + 여유공간) 계산
+        Vector2Int totalOrigin = new Vector2Int(
+            bodyOrigin.x - clearance.left,
+            bodyOrigin.y - clearance.bottom
+        );
+
+        Vector2Int totalSize = new Vector2Int(
+            clearance.left + bodySize.x + clearance.right,
+            clearance.bottom + bodySize.y + clearance.top
+        );
+
+        // 4) 전체 영역에 대해 InBounds + placementMask 검사
+        for (int dz = 0; dz < totalSize.y; dz++)
         {
-            for (int dx = 0; dx < sizeInCells.x; dx++)
+            for (int dx = 0; dx < totalSize.x; dx++)
             {
-                int gx = originCell.x + dx;
-                int gz = originCell.y + dz;
-    
+                int gx = totalOrigin.x + dx;
+                int gz = totalOrigin.y + dz;
+
                 if (!grid.InBounds(gx, gz))
                 {
                     return false;
                 }
-    
+
                 if (!grid.placementMask[gx, gz])
                 {
                     return false;
                 }
             }
         }
-    
+
         return true;
     }
 
