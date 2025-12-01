@@ -65,5 +65,7 @@ public class MyFurnitureSlot : MonoBehaviour, IPointerClickHandler
         {
             button.interactable = interactable;
         }
+        
+        enabled = interactable;
     }
 }
