@@ -100,6 +100,8 @@ public class PlaceSceneUI : MonoBehaviour
 
     [Header("Simulation Panel")] 
     public Button returnToPlaceButton;
+    public Button helpButton_Simulation;
+    public TextMeshProUGUI helpText_Simulation;
     
     // 현재 선택 상태
     private string currentReadOnlyInstanceId;
@@ -258,6 +260,10 @@ public class PlaceSceneUI : MonoBehaviour
                 delegate(bool isOn) { OnWallToggleChanged(isOn, clearanceRightInput); }
             );
         }
+        
+        // Help Button Simulation
+        helpButton_Simulation.onClick.RemoveAllListeners();
+        helpButton_Simulation.onClick.AddListener(OnClickHelpButtonSimulation);
     }
     
     public void SetSlotColor(string instanceId, bool isPlaced)
@@ -1001,6 +1007,11 @@ public class PlaceSceneUI : MonoBehaviour
         
         // Show Main Panel
         ShowMain();
+    }
+    
+    public void OnClickHelpButtonSimulation()
+    {
+        helpText_Simulation.gameObject.SetActive(!helpText_Simulation.IsActive());
     }
     
     #endregion

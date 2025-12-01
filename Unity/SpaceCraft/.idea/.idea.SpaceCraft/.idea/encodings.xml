@@ -3,5 +3,6 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/Assets/03_Scripts/AutoPlacement/FunitureAutoTester.cs" charset="x-windows-949" />
     <file url="file://$PROJECT_DIR$/Assets/03_Scripts/Grid/RoomPlacementGrid.cs" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/Assets/03_Scripts/UI/FloorPlanUI.cs" charset="x-windows-949" />
   </component>
 </project>

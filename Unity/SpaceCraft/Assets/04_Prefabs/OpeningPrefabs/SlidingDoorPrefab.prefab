@@ -107,7 +107,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
@@ -216,7 +216,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
@@ -272,19 +272,13 @@ MonoBehaviour:
   gridCell: {x: 0, y: 0}
   rotation: 0
   sizeCentimeters: {x: 0, y: 0, z: 0}
-  isPrimaryFurniture: 0
   clearance:
     front: 0
     back: 0
     left: 0
     right: 0
-  isPrivacyFurniture: 0
-  privacyDir:
-    front: 0
-    back: 0
-    left: 0
-    right: 0
   keepBottomOnScale: 1
+  snapToFloor: 1
 --- !u!1 &8394968326231280966
 GameObject:
   m_ObjectHideFlags: 0
@@ -389,7 +383,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
