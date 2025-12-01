@@ -37,6 +37,7 @@ public class PlaceSceneUI : MonoBehaviour
     public Button saveButton;
     public Button categoryButton;
     public Button autoPlaceButton;
+    public Button unplaceRoomFurnitureButton;
     public TextMeshProUGUI roomNameText;
     public TextMeshProUGUI indexText;
 
@@ -166,12 +167,16 @@ public class PlaceSceneUI : MonoBehaviour
         helpButton.onClick.RemoveAllListeners();
         helpButton.onClick.AddListener(OnClickHelpButton);
         
-        // Prev Button & next Button
+        // Prev Button
         prevButton.onClick.RemoveAllListeners();
         prevButton.onClick.AddListener(OnClickPrevRoom);
         
+        // Next Button
         nextButton.onClick.RemoveAllListeners();
         nextButton.onClick.AddListener(OnClickNextRoom);
+        
+        unplaceRoomFurnitureButton.onClick.RemoveAllListeners();
+        unplaceRoomFurnitureButton.onClick.AddListener(OnClickUnplaceRoomFurnitureButton);
         
         // Add Function
         addFurnitureButton.onClick.RemoveAllListeners();
@@ -668,6 +673,38 @@ public class PlaceSceneUI : MonoBehaviour
         helpText.gameObject.SetActive(!helpText.IsActive());
     }
     
+    public void OnClickUnplaceRoomFurnitureButton()
+    {
+        if (furnitureManager == null || roomManager == null)
+        {
+            return;
+        }
+
+        // 배치 중이라면 배치 취소
+        if (placementController != null)
+        {
+            placementController.CancelPlacement();
+        }
+
+        int roomID = roomManager.currentRoomID;
+
+        // Get Items In Room
+        List<FurnitureItemData> items = furnitureManager.GetItemsInRoom(roomID);
+
+        // 배치된(isPlaced == true) 가구만 배치 해제
+        for (int i = 0; i < items.Count; i++)
+        {
+            FurnitureItemData item = items[i];
+            if (item != null && item.isPlaced)
+            {
+                furnitureManager.UnplaceItem(item.instanceId);
+            }
+        }
+
+        // Refresh UI
+        RefreshFurnitureList();
+    }
+    
     // LeftClick -> Place Mode
     public void OnLeftClickFurnitureSlot(string instanceId)
     {
@@ -933,6 +970,7 @@ public class PlaceSceneUI : MonoBehaviour
         if (autoPlaceButton != null)  autoPlaceButton.interactable  = interact;
         if (categoryButton != null) categoryButton.interactable = interact;
         if (helpButton != null) helpButton.interactable = interact;
+        if (unplaceRoomFurnitureButton != null) unplaceRoomFurnitureButton.interactable = interact;
 
         // 하단 가구 슬롯 버튼 잠금
         foreach (KeyValuePair<string, MyFurnitureSlot> kvp in slotMap)
