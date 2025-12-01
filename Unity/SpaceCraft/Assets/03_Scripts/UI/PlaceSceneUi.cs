@@ -638,6 +638,11 @@ public class PlaceSceneUI : MonoBehaviour
     // LeftClick -> Place Mode
     public void OnLeftClickFurnitureSlot(string instanceId)
     {
+        // if placing -> return
+        if (isPlacementMode)
+        {
+            return;
+        }
         // 0. No Furniture -> return
         FurnitureItemData item = furnitureManager.GetItemByInstanceId(instanceId);
         if (item == null)
@@ -662,6 +667,12 @@ public class PlaceSceneUI : MonoBehaviour
     // RightClick -> Show Detail Panel (RO)
     public void OnRightClickFurnitureSlot(string instanceId)
     {
+        // if placing -> return
+        if (isPlacementMode)
+        {
+            return;
+        }
+        
         FurnitureItemData item = furnitureManager.GetItemByInstanceId(instanceId);
         if (item == null)
         {
