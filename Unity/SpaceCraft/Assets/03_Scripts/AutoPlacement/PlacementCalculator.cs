@@ -175,4 +175,14 @@ public static class PlacementCalculator
             list[i] = temp;
         }
     }
+
+    public static int GetRequiredWallCount(FurnitureItemData item)
+    {
+        int count = 0;
+        if (item.wallDir.back) count++;
+        if (item.wallDir.front) count++;
+        if (item.wallDir.left) count++;
+        if (item.wallDir.right) count++;
+        return count;
+    }
 }

@@ -390,10 +390,14 @@ public class FurniturePlacer : MonoBehaviour
 
         PlacementCalculator.ShuffleList(unplacedItems);
 
+        var sortedItems = unplacedItems
+            .OrderByDescending(item => PlacementCalculator.GetRequiredWallCount(item))
+            .ToList();
+
         int successCount = 0;
 
         // 2. 루프 돌면서 하나씩 배치 시도
-        foreach (var item in unplacedItems)
+        foreach (var item in sortedItems)
         {
             // 여기서 updateVisuals = false로 줘서, 중간중간 화면 갱신을 안 하게 함 (성능 최적화)
             bool result = TryAutoPlaceBasic(item, roomID, updateVisuals: false);
