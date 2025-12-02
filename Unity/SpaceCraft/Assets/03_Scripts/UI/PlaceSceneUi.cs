@@ -827,7 +827,8 @@ public class PlaceSceneUI : MonoBehaviour
 
         // Refresh
         RefreshFurnitureList();
-        // Active Camera Input
+        // Active All Buttons & Camera Input
+        SetAllButtonsInteractive(true);
         placeCameraController.UnlockCameraControl();
         // Close ReadOnly Panel
         SetDetailPanelReadOnly(false);
