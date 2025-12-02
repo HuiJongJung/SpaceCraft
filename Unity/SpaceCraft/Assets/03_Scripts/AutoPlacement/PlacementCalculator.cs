@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class PlacementCalculator 
@@ -151,5 +152,27 @@ public static class PlacementCalculator
     {
         // 4방향 중 하나라도 true면 벽 배치 가구
         return item.wallDir.back || item.wallDir.front || item.wallDir.left || item.wallDir.right;
+    }
+
+    public static void ShuffleArray<T>(T[] array)
+    {
+        for (int i = 0; i < array.Length; i++)
+        {
+            int rnd = Random.Range(0, array.Length);
+            T temp = array[rnd];
+            array[rnd] = array[i];
+            array[i] = temp;
+        }
+    }
+
+    public static void ShuffleList<T>(List<T> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            int rnd = Random.Range(0, list.Count);
+            T temp = list[rnd];
+            list[rnd] = list[i];
+            list[i] = temp;
+        }
     }
 }

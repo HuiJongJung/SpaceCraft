@@ -227,6 +227,7 @@ public class FurniturePlacer : MonoBehaviour
 
         float cellSize = grid.cellSize > 0 ? grid.cellSize : cellSizeMeters;
         int[] rotations = { 0, 90, 180, 270 }; // 필요시 셔플 추가
+        PlacementCalculator.ShuffleArray(rotations);
 
         List<PlacementCandidate> candidates = new List<PlacementCandidate>();
 
@@ -301,6 +302,36 @@ public class FurniturePlacer : MonoBehaviour
         // 후보가 없으면 실패
         if (candidates.Count == 0) return false;
 
+        // 1. 각 후보마다 "가장 가까운 방 모서리까지의 거리"를 계산하여 정렬
+        // (방 모양이 이상해도 Bounding Box의 4개 꼭짓점 기준 가장 가까운 곳이 '구석'이 됩니다)
+        Vector2Int[] gridCorners = new Vector2Int[]
+        {
+            new Vector2Int(0, 0),
+            new Vector2Int(grid.cols, 0),
+            new Vector2Int(0, grid.rows),
+            new Vector2Int(grid.cols, grid.rows)
+        };
+
+        // 거리(Score)가 낮을수록 구석에 가까움
+        var sortedCandidates = candidates.OrderBy(c =>
+        {
+            float minDst = float.MaxValue;
+            foreach (var corner in gridCorners)
+            {
+                float dst = Vector2Int.Distance(c.origin, corner);
+                if (dst < minDst) minDst = dst;
+            }
+            return minDst;
+        }).ToList();
+
+        // 2. "상위권(Top N)" 중에서 랜덤 선택
+        // (너무 1등만 뽑으면 항상 똑같은 구석에만 가므로, 상위 20% 정도에서 섞음)
+        int takeCount = Mathf.Max(1, sortedCandidates.Count / 5); // 상위 20%
+        List<PlacementCandidate> topCandidates = sortedCandidates.Take(takeCount).ToList();
+
+        // 상위권 내에서 랜덤 셔플
+        PlacementCalculator.ShuffleList(topCandidates);
+
         // 최적 후보 선정 (지금은 첫 번째, 나중엔 정렬)
         PlacementCandidate best = candidates[0];
         bool foundValidPath = false;
@@ -357,8 +388,7 @@ public class FurniturePlacer : MonoBehaviour
         // 1. 배치되지 않은 가구 목록 가져오기
         List<FurnitureItemData> unplacedItems = furnitureManager.GetUnplacedItemsInRoom(roomID);
 
-        // (옵션) 가구를 크기 순으로 정렬해서 큰 것부터 배치하면 성공률이 높음
-        // unplacedItems.Sort((a, b) => (b.sizeCentimeters.x * b.sizeCentimeters.z).CompareTo(a.sizeCentimeters.x * a.sizeCentimeters.z));
+        PlacementCalculator.ShuffleList(unplacedItems);
 
         int successCount = 0;
 
