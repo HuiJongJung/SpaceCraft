@@ -411,10 +411,14 @@ public class PlaceSceneUI : MonoBehaviour
             }
 
             // Apply UI
-            Image image = itemGo.GetComponentInChildren<Image>();
-            if (image != null && def.sprite != null)
+            Transform iconTr = itemGo.transform.Find("Icon");
+            if (iconTr != null)
             {
-                image.sprite = def.sprite;
+                Image iconImage = iconTr.GetComponent<Image>();
+                if (iconImage != null && def.sprite != null)
+                {
+                    iconImage.sprite = def.sprite;
+                }
             }
 
             TextMeshProUGUI text = itemGo.GetComponentInChildren<TextMeshProUGUI>();
