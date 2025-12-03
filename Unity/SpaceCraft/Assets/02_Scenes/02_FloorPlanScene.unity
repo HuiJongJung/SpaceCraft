@@ -1129,6 +1129,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 935257518}
   - {fileID: 860107041}
   - {fileID: 333282128}
   - {fileID: 1940109888}
@@ -1378,7 +1379,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2059569292}
-  - {fileID: 935257518}
   - {fileID: 744954664}
   - {fileID: 131046845}
   - {fileID: 1284352759}
@@ -1580,7 +1580,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 991253677}
+    m_TransformParent: {fileID: 744954664}
     m_Modifications:
     - target: {fileID: 185098688652553127, guid: 8691b120c8943cb43ac2698f3ba8d8c0, type: 3}
       propertyPath: m_Pivot.x
@@ -1632,15 +1632,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 185098688652553127, guid: 8691b120c8943cb43ac2698f3ba8d8c0, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 185098688652553127, guid: 8691b120c8943cb43ac2698f3ba8d8c0, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 185098688652553127, guid: 8691b120c8943cb43ac2698f3ba8d8c0, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 185098688652553127, guid: 8691b120c8943cb43ac2698f3ba8d8c0, type: 3}
       propertyPath: m_AnchoredPosition.x
