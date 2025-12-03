@@ -23,6 +23,7 @@ public class MainSceneUI : MonoBehaviour
         LoadSpaceData();
     }
 
+    #region Button Functions
     public void DeactiveAllPanel()
     {
         mainPanel.SetActive(false);
@@ -66,6 +67,9 @@ public class MainSceneUI : MonoBehaviour
         SceneManager.LoadScene("03_PlaceScene");
     }
 
+    #endregion
+
+    #region Generate Contents
     // SaveData 폴더에서 저장된 공간 정보 불러오기
     public void LoadSpaceData()
     {
@@ -125,4 +129,5 @@ public class MainSceneUI : MonoBehaviour
             button.onClick.AddListener(() => { OnClickLoadSpaceButton(folderPath); });
         }
     }
+    #endregion
 }
