@@ -51,15 +51,18 @@ public class MainSceneUI : MonoBehaviour
     public void OnClickLoadSpaceButton(string spaceDirPath)
     {
         // SpaceData에 JSON 입력 후 씬 전환
-        TextAsset jsonText = Resources.Load<TextAsset>(Path.Combine(spaceDirPath, "space.json"));
+        string filePath = Path.Combine(spaceDirPath, "space.json");
 
-        if (jsonText == null)
+        if (!File.Exists(filePath))
         {
-            Debug.LogError("Can't find JSON file.");
+            Debug.LogError($"Can't find JSON file. :{filePath}");
             return;
         }
 
-        spaceData.roomsJson = jsonText;
+        string jsonText = File.ReadAllText(filePath);
+        spaceData.roomsJson = new TextAsset(jsonText);
+        spaceData.LoadData();
+
         SceneManager.LoadScene("03_PlaceScene");
     }
 
