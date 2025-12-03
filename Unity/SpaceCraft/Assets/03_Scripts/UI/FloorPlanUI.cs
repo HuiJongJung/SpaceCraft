@@ -67,13 +67,27 @@ public class FloorPlanUI : MonoBehaviour
         previewPanel.SetActive(false);
     }
 
-    public void OnClickTemplateIcon(GameObject selected)
+    public void OnClickTemplateIcon(string dirPath)
     {
         // 미리보기 변경
-        // mask가 포함된 이미지 탐색 => 이미지 이름 통일하는 방식으로 변경 예정
+        string maskPath = Path.Combine(dirPath, "floorplan_mask.png");
+        if (!File.Exists(maskPath))
+        {
+            Debug.LogError($"Failed to find file.: {maskPath}");
+            return;
+        }
+        PreviewUpload(maskPath);
 
         // space.json 파일 매핑
-        // load space
+        string jsonPath = Path.Combine(dirPath, "space.json");
+        if (!File.Exists(jsonPath))
+        {
+            Debug.LogError($"Failed to find file.: {jsonPath}");
+            return;
+        }
+        string jsonText = File.ReadAllText(jsonPath);
+        spaceData.roomsJson = new TextAsset(jsonText);
+        spaceData.LoadData();
 
         // 메인 화면으로 돌아가기
         ShowMain();
@@ -110,7 +124,7 @@ public class FloorPlanUI : MonoBehaviour
         if (isSucceed)
         {
             ApplyJson(Path.Combine(Application.persistentDataPath, "UserData", "space.json"));
-            PreviewUpload();
+            PreviewUpload(Path.Combine(Application.persistentDataPath, "UserData", "floorplan_mask.png"));
         }
 
         loadingIcon.SetActive(false);
@@ -148,10 +162,15 @@ public class FloorPlanUI : MonoBehaviour
     }
     
     //Preveiw Upload
-    private void PreviewUpload()
+    private void PreviewUpload(string path)
     {
         // Texture Preview
-        Texture2D tex = LoadTexture(Path.Combine(Application.persistentDataPath, "UserData", "floorplan_mask.png"));
+        if (!File.Exists(path))
+        {
+            Debug.LogError($"Failed to find file.: {path}");
+            return;
+        }
+        Texture2D tex = LoadTexture(path);
 
         Sprite img = Sprite.Create(
             tex,
@@ -228,13 +247,15 @@ public class FloorPlanUI : MonoBehaviour
 
             // Template 하위 Button의 이미지를
             // 폴더 내부에 "mask" 문자열이 포함되지 않은 이미지를 가져와서 이미지 변경
-            string previewImagePath = FindPreviewImagePath(folderPath);
-            if (!string.IsNullOrEmpty(previewImagePath))
+            Button button = item.GetComponentInChildren<Button>(true);
+
+            string previewImagePath = Path.Combine(folderPath, "Input_FloorPlan.PNG");
+
+            if (File.Exists((previewImagePath)))
             {
                 Sprite sprite = LoadSpriteFromFile(previewImagePath);
                 if (sprite != null)
                 {
-                    Button button = item.GetComponentInChildren<Button>(true);
                     if (button != null)
                     {
                         Image img = button.GetComponent<Image>();
@@ -247,7 +268,7 @@ public class FloorPlanUI : MonoBehaviour
                 }
             }
 
-            // todo : 버튼 클릭 시, OnClickTemplateIcon 함수 호출할 수 있게 지정
+            button.onClick.AddListener(() => { OnClickTemplateIcon(folderPath); });
         }
     }
 
