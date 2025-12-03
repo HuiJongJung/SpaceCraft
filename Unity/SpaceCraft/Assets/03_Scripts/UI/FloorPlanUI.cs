@@ -1,5 +1,6 @@
 using System.IO;
 using TMPro;
+using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -22,10 +23,14 @@ public class FloorPlanUI : MonoBehaviour
 
     [Header("SpaceData")]
     public FloorPlanInterpreter floorPlanInterpreter;
-    public SpaceData spaceData;
+    private SpaceData spaceData;
 
     void Start()
     {
+        if (spaceData == null)
+        {
+            spaceData = SpaceData.Instance;
+        }
         LoadTemplates();
         ShowMain();
     }

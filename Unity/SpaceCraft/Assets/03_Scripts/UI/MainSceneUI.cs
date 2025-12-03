@@ -1,5 +1,6 @@
 using System.IO;
 using TMPro;
+using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -19,6 +20,7 @@ public class MainSceneUI : MonoBehaviour
 
     public void Start()
     {
+        spaceData = SpaceData.Instance;
         ActiveMainPanel();
         LoadSpaceData();
     }
@@ -63,6 +65,7 @@ public class MainSceneUI : MonoBehaviour
         string jsonText = File.ReadAllText(filePath);
         spaceData.roomsJson = new TextAsset(jsonText);
         spaceData.LoadData();
+        Debug.LogError($"spaceData Load :{filePath}");
 
         SceneManager.LoadScene("03_PlaceScene");
     }
