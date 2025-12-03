@@ -22,7 +22,7 @@ public class FloorPlanInterpreter : MonoBehaviour
     private string outMaskPath;
     private string outJsonPath;
 
-    private bool isProcessing = false;
+    public bool isProcessing = false;
     private bool isFinished = false;
 
 

@@ -55,6 +55,12 @@ public class FloorPlanUI : MonoBehaviour
     
     public void ShowTemplate()
     {
+        if (floorPlanInterpreter.isProcessing)
+        {
+            Debug.Log("FloorPlan Interpreter is Running.");
+            return;
+        }
+
         DeactiveAllPanels();
         templatePanel.SetActive(true);  
     }
@@ -131,8 +137,6 @@ public class FloorPlanUI : MonoBehaviour
             ApplyJson(Path.Combine(Application.persistentDataPath, "UserData", "space.json"));
             PreviewUpload(Path.Combine(Application.persistentDataPath, "UserData", "floorplan_mask.png"));
         }
-
-        loadingIcon.SetActive(false);
     }
 
     public void OnClickUpload() {
@@ -169,6 +173,8 @@ public class FloorPlanUI : MonoBehaviour
     //Preveiw Upload
     private void PreviewUpload(string path)
     {
+        loadingIcon.SetActive(false);
+
         // Texture Preview
         if (!File.Exists(path))
         {
