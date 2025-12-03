@@ -371,6 +371,22 @@ public class FurniturePlacer : MonoBehaviour
             best.origin.y + bestClearance.bottom
         );
 
+        // 전체 영역(여유공간 포함)이 그리드 밖으로 나가거나, 이미 점유된 곳과 겹치는지 확인
+        // (PlacementValidator.CheckAreaValid는 InBounds와 PlacementMask를 모두 검사함)
+        if (!PlacementValidator.CheckAreaValid(grid, best.origin, best.sizeInCells))
+        {
+            Debug.LogError($"[AutoPlace Critical] {item.furnitureId} 배치 실패: 최종 좌표가 유효하지 않습니다. (Total Area Invalid)");
+            // 여기서 return false를 하면 배치를 취소하고 넘어감 (안전)
+            return false;
+        }
+
+        // 가구 본체가 놓일 자리도 이중 체크
+        if (!PlacementValidator.CheckAreaValid(grid, finalBodyOrigin, finalBodySize))
+        {
+            Debug.LogError($"[AutoPlace Critical] {item.furnitureId} 배치 실패: 본체 위치가 벽이나 장애물과 겹칩니다.");
+            return false;
+        }
+
         // 3. 실제 가구 생성 (본체 중심점 기준)
         Vector2Int finalBodyPivot = PlacementCalculator.ComputePivotCell(finalBodyOrigin, finalBodySize);
         furnitureManager.PlaceItem(item.instanceId, roomID, finalBodyPivot, best.rotation);
