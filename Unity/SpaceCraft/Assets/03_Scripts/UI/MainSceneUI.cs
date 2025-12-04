@@ -1,6 +1,5 @@
 using System.IO;
 using TMPro;
-using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -20,7 +19,10 @@ public class MainSceneUI : MonoBehaviour
 
     public void Start()
     {
-        spaceData = SpaceData.Instance;
+        if (spaceData == null)
+        {
+            spaceData = SpaceData.Instance;
+        }
         ActiveMainPanel();
         LoadSpaceData();
     }

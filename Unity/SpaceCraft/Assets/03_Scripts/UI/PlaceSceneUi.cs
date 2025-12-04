@@ -34,7 +34,6 @@ public class PlaceSceneUI : MonoBehaviour
     public GameObject furnitureSlotPrefab;
     public Button prevButton;
     public Button nextButton;
-    public Button roomNameButton;
     public Button helpButton;
     public TextMeshProUGUI helpText;
     public Button saveButton;
@@ -218,10 +217,6 @@ public class PlaceSceneUI : MonoBehaviour
         // Delete Function
         deleteFurnitureButton.onClick.RemoveAllListeners();
         deleteFurnitureButton.onClick.AddListener(OnClickDeleteFurnitureButton);
-        
-        // roomName Button
-        roomNameButton.onClick.RemoveAllListeners();
-        roomNameButton.onClick.AddListener(OnClickRoomNameButton);
         
         // category Button
         categoryButton.onClick.RemoveAllListeners();
@@ -411,10 +406,14 @@ public class PlaceSceneUI : MonoBehaviour
             }
 
             // Apply UI
-            Image image = itemGo.GetComponentInChildren<Image>();
-            if (image != null && def.sprite != null)
+            Transform iconTr = itemGo.transform.Find("Icon");
+            if (iconTr != null)
             {
-                image.sprite = def.sprite;
+                Image iconImage = iconTr.GetComponent<Image>();
+                if (iconImage != null && def.sprite != null)
+                {
+                    iconImage.sprite = def.sprite;
+                }
             }
 
             TextMeshProUGUI text = itemGo.GetComponentInChildren<TextMeshProUGUI>();
@@ -837,13 +836,6 @@ public class PlaceSceneUI : MonoBehaviour
         currentReadOnlyInstanceId = null;
     }
 
-    // OnClick Room Name -> Rename room
-    public void OnClickRoomNameButton()
-    {
-        // Rename Room
-        Debug.Log("Set Room Name");
-    }
-
     public void OnClickCategoryButton()
     {
         ShowCategory();
@@ -1025,7 +1017,6 @@ public class PlaceSceneUI : MonoBehaviour
 
         // 상단 네비게이션 버튼 잠금
         if (returnButton != null) returnButton.interactable = isActive;
-        if (roomNameButton != null) roomNameButton.interactable = isActive;
         if (prevButton != null) prevButton.interactable = isActive;
         if (nextButton != null) nextButton.interactable = isActive;
         if (saveButton != null) saveButton.interactable = isActive;
