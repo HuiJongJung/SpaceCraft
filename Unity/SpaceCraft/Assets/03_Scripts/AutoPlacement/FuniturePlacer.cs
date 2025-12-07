@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ToolTip;
+using static UnityEngine.UI.GridLayoutGroup;
 
 /// - RoomPlacementGridBuilder가 만든 방별 그리드를 이용해서
 ///   "가구를 어디에 놓을 수 있는지" 판단하고,
@@ -231,6 +232,8 @@ public class FurniturePlacer : MonoBehaviour
 
         List<PlacementCandidate> candidates = new List<PlacementCandidate>();
 
+        bool requireWall = PlacementCalculator.IsWallPlacementRequired(item);
+
         for (int rIndex = 0; rIndex < rotations.Length; rIndex++)
         {
             int rot = rotations[rIndex];
@@ -255,6 +258,16 @@ public class FurniturePlacer : MonoBehaviour
             {
                 for (int gx = 0; gx < grid.cols; gx++)
                 {
+                    if (requireWall)
+                    {
+                        // grid.wallZoneMask가 만들어져 있고, 현재 위치(gx,gz)가 false라면?
+                        // -> 여기는 방 한가운데 허공이다 -> 검사할 가치가 없다 -> Continue
+                        if (grid.wallZoneMask != null && !grid.wallZoneMask[gx, gz])
+                        {
+                            continue;
+                        }
+                    }
+
                     Vector2Int totalOrigin = new Vector2Int(gx, gz);
 
                     // A. 전체 영역(가구+여유공간)이 빈 땅인지 검사
@@ -302,6 +315,18 @@ public class FurniturePlacer : MonoBehaviour
         // 후보가 없으면 실패
         if (candidates.Count == 0) return false;
 
+        List<Vector2Int> doorCells = new List<Vector2Int>();
+        if (grid.doorMask != null)
+        {
+            for (int z = 0; z < grid.rows; z++)
+            {
+                for (int x = 0; x < grid.cols; x++)
+                {
+                    if (grid.doorMask[x, z]) doorCells.Add(new Vector2Int(x, z));
+                }
+            }
+        }
+
         // 1. 각 후보마다 "가장 가까운 방 모서리까지의 거리"를 계산하여 정렬
         // (방 모양이 이상해도 Bounding Box의 4개 꼭짓점 기준 가장 가까운 곳이 '구석'이 됩니다)
         Vector2Int[] gridCorners = new Vector2Int[]
@@ -312,16 +337,36 @@ public class FurniturePlacer : MonoBehaviour
             new Vector2Int(grid.cols, grid.rows)
         };
 
-        // 거리(Score)가 낮을수록 구석에 가까움
+        // 점수 계산 및 정렬 (점수가 낮을수록 좋은 위치)
+        // 공식: (구석 거리) - (문 거리 * 가중치)
         var sortedCandidates = candidates.OrderBy(c =>
         {
-            float minDst = float.MaxValue;
+            // A. 가장 가까운 모서리까지의 거리 (작을수록 좋음 -> 구석 선호)
+            float minCornerDist = float.MaxValue;
             foreach (var corner in gridCorners)
             {
-                float dst = Vector2Int.Distance(c.origin, corner);
-                if (dst < minDst) minDst = dst;
+                float d = Vector2Int.Distance(c.origin, corner);
+                if (d < minCornerDist) minCornerDist = d;
             }
-            return minDst;
+
+            // B. 가장 가까운 문까지의 거리 (클수록 좋음 -> 문 회피)
+            float minDoorDist = 0;
+            if (doorCells.Count > 0)
+            {
+                minDoorDist = float.MaxValue;
+                foreach (var door in doorCells)
+                {
+                    float d = Vector2Int.Distance(c.origin, door);
+                    if (d < minDoorDist) minDoorDist = d;
+                }
+            }
+
+            // [최종 점수 산정]
+            // 구석 거리는 더하고(Penalty), 문 거리는 뺍니다(Bonus).
+            // * 2.0f 가중치: 문에서 멀어지는 것을 구석에 붙는 것보다 2배 더 중요하게 평가
+            // 결과: 문 반대편 구석(Corner - BigDoor)이 가장 낮은 점수(Best)가 됨.
+            return minCornerDist - (minDoorDist * 2.0f);
+
         }).ToList();
 
         // 2. "상위권(Top N)" 중에서 랜덤 선택
@@ -336,6 +381,8 @@ public class FurniturePlacer : MonoBehaviour
         PlacementCandidate best = candidates[0];
         bool foundValidPath = false;
 
+        int cachedTotalWalkable = PlacementPathFinder.CountTotalWalkableCells(grid);
+
         foreach (var cand in candidates)
         {
             // 검사를 위해 본체 위치 재계산
@@ -345,7 +392,7 @@ public class FurniturePlacer : MonoBehaviour
 
             //  통로 확보 검사 
             // 이 자리에 놨을 때 문에서 다른 빈칸으로 갈 수 있는지?
-            if (PlacementPathFinder.CheckPassageAvailability(grid, bodyOrigin, bodySize))
+            if (PlacementPathFinder.CheckPassageAvailability(grid, bodyOrigin, bodySize, cachedTotalWalkable))
             {
                 best = cand;
                 foundValidPath = true;

@@ -15563,6 +15563,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8513599655701864972, guid: 8691b120c8943cb43ac2698f3ba8d8c0, type: 3}
+      propertyPath: m_text
+      value: "\uBC29 \uAC00\uAD6C \uCD08\uAE30\uD654"
+      objectReference: {fileID: 0}
     - target: {fileID: 9172003799299686273, guid: 8691b120c8943cb43ac2698f3ba8d8c0, type: 3}
       propertyPath: m_Name
       value: Unplace Button

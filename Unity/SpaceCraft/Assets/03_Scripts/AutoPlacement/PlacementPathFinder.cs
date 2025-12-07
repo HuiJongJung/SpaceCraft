@@ -4,27 +4,23 @@ using System.Collections.Generic;
 public static class PlacementPathFinder 
 {
     /// 가구(body)를 해당 위치(origin)에 가상 배치했을 때, 문에서 시작된 길이 막히지 않는지 검사
-    public static bool CheckPassageAvailability(RoomPlacementGrid grid, Vector2Int bodyOrigin, Vector2Int bodySize)
+    public static bool CheckPassageAvailability(RoomPlacementGrid grid, Vector2Int bodyOrigin, Vector2Int bodySize, int cachedTotalWalkable)
     {
-        // 1. 문(Door) 위치 찾기 (시작점)
+        // 1. 문(Door) 위치 찾기
         List<Vector2Int> doors = GetDoorCells(grid);
-        if (doors.Count == 0) return true; // 문이 없으면 검사 패스 (예외)
+        if (doors.Count == 0) return true;
 
-        // 2. 현재 상태에서 '사람이 갈 수 있는 빈 땅'의 총개수 계산
-        int currentTotalWalkable = CountTotalWalkableCells(grid);
-
-        // 3. 가구가 차지할 면적 계산 (겹치는 부분 제외하고 순수하게 줄어들 면적)
-        // (정확한 계산을 위해 BFS 내부에서 체크하는 것이 좋지만, 약식으로 크기만 뺌)
+        // 2. 가구 면적 계산
         int furnitureArea = bodySize.x * bodySize.y;
 
-        // 4. 예상되는 도달 가능 면적 (원래 빈 땅 - 가구 면적)
-        int expectedReachable = currentTotalWalkable - furnitureArea;
+        // 3. 예상 도달 가능 면적 (캐싱된 값 - 가구 면적)
+        // * 여기서 CountTotalWalkableCells를 다시 호출하지 않는 것이 핵심!
+        int expectedReachable = cachedTotalWalkable - furnitureArea;
 
-        // 5. 실제 도달 가능 면적 계산 (BFS 탐색)
+        // 4. 실제 도달 가능 면적 계산 (BFS)
         int actualReachable = CountReachableCellsBFS(grid, bodyOrigin, bodySize, doors);
 
-        // 6. 판정: 실제 갈 수 있는 땅이 예상보다 터무니없이 적다면 -> 길 막힘!
-        // (오차 허용 범위: 2칸 정도)
+        // 5. 판정
         return actualReachable >= expectedReachable - 2;
     }
 
@@ -98,7 +94,7 @@ public static class PlacementPathFinder
         return false; // 그 외(진짜 벽)
     }
 
-    private static int CountTotalWalkableCells(RoomPlacementGrid grid)
+    public static int CountTotalWalkableCells(RoomPlacementGrid grid)
     {
         int count = 0;
         for (int z = 0; z < grid.rows; z++)
