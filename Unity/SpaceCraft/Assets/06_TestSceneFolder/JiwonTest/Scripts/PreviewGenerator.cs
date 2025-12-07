@@ -1,7 +1,8 @@
 #if UNITY_EDITOR
-using UnityEngine;
-using UnityEditor;
+using System.Drawing;
 using System.IO;
+using UnityEditor;
+using UnityEngine;
 
 public class PreviewGenerator : EditorWindow
 {
@@ -130,12 +131,16 @@ public class PreviewGenerator : EditorWindow
         GameObject camObj = new GameObject("Camera");
         camObj.transform.SetParent(parent, false);
 
+        UnityEngine.Color backColor;
+        ColorUtility.TryParseHtmlString("#D6D8D6", out backColor);
+
         Camera cam = camObj.AddComponent<Camera>();
         cam.clearFlags = CameraClearFlags.SolidColor;
         //cam.backgroundColor = backgroundColor;
         cam.orthographic = true;
         cam.nearClipPlane = 0.01f;
         cam.farClipPlane = 100f;
+        cam.backgroundColor = backColor;
         cam.allowHDR = false;
         cam.allowMSAA = false;
 
