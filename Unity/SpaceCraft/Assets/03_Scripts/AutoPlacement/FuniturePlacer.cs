@@ -315,6 +315,7 @@ public class FurniturePlacer : MonoBehaviour
         // 후보가 없으면 실패
         if (candidates.Count == 0) return false;
 
+        // 1. 문(Door) 위치 미리 수집 (거리 계산용)
         List<Vector2Int> doorCells = new List<Vector2Int>();
         if (grid.doorMask != null)
         {
@@ -327,9 +328,8 @@ public class FurniturePlacer : MonoBehaviour
             }
         }
 
-        // 1. 각 후보마다 "가장 가까운 방 모서리까지의 거리"를 계산하여 정렬
-        // (방 모양이 이상해도 Bounding Box의 4개 꼭짓점 기준 가장 가까운 곳이 '구석'이 됩니다)
-        Vector2Int[] gridCorners = new Vector2Int[]
+        // 2. 방 모서리 정의
+        Vector2Int[] corners =
         {
             new Vector2Int(0, 0),
             new Vector2Int(grid.cols, 0),
@@ -337,61 +337,71 @@ public class FurniturePlacer : MonoBehaviour
             new Vector2Int(grid.cols, grid.rows)
         };
 
-        // 점수 계산 및 정렬 (점수가 낮을수록 좋은 위치)
-        // 공식: (구석 거리) - (문 거리 * 가중치)
+        // 3. 점수 계산 및 정렬
         var sortedCandidates = candidates.OrderBy(c =>
         {
-            // A. 가장 가까운 모서리까지의 거리 (작을수록 좋음 -> 구석 선호)
+            // A. 가장 가까운 모서리 거리 (작을수록 좋음 -> 구석 선호)
             float minCornerDist = float.MaxValue;
-            foreach (var corner in gridCorners)
+            foreach (var corner in corners)
             {
                 float d = Vector2Int.Distance(c.origin, corner);
                 if (d < minCornerDist) minCornerDist = d;
             }
 
-            // B. 가장 가까운 문까지의 거리 (클수록 좋음 -> 문 회피)
-            float minDoorDist = 0;
+            // B. 문 주변 페널티 (임계값 방식)
+            // "문에서 너무 가까울 때만 싫어하고, 적당히 떨어지면 신경 끄기"
+            float doorPenalty = 0f;
+
             if (doorCells.Count > 0)
             {
-                minDoorDist = float.MaxValue;
+                float minDoorDist = float.MaxValue;
                 foreach (var door in doorCells)
                 {
                     float d = Vector2Int.Distance(c.origin, door);
                     if (d < minDoorDist) minDoorDist = d;
                 }
+
+                // [설정] 문 주변 기피 반경 (단위: 셀 개수)
+                // 예: 15칸 = 1.5m. 이 안쪽으로 들어오면 페널티 부여
+                float avoidRadius = 5.0f;
+
+                if (minDoorDist < avoidRadius)
+                {
+                    // 반경 안쪽에서는 문에 가까울수록 페널티가 커짐 (밀어냄)
+                    // (avoidRadius - minDoorDist)가 클수록 문에 가까운 것
+                    doorPenalty = (avoidRadius - minDoorDist) * 2.0f; // 가중치 2배
+                }
+                // 반경 밖(> 15칸)이면 doorPenalty는 0점. (배치해도 상관없음)
             }
 
-            // [최종 점수 산정]
-            // 구석 거리는 더하고(Penalty), 문 거리는 뺍니다(Bonus).
-            // * 2.0f 가중치: 문에서 멀어지는 것을 구석에 붙는 것보다 2배 더 중요하게 평가
-            // 결과: 문 반대편 구석(Corner - BigDoor)이 가장 낮은 점수(Best)가 됨.
-            return minCornerDist - (minDoorDist * 2.0f);
+            // [최종 점수]
+            // 모서리 거리(기본 점수) + 문 주변 페널티(추가 점수)
+            // 점수가 낮을수록 1등
+            return minCornerDist + doorPenalty;
 
         }).ToList();
 
-        // 2. "상위권(Top N)" 중에서 랜덤 선택
-        // (너무 1등만 뽑으면 항상 똑같은 구석에만 가므로, 상위 20% 정도에서 섞음)
-        int takeCount = Mathf.Max(1, sortedCandidates.Count / 5); // 상위 20%
+        // 4. 상위 50% 중에서 랜덤 선택 (다양성 확보)
+        int takeCount = Mathf.Max(1, sortedCandidates.Count / 2);
         List<PlacementCandidate> topCandidates = sortedCandidates.Take(takeCount).ToList();
 
-        // 상위권 내에서 랜덤 셔플
+        // 상위권 내에서 순서 섞기
         PlacementCalculator.ShuffleList(topCandidates);
 
-        // 최적 후보 선정 (지금은 첫 번째, 나중엔 정렬)
-        PlacementCandidate best = candidates[0];
+        PlacementCandidate best = topCandidates[0];
         bool foundValidPath = false;
 
         int cachedTotalWalkable = PlacementPathFinder.CountTotalWalkableCells(grid);
 
-        foreach (var cand in candidates)
+        // 5. 섞인 상위권 후보들을 순서대로 검사 (통로 확보 확인)
+        foreach (var cand in topCandidates)
         {
             // 검사를 위해 본체 위치 재계산
             var clearance = PlacementCalculator.GetRotatedClearanceInCells(item, cellSize, cand.rotation);
             Vector2Int bodySize = PlacementCalculator.ComputeFootprintCells(item.sizeCentimeters, cellSize, cand.rotation);
             Vector2Int bodyOrigin = new Vector2Int(cand.origin.x + clearance.left, cand.origin.y + clearance.bottom);
 
-            //  통로 확보 검사 
-            // 이 자리에 놨을 때 문에서 다른 빈칸으로 갈 수 있는지?
+            // 통로 확보 검사
             if (PlacementPathFinder.CheckPassageAvailability(grid, bodyOrigin, bodySize, cachedTotalWalkable))
             {
                 best = cand;
