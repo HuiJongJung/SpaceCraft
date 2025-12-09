@@ -27,6 +27,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
     public Material gridMaterial;
     public Material gridOccupiedMaterial;
     public Material gridClearanceMaterial;
+    public Material gridWallZoneMaterial;
     [SerializeField] private Transform gridRoot; // 그리드 오브젝트들을 담아둘 부모
 
     private Dictionary<int, MeshRenderer[,]> _tileCache = new Dictionary<int, MeshRenderer[,]>();
@@ -688,6 +689,13 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         {
             gridClearanceMaterial = new Material(Shader.Find("Unlit/Color"));
             gridClearanceMaterial.color = new Color(1f, 0.64f, 0f, 0.4f); // 주황 (여유 공간)
+
+        }
+
+        if (gridWallZoneMaterial == null)
+        {
+            gridWallZoneMaterial = new Material(Shader.Find("Unlit/Color"));
+            gridWallZoneMaterial.color = new Color(0f, 0f, 1f, 0.4f); // 파란색
         }
     }
 
@@ -790,8 +798,8 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         if (grid.occupiedMask != null && grid.occupiedMask[gx, gz])
             return gridClearanceMaterial; // 주황 (여유 공간)
 
-        // (디버그용) 벽 구역도 보고 싶으면 주석 해제
-        // if (grid.wallZoneMask != null && grid.wallZoneMask[gx, gz]) return gridMaterial; 
+        if (grid.wallZoneMask != null && grid.wallZoneMask[gx, gz])
+            return gridWallZoneMaterial;
 
         if (grid.placementMask[gx, gz])
             return gridMaterial; // 초록 (빈 땅)

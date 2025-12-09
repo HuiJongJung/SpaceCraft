@@ -21,7 +21,7 @@ public static class PlacementPathFinder
         int actualReachable = CountReachableCellsBFS(grid, bodyOrigin, bodySize, doors);
 
         // 5. 판정
-        return actualReachable >= expectedReachable - 2;
+        return actualReachable >= expectedReachable - 5;
     }
 
     // BFS로 도달 가능한 셀 개수를 세는 함수

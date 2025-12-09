@@ -227,64 +227,36 @@ public class FurniturePlacer : MonoBehaviour
         if (grid == null) return false;
 
         float cellSize = grid.cellSize > 0 ? grid.cellSize : cellSizeMeters;
-        int[] rotations = { 0, 90, 180, 270 }; // 필요시 셔플 추가
+
+        int[] rotations = { 0, 90, 180, 270 };
         PlacementCalculator.ShuffleArray(rotations);
 
         List<PlacementCandidate> candidates = new List<PlacementCandidate>();
-
         bool requireWall = PlacementCalculator.IsWallPlacementRequired(item);
 
+        // 1. 후보 수집
         for (int rIndex = 0; rIndex < rotations.Length; rIndex++)
         {
             int rot = rotations[rIndex];
-
-            // 1. 가구 본체 크기 계산
             Vector2Int bodySize = PlacementCalculator.ComputeFootprintCells(item.sizeCentimeters, cellSize, rot);
             if (bodySize.x <= 0 || bodySize.y <= 0) continue;
-
-            // 2. 회전된 여유 공간 계산 (Cell 단위)
-            // (이미 추가하신 GetRotatedClearanceInCells 함수 사용)
             var clearance = PlacementCalculator.GetRotatedClearanceInCells(item, cellSize, rot);
+            Vector2Int totalSize = new Vector2Int(clearance.left + bodySize.x + clearance.right, clearance.bottom + bodySize.y + clearance.top);
 
-            // 3. 전체 필요 영역(Total Footprint) 계산
-            //    (왼쪽 여백 + 본체 + 오른쪽 여백, 아래 여백 + 본체 + 위쪽 여백)
-            Vector2Int totalSize = new Vector2Int(
-                clearance.left + bodySize.x + clearance.right,
-                clearance.bottom + bodySize.y + clearance.top
-            );
-
-            // 4. 전체 영역 기준으로 탐색
             for (int gz = 0; gz < grid.rows; gz++)
             {
                 for (int gx = 0; gx < grid.cols; gx++)
                 {
-                    if (requireWall)
-                    {
-                        // grid.wallZoneMask가 만들어져 있고, 현재 위치(gx,gz)가 false라면?
-                        // -> 여기는 방 한가운데 허공이다 -> 검사할 가치가 없다 -> Continue
-                        if (grid.wallZoneMask != null && !grid.wallZoneMask[gx, gz])
-                        {
-                            continue;
-                        }
-                    }
+                    // [버그 수정] 문제의 최적화 코드 삭제
+                    // if (requireWall && ... !grid.wallZoneMask[gx, gz]) continue; 
 
                     Vector2Int totalOrigin = new Vector2Int(gx, gz);
 
-                    // A. 전체 영역(가구+여유공간)이 빈 땅인지 검사
-                    // (이미 추가하신 CheckAreaValid 함수 사용)
-                    if (!PlacementValidator.CheckAreaValid(grid, totalOrigin, totalSize))
-                        continue;
+                    if (!PlacementValidator.CheckAreaValid(grid, totalOrigin, totalSize)) continue;
 
-                    // B. 본체의 실제 위치(Origin) 계산
-                    //    전체 시작점에서 왼쪽/아래 여백만큼 안으로 들어간 좌표
-                    Vector2Int bodyOrigin = new Vector2Int(
-                        totalOrigin.x + clearance.left,
-                        totalOrigin.y + clearance.bottom
-                    );
+                    Vector2Int bodyOrigin = new Vector2Int(totalOrigin.x + clearance.left, totalOrigin.y + clearance.bottom);
 
-                    // C. 벽 배치 조건 검사 (가구 본체 기준 검사!)
-                    int wallMatchCount = 0;
-                    if (PlacementCalculator.IsWallPlacementRequired(item))
+                    if (requireWall)
                     {
                         bool backOk = !item.wallDir.back || PlacementValidator.CheckSideTouchingWall(grid, bodyOrigin, bodySize, rot, "back");
                         bool frontOk = !item.wallDir.front || PlacementValidator.CheckSideTouchingWall(grid, bodyOrigin, bodySize, rot, "front");
@@ -292,55 +264,36 @@ public class FurniturePlacer : MonoBehaviour
                         bool rightOk = !item.wallDir.right || PlacementValidator.CheckSideTouchingWall(grid, bodyOrigin, bodySize, rot, "right");
 
                         if (!backOk || !frontOk || !leftOk || !rightOk) continue;
-
-                        // 점수 계산 (많이 붙을수록 좋음)
-                        if (item.wallDir.back && backOk) wallMatchCount++;
-                        if (item.wallDir.front && frontOk) wallMatchCount++;
-                        if (item.wallDir.left && leftOk) wallMatchCount++;
-                        if (item.wallDir.right && rightOk) wallMatchCount++;
                     }
 
-                    // 후보 등록 (위치는 '전체 영역' 기준, 사이즈도 '전체 사이즈' 저장)
                     candidates.Add(new PlacementCandidate
                     {
                         origin = totalOrigin,
                         rotation = rot,
                         sizeInCells = totalSize
-                        // (나중에 wallMatchCount도 구조체에 넣어서 정렬 가능)
                     });
                 }
             }
         }
 
-        // 후보가 없으면 실패
         if (candidates.Count == 0) return false;
 
-        // 1. 문(Door) 위치 미리 수집 (거리 계산용)
         List<Vector2Int> doorCells = new List<Vector2Int>();
         if (grid.doorMask != null)
         {
             for (int z = 0; z < grid.rows; z++)
-            {
                 for (int x = 0; x < grid.cols; x++)
-                {
                     if (grid.doorMask[x, z]) doorCells.Add(new Vector2Int(x, z));
-                }
-            }
         }
 
-        // 2. 방 모서리 정의
-        Vector2Int[] corners =
-        {
-            new Vector2Int(0, 0),
-            new Vector2Int(grid.cols, 0),
-            new Vector2Int(0, grid.rows),
-            new Vector2Int(grid.cols, grid.rows)
+        Vector2Int[] corners = {
+            new Vector2Int(0, 0), new Vector2Int(grid.cols, 0),
+            new Vector2Int(0, grid.rows), new Vector2Int(grid.cols, grid.rows)
         };
 
-        // 3. 점수 계산 및 정렬
         var sortedCandidates = candidates.OrderBy(c =>
         {
-            // A. 가장 가까운 모서리 거리 (작을수록 좋음 -> 구석 선호)
+            // 1. 구석 거리 (가까울수록 좋음)
             float minCornerDist = float.MaxValue;
             foreach (var corner in corners)
             {
@@ -348,10 +301,8 @@ public class FurniturePlacer : MonoBehaviour
                 if (d < minCornerDist) minCornerDist = d;
             }
 
-            // B. 문 주변 페널티 (임계값 방식)
-            // "문에서 너무 가까울 때만 싫어하고, 적당히 떨어지면 신경 끄기"
+            // 2. 문 거리 (가까우면 벌점)
             float doorPenalty = 0f;
-
             if (doorCells.Count > 0)
             {
                 float minDoorDist = float.MaxValue;
@@ -361,96 +312,63 @@ public class FurniturePlacer : MonoBehaviour
                     if (d < minDoorDist) minDoorDist = d;
                 }
 
-                // [설정] 문 주변 기피 반경 (단위: 셀 개수)
-                // 예: 15칸 = 1.5m. 이 안쪽으로 들어오면 페널티 부여
-                float avoidRadius = 5.0f;
-
-                if (minDoorDist < avoidRadius)
-                {
-                    // 반경 안쪽에서는 문에 가까울수록 페널티가 커짐 (밀어냄)
-                    // (avoidRadius - minDoorDist)가 클수록 문에 가까운 것
-                    doorPenalty = (avoidRadius - minDoorDist) * 2.0f; // 가중치 2배
-                }
-                // 반경 밖(> 15칸)이면 doorPenalty는 0점. (배치해도 상관없음)
+                // 1.5m 이내면 벌점 부과 (값 조절 가능)
+                if (minDoorDist < 15.0f)
+                    doorPenalty = (15.0f - minDoorDist) * 1.0f;
             }
 
-            // [최종 점수]
-            // 모서리 거리(기본 점수) + 문 주변 페널티(추가 점수)
-            // 점수가 낮을수록 1등
             return minCornerDist + doorPenalty;
 
         }).ToList();
 
-        // 4. 상위 50% 중에서 랜덤 선택 (다양성 확보)
-        int takeCount = Mathf.Max(1, sortedCandidates.Count / 2);
-        List<PlacementCandidate> topCandidates = sortedCandidates.Take(takeCount).ToList();
+        // [패자부활전] 상위권 먼저 시도 -> 실패 시 하위권 시도
+        int cutIndex = Mathf.Max(1, sortedCandidates.Count / 2);
+        List<PlacementCandidate> topGroup = sortedCandidates.Take(cutIndex).ToList();
+        List<PlacementCandidate> bottomGroup = sortedCandidates.Skip(cutIndex).ToList();
 
-        // 상위권 내에서 순서 섞기
-        PlacementCalculator.ShuffleList(topCandidates);
+        PlacementCalculator.ShuffleList(topGroup);
+        PlacementCalculator.ShuffleList(bottomGroup);
 
-        PlacementCandidate best = topCandidates[0];
+        List<PlacementCandidate> finalQueue = new List<PlacementCandidate>();
+        finalQueue.AddRange(topGroup);
+        finalQueue.AddRange(bottomGroup);
+
+        PlacementCandidate best = finalQueue[0];
         bool foundValidPath = false;
-
         int cachedTotalWalkable = PlacementPathFinder.CountTotalWalkableCells(grid);
 
-        // 5. 섞인 상위권 후보들을 순서대로 검사 (통로 확보 확인)
-        foreach (var cand in topCandidates)
+        foreach (var cand in finalQueue)
         {
-            // 검사를 위해 본체 위치 재계산
             var clearance = PlacementCalculator.GetRotatedClearanceInCells(item, cellSize, cand.rotation);
             Vector2Int bodySize = PlacementCalculator.ComputeFootprintCells(item.sizeCentimeters, cellSize, cand.rotation);
             Vector2Int bodyOrigin = new Vector2Int(cand.origin.x + clearance.left, cand.origin.y + clearance.bottom);
 
-            // 통로 확보 검사
             if (PlacementPathFinder.CheckPassageAvailability(grid, bodyOrigin, bodySize, cachedTotalWalkable))
             {
                 best = cand;
                 foundValidPath = true;
-                break; // 통과했으면 확정
+                break;
             }
         }
 
         if (!foundValidPath)
         {
-            Debug.Log($"[AutoPlace] {item.furnitureId} 배치 실패: 놓을 자리는 있는데 길을 막습니다.");
+            Debug.Log($"[AutoPlace] {item.furnitureId} 배치 실패: 통로 막힘");
             return false;
         }
 
-        // --- 최종 배치 (좌표 보정) ---
-
-        // 1. Pivot 계산을 위해 여유 공간/본체 크기 다시 계산
+        // --- 최종 배치 (기존 동일) ---
         var bestClearance = PlacementCalculator.GetRotatedClearanceInCells(item, cellSize, best.rotation);
         Vector2Int finalBodySize = PlacementCalculator.ComputeFootprintCells(item.sizeCentimeters, cellSize, best.rotation);
-
-        // 2. 본체 시작점 재계산 (전체 Origin + 여백)
-        Vector2Int finalBodyOrigin = new Vector2Int(
-            best.origin.x + bestClearance.left,
-            best.origin.y + bestClearance.bottom
-        );
-
-        // 전체 영역(여유공간 포함)이 그리드 밖으로 나가거나, 이미 점유된 곳과 겹치는지 확인
-        // (PlacementValidator.CheckAreaValid는 InBounds와 PlacementMask를 모두 검사함)
-        if (!PlacementValidator.CheckAreaValid(grid, best.origin, best.sizeInCells))
-        {
-            Debug.LogError($"[AutoPlace Critical] {item.furnitureId} 배치 실패: 최종 좌표가 유효하지 않습니다. (Total Area Invalid)");
-            // 여기서 return false를 하면 배치를 취소하고 넘어감 (안전)
-            return false;
-        }
-
-        // 가구 본체가 놓일 자리도 이중 체크
-        if (!PlacementValidator.CheckAreaValid(grid, finalBodyOrigin, finalBodySize))
-        {
-            Debug.LogError($"[AutoPlace Critical] {item.furnitureId} 배치 실패: 본체 위치가 벽이나 장애물과 겹칩니다.");
-            return false;
-        }
-
-        // 3. 실제 가구 생성 (본체 중심점 기준)
+        Vector2Int finalBodyOrigin = new Vector2Int(best.origin.x + bestClearance.left, best.origin.y + bestClearance.bottom);
         Vector2Int finalBodyPivot = PlacementCalculator.ComputePivotCell(finalBodyOrigin, finalBodySize);
+
+        // 안전 검사
+        if (!PlacementValidator.CheckAreaValid(grid, best.origin, best.sizeInCells)) return false;
+        if (!PlacementValidator.CheckAreaValid(grid, finalBodyOrigin, finalBodySize)) return false;
+
         furnitureManager.PlaceItem(item.instanceId, roomID, finalBodyPivot, best.rotation);
-
-        // 4. 그리드 마스킹은 '전체 영역(Total Size)'을 덮어버림 (여유 공간 확보)
         GridManipulator.MarkGridAsOccupied(grid, best.origin, best.sizeInCells, finalBodyOrigin, finalBodySize);
-
         if (updateVisuals) gridBuilder.BuildRuntimeGridVisuals(roomManager.currentRoomID);
 
         return true;
