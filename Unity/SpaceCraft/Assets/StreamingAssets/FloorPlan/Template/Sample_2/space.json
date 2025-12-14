@@ -2280,7 +2280,7 @@
     },
     {
       "id": 4,
-      "type": "window",
+      "type": "slidedoor",
       "wallID": 32,
       "center": {
         "x": -6.219470214843749,
@@ -2301,7 +2301,7 @@
     },
     {
       "id": 5,
-      "type": "window",
+      "type": "slidedoor",
       "wallID": 13,
       "center": {
         "x": -6.219999999999999,
