@@ -124,11 +124,6 @@ public class FloorPlanUI : MonoBehaviour
     }
 
     // Upload FloorPlan
-    /* ======== Comment ======== */
-    // [ 지원 ]
-    // EditorUtility에서 지원하는 기능은 Editor에서만 동작하고,
-    // 빌드된 파일에서는 작동하지 않는 문제가 있어서 빌드에서도 동작하는 방식으로 "수정 예정"
-    /* ======================== */
     public void ApplyOutput(bool isSucceed)
     {
         if (isSucceed)
