@@ -116,12 +116,7 @@ public class Furniture : MonoBehaviour
         // 5) 읽기전용 cm 값 갱신
         sizeCentimeters = new Vector3(width, height, depth);
     }
-
-    /// <summary>
-    /// 모든 하위 Renderer의 localBounds 8코너를 “각 Renderer의 로컬→월드”로 변환한 뒤,
-    /// 루트 축(transform.right/up/forward)에 투영하여 X/Y/Z 범위를 계산한다.
-    /// 또한 월드 Y-최소값(바닥)을 함께 반환한다.
-    /// </summary>
+    
     private void ComputeExtentsOnRootAxes(out float sizeX, out float sizeY, out float sizeZ, out float bottomWorldY)
     {
         Transform root = transform;
@@ -187,10 +182,8 @@ public class Furniture : MonoBehaviour
         sizeZ = maxProjZ - minProjZ;
         bottomWorldY = minWorldY;
     }
-
-    /// <summary>
-    /// 현재 스케일/자세 상태에서 월드 바닥(Y-최소)만 다시 계산.
-    /// </summary>
+    
+    // 현재 스케일/자세 상태에서 월드 바닥(Y-최소)만 다시 계산.
     private float ComputeWorldBottomY()
     {
         Renderer[] rends = GetComponentsInChildren<Renderer>(true);
@@ -214,10 +207,8 @@ public class Furniture : MonoBehaviour
         }
         return minWorldY;
     }
-
-    /// <summary>
-    /// Bounds(local)에서 8개 코너 좌표(로컬공간)를 반환.
-    /// </summary>
+    
+    // Bounds(local)에서 8개 코너 좌표(로컬공간)를 반환.
     private static Vector3[] GetLocalBoundsCorners(Bounds localB)
     {
         Vector3 c = localB.center;
