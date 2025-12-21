@@ -6,8 +6,8 @@ public class RoomPlacementGrid
     public string roomName;
 
     // 그리드 좌표계
-    public Vector2 originXZ;   // (xmin, zmin) in meters
-    public float cellSize;     // e.g., 0.1f
+    public Vector2 originXZ;   
+    public float cellSize;     
     public int cols;           // X 방향 셀 수
     public int rows;           // Z 방향 셀 수
 
@@ -20,7 +20,7 @@ public class RoomPlacementGrid
     public bool[,] wallZoneMask;
     public bool[,] doorMask;
 
-    // 월드↔그리드 간단 변환 유틸
+    // 월드 <-> 그리드 변환 
     public Vector2Int WorldToGrid(Vector3 worldPos)
     {
         int gx = Mathf.FloorToInt((worldPos.x - originXZ.x) / cellSize);

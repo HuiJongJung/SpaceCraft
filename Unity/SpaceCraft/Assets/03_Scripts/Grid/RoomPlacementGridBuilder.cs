@@ -8,7 +8,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
 #endif
 
     [Header("References")]
-    [SerializeField] private SpaceData data;   // 비워두면 자동으로 SpaceData.Instance 사용
+    [SerializeField] private SpaceData data;   
 
     [Header("Grid Options")]
     [SerializeField, Min(0.01f)] private float cellSize = 0.1f; // 10cm
@@ -16,7 +16,6 @@ public class RoomPlacementGridBuilder : MonoBehaviour
     [Header("Debug View")]
     public bool drawGizmos = true;
     [Range(0f, 1f)] public float gizmoAlpha = 0.35f;
-    //public Color[] roomColors; // 방마다 다른 색(비워두면 자동 생성)
 
     [Header("Door Blocking")]
     [SerializeField] private float wallInset = 0.02f; // 벽면에서 살짝 안쪽(수치오차/겹침 방지)
@@ -122,19 +121,17 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         IsBuilt = true;
     }
 
-    // ===== 폴리곤 추출 =====
-    // 가정: FloorDef.vertices가 상단면 윤곽을 이룸 (JSON 예시처럼 순서가 외곽 경로)
+    // 폴리곤 추출 
     // 안전하게 처리하기 위해 indices에서 경계 에지를 찾아 루프를 구성
     private List<Vector2> ExtractRoomPolygonXZ(RoomDef room, SpaceLayout layout)
     {
         if (room.floorIDs == null || room.floorIDs.Count == 0) return null;
 
-        // 단일 플로어만 있다고 가정(현재 JSON 구조와 동일). 다수일 경우 합집합 필요.
         FloorDef fd = layout.floors.Find(f => f != null && f.id == room.floorIDs[0]);
         if (fd == null || fd.vertices == null || fd.vertices.Count < 3 || fd.indices == null || fd.indices.Count < 3)
             return null;
 
-        // 1) 경계 에지 수집 (무향)
+        // 1) 경계 에지 수집
         Dictionary<(int, int), (int a, int b, int cnt)> edgeCount =
             new Dictionary<(int, int), (int a, int b, int cnt)>();
         for (int i = 0; i + 2 < fd.indices.Count; i += 3)
@@ -163,7 +160,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
             }
         }
 
-        // 3) 가장 긴 루프를 외곽으로 간주 (홀이 없다는 가정에 부합)
+        // 3) 가장 긴 루프를 외곽으로 간주
         List<int> loop = TraceLongestLoop(boundary);
         if (loop == null || loop.Count < 3) return null;
 
@@ -187,7 +184,6 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         (int a, int b, int cnt) rec;
         if (!map.TryGetValue(key, out rec)) rec = (a, b, 0);
         rec.cnt += 1;
-        // a,b는 최초 방향 보존(대략적인 루프 복원에 도움)
         map[key] = rec;
     }
 
@@ -233,7 +229,6 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         path.RemoveAt(path.Count - 1);
     }
 
-    // ===== 기초 유틸 =====
     private void Bounds2D(List<Vector2> poly, out float minX, out float maxX, out float minZ, out float maxZ)
     {
         minX = poly[0].x;
@@ -251,7 +246,6 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         }
     }
 
-    // 홀짝 규칙 PIP (시계/반시계/오목 모두 OK)
     private bool PointInPolygon(float x, float z, List<Vector2> poly)
     {
         bool inside = false;
@@ -268,11 +262,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         return inside;
     }
 
-    // 문 스윙 영역(문이 열리는 쪽 한쪽만) 적용
-    // ★ 문 스윙/반대편(동일 크기) 배치 불가 영역 생성
-    // 문 스윙 / 미닫이 영역 적용
-    // - 여닫이: 스윙 방향 + (외곽문일 경우) 반대편 동일 크기 차단
-    // - 미닫이: 각 방 안쪽으로 얇은 띠(slidingDoorDepth) 차단
+    // 문 스윙/반대편(동일 크기) 배치 불가 영역 생성
     private void ApplyDoorSwingZones()
     {
         if (data == null || data._layout == null) return;
@@ -322,7 +312,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
             float len1 = e1.magnitude;
             float len3 = e3.magnitude;
 
-            // 둘 다 0이면 의미 없는 벽이니 스킵
+            // 둘 다 0이면 스킵
             if (len1 <= 1e-6f && len3 <= 1e-6f) continue;
 
             // 1) 긴 쪽을 "벽 길이 방향"으로 사용
@@ -342,12 +332,12 @@ public class RoomPlacementGridBuilder : MonoBehaviour
                 uLen = len3;
             }
 
-            // 2) 두께 후보가 거의 평행이면 → 버리고 uDir에 수직인 2D 법선으로 tDir 생성
+            // 2) 두께 후보가 거의 평행할 경우 버리고 uDir에 수직인 2D 법선으로 tDir 생성
             Vector3 tDir;
             if (thicknessCandidate.sqrMagnitude < 1e-10f)
             {
                 // 후보가 너무 짧으면 바로 수직 벡터 생성
-                Vector3 n2D = new Vector3(-uDir.z, 0f, uDir.x);   // (x,z) 평면 직교
+                Vector3 n2D = new Vector3(-uDir.z, 0f, uDir.x); 
                 if (n2D.sqrMagnitude < 1e-10f)
                     n2D = new Vector3(uDir.z, 0f, -uDir.x);
                 tDir = n2D.normalized;
@@ -359,7 +349,6 @@ public class RoomPlacementGridBuilder : MonoBehaviour
 
                 if (dot > 0.95f)
                 {
-                    // 거의 평행 → thickness는 믿지 말고, uDir에 수직인 방향을 직접 만든다
                     Vector3 n2D = new Vector3(-uDir.z, 0f, uDir.x);
                     if (n2D.sqrMagnitude < 1e-10f)
                         n2D = new Vector3(uDir.z, 0f, -uDir.x);
@@ -367,7 +356,6 @@ public class RoomPlacementGridBuilder : MonoBehaviour
                 }
                 else
                 {
-                    // 평행은 아니면, uDir 성분을 제거해서 "정확히 수직"으로 만든다
                     Vector3 tProjOnU = Vector3.Dot(thicknessCandidate, uDir) * uDir;
                     Vector3 tOrtho = thicknessCandidate - tProjOnU;
                     tDir = tOrtho.normalized;
@@ -438,10 +426,9 @@ public class RoomPlacementGridBuilder : MonoBehaviour
 
                 if (isHinged)
                 {
-                    // ───────────── 여닫이문 처리 ─────────────
                     bool anyBlockedMain = false;
 
-                    // 1) 현재 방 방향으로 차단 (스윙 + 접근 클리어런스)
+                    // 1) 현재 방 방향으로 차단 
                     for (int gz = 0; gz < g.rows; gz++)
                     {
                         for (int gx = 0; gx < g.cols; gx++)
@@ -479,7 +466,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
                     }
 #endif
 
-                    // 2) 외곽 문이면: 같은 방에 반대방향도 동일 크기로 차단
+                    // 2) 같은 방에 반대방향도 동일 크기로 차단
                     if (isPerimeterDoor)
                     {
                         Vector3 intoOpp = -intoDirForThisRoom;
@@ -526,7 +513,6 @@ public class RoomPlacementGridBuilder : MonoBehaviour
                 }
                 else if (isSliding)
                 {
-                    // ───────────── 미닫이문 처리 ─────────────
                     bool anyBlockedSlide = false;
 
                     for (int gz = 0; gz < g.rows; gz++)
@@ -571,12 +557,10 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         }
     }
 
-
-    // 폴리곤 무게중심(centroid)
     private Vector2 ComputePolygonCentroid(List<Vector2> poly)
     {
         int n = poly.Count;
-        float A2 = 0f;   // 서명 면적*2
+        float A2 = 0f;  
         float cx = 0f, cy = 0f;
 
         for (int i = 0, j = n - 1; i < n; j = i++)
@@ -591,7 +575,6 @@ public class RoomPlacementGridBuilder : MonoBehaviour
 
         if (Mathf.Abs(A2) < 1e-6f)
         {
-            // 퇴화 시 평균값으로 폴백
             float sx = 0f, sy = 0f;
             for (int i = 0; i < n; i++) { sx += poly[i].x; sy += poly[i].y; }
             return new Vector2(sx / n, sy / n);
@@ -604,10 +587,9 @@ public class RoomPlacementGridBuilder : MonoBehaviour
     }
 
 
-    // ===== 디버그 시각화 =====
     void OnDrawGizmos()
     {
-        // ✅ 플레이 중일 때만 디버그 시각화
+        // 플레이 중일 때만 디버그 시각화
         if (!Application.isPlaying) return;
         if (!drawGizmos || grids == null) return;
 
@@ -617,11 +599,10 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         {
             RoomPlacementGrid grid = grids[r];
 
-            // ✅ 녹색 고정 색상 (투명도는 gizmoAlpha 사용)
+            // 녹색 색상
             Color fill = new Color(0f, 1f, 0f, gizmoAlpha);
             Gizmos.color = fill;
 
-            // 너무 많은 셀을 그려 성능이 떨어지지 않게 간단한 가드
             int maxDraw = Mathf.Min(grid.cols * grid.rows, 25000);
             int drawn = 0;
 
@@ -639,7 +620,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
                     }
                     else if (grid.wallZoneMask != null && grid.wallZoneMask[gx, gz])
                     {
-                        Gizmos.color = new Color(0f, 0f, 1f, gizmoAlpha); // Blue (Wall Zone - 디버깅용)
+                        Gizmos.color = new Color(0f, 0f, 1f, gizmoAlpha); // Blue (Wall Zone)
                     }
                     else if (grid.placementMask[gx, gz])
                     {
@@ -647,7 +628,6 @@ public class RoomPlacementGridBuilder : MonoBehaviour
                     }
                     else continue;
 
-                    // 큐브 그리기 (기존 코드 유지)
                     Vector3 c = grid.GridCenterToWorld(gx, gz, y);
                     Vector3 size = new Vector3(grid.cellSize * 0.98f, 0.002f, grid.cellSize * 0.98f);
                     Gizmos.DrawCube(c, size);
@@ -699,7 +679,6 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         }
     }
 
-    /// 그리드를 그립니다. 이미 생성되어 있다면 머테리얼만 갱신(Refresh)하고, 없다면 생성(Create)합니다.
     public void BuildRuntimeGridVisuals(int targetRoomID = -1)
     {
         EnsureGridMaterial();
@@ -709,21 +688,17 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         {
             if (targetRoomID != -1 && grid.roomID != targetRoomID) continue;
 
-            // 1. 캐시 확인: 이미 타일이 만들어져 있는가?
             if (_tileCache.ContainsKey(grid.roomID) && roomGridRoots.ContainsKey(grid.roomID))
             {
-                // 있으면 -> 색깔만 갱신 (Refresh)
                 RefreshGridMaterials(grid);
             }
             else
             {
-                // 없으면 -> 오브젝트 생성 (Create)
                 CreateGridObjects(grid);
             }
         }
     }
 
-    // 타일 오브젝트를 처음 생성하는 함수
     private void CreateGridObjects(RoomPlacementGrid grid)
     {
         if (roomGridRoots.TryGetValue(grid.roomID, out GameObject oldRoot)) Destroy(oldRoot);
@@ -732,14 +707,12 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         roomRootGO.transform.SetParent(gridRoot, false);
         roomGridRoots[grid.roomID] = roomRootGO;
 
-        // 캐시 배열 할당
         MeshRenderer[,] renderers = new MeshRenderer[grid.cols, grid.rows];
 
         for (int gz = 0; gz < grid.rows; gz++)
         {
             for (int gx = 0; gx < grid.cols; gx++)
             {
-                // 안 그릴 곳(벽 등)은 패스
                 if (!IsTileVisible(grid, gx, gz)) continue;
 
                 Vector3 c = grid.GridCenterToWorld(gx, gz, 0f);
@@ -755,7 +728,6 @@ public class RoomPlacementGridBuilder : MonoBehaviour
 
                 Destroy(tile.GetComponent<Collider>());
 
-                // 렌더러 캐싱 & 초기 색상 설정
                 MeshRenderer mr = tile.GetComponent<MeshRenderer>();
                 renderers[gx, gz] = mr;
 
@@ -765,7 +737,6 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         _tileCache[grid.roomID] = renderers;
     }
 
-    // 이미 있는 타일의 색상만 바꾸는 함수 (최적화)
     private void RefreshGridMaterials(RoomPlacementGrid grid)
     {
         MeshRenderer[,] renderers = _tileCache[grid.roomID];
@@ -777,10 +748,8 @@ public class RoomPlacementGridBuilder : MonoBehaviour
                 MeshRenderer mr = renderers[gx, gz];
                 if (mr == null) continue;
 
-                // 현재 상태에 맞는 머테리얼 가져오기
                 Material correctMat = GetMaterialForGrid(grid, gx, gz);
 
-                // 다를 때만 교체
                 if (correctMat != null && mr.sharedMaterial != correctMat)
                 {
                     mr.material = correctMat;
@@ -806,8 +775,6 @@ public class RoomPlacementGridBuilder : MonoBehaviour
 
         return null;
     }
-
-    // 타일을 생성할지 말지 결정
     private bool IsTileVisible(RoomPlacementGrid grid, int gx, int gz)
     {
         return grid.placementMask[gx, gz] ||
@@ -851,10 +818,8 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         {
             for (int x = 0; x < cols; x++)
             {
-                // 배치가 불가능한 곳(이미 벽이거나 문)은 벽 인접 여부를 따질 필요 없음
                 if (!grid.placementMask[x, z]) continue;
 
-                // 상하좌우 중 하나라도 '배치 불가(false)'가 있다면 -> 벽(또는 문) 경계면임
                 bool isEdge = false;
 
                 if (x - 1 < 0 || !grid.placementMask[x - 1, z]) isEdge = true;
@@ -869,8 +834,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
             }
         }
     }
-    
-    // Util GetGridByRoomId
+
     public RoomPlacementGrid GetGridByRoomId(int roomID)
     {
         if (grids == null) return null;
@@ -885,8 +849,7 @@ public class RoomPlacementGridBuilder : MonoBehaviour
         }
         return null;
     }
-    
-    // Util 
+
     public void BuildFromSpaceData(SpaceData space)
     {
         data = space;
